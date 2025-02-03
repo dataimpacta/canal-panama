@@ -1,23 +1,36 @@
 import dash
 from dash import dcc, html
+import pandas as pd
 import plotly.express as px
+import boto3
+from io import StringIO
 
-# Initialize the Dash app
+# Initialize Dash app
 app = dash.Dash(__name__)
 server = app.server
 
-# Sample data embedded directly in the code (example: a simple bar chart)
-data = {
-    "Fruits": ["Apples", "Bananas", "Oranges", "Berries", "Pears"],
-    "Amount": [10, 15, 7, 20, 13]
-}
+# Set up AWS S3 client
+s3_client = boto3.client('s3')
+
+# Bucket and file name
+bucket_name = 'canal-panama'
+file_name = 'fruit_data.csv'
+
+# Function to read CSV from S3
+def read_csv_from_s3(bucket, file):
+    obj = s3_client.get_object(Bucket=bucket, Key=file)
+    data = obj['Body'].read().decode('utf-8')
+    return pd.read_csv(StringIO(data))
+
+# Read the data from S3
+df = read_csv_from_s3(bucket_name, file_name)
 
 # Create a simple bar chart using Plotly
-fig = px.bar(data_frame=data, x="Fruits", y="Amount", title="Fruit Amounts")
+fig = px.bar(df, x="Fruit", y="Amount", title="Fruit Amounts")
 
 # Define the layout of the app
 app.layout = html.Div([
-    html.H1("Bar Chart"),
+    html.H1("Simple Dash App with S3 Data"),
     dcc.Graph(figure=fig),
 ])
 
