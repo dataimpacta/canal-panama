@@ -4,6 +4,7 @@ import plotly.express as px
 
 # Initialize the Dash app
 app = dash.Dash(__name__)
+server = app.server
 
 # Sample data embedded directly in the code (example: a simple bar chart)
 data = {
