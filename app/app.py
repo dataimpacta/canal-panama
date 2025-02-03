@@ -1,15 +1,24 @@
 import dash
-from dash import html
-from layout import create_layout
+from dash import dcc, html
+import plotly.express as px
 
-# Initialize Dash app
+# Initialize the Dash app
 app = dash.Dash(__name__)
-server = app.server
 
-# Define layout
-app.css.config.serve_locally = True
-app.scripts.config.serve_locally = True
-app.layout = create_layout()
+# Sample data embedded directly in the code (example: a simple bar chart)
+data = {
+    "Fruits": ["Apples", "Bananas", "Oranges", "Berries", "Pears"],
+    "Amount": [10, 15, 7, 20, 13]
+}
+
+# Create a simple bar chart using Plotly
+fig = px.bar(data_frame=data, x="Fruits", y="Amount", title="Fruit Amounts")
+
+# Define the layout of the app
+app.layout = html.Div([
+    html.H1("Bar Chart"),
+    dcc.Graph(figure=fig),
+])
 
 # Run the app
 if __name__ == '__main__':
