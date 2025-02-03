@@ -13,7 +13,7 @@ server = app.server
 s3_client = boto3.client('s3')
 
 # Bucket and file name
-bucket_name = 'canal-panama'
+bucket_name = 'buckect-canalpanama'
 file_name = 'fruit_data.csv'
 
 # Function to read CSV from S3
