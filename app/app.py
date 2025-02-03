@@ -1,6 +1,6 @@
 import dash
 from dash import html
-from app.layout import create_layout  # Import layout from layout.py
+from .layout import create_layout  # Import layout from layout.py
 
 # Initialize Dash app
 app = dash.Dash(__name__)
