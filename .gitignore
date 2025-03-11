@@ -1,7 +1,8 @@
 __pycache__/
 *.pyc
 *.pyo
+*.out
 .env
 myenv/
 venv/
-sample_data/
+secrets/
