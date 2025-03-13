@@ -1,3 +1,4 @@
+# 📌 Import Necessary Libraries
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc, callback, Output, Input
@@ -11,85 +12,80 @@ import os
 import boto3
 from io import StringIO
 from dash.dependencies import Input, Output
-import datetime
 
-
-# My libraries
+# 📌 My custom module
 import charts
 
-# Initialize Dash app
+# ========================== 1️⃣ APP INITIALIZATION ==========================
+
+# ✅ Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
 
-# Establish connection to the database
+# ========================== 2️⃣ DATABASE CONNECTION ==========================
 
-# Set up AWS S3 client
+# ✅ Set up AWS S3 client
 s3_client = boto3.client('s3')
 
 def read_csv_from_s3(bucket, file):
+    """Reads CSV from an S3 bucket and returns a DataFrame"""
     obj = s3_client.get_object(Bucket=bucket, Key=file)
     data = obj['Body'].read().decode('utf-8')
     return pd.read_csv(StringIO(data))
 
-# Read the data
+
+# ========================== 3️⃣ READ & PREPROCESS DATA ==========================
+
+# ✅ Define file paths
 bucket_name = 'buckect-canalpanama'
 file_name_emissions = 'Generated_Emission_Data_Monthly.csv'
-# file_name_waiting = 'Waiting_Time_Data.csv'
-# file_name_energy = 'Energy_Consumption_Data.csv'
 
-# Read the data
+# ✅ Read the data
 df_emissions = read_csv_from_s3(bucket_name, file_name_emissions)
-df_emissions['year_month'] =  df_emissions['year'].astype(str) + '-' + df_emissions['month'].astype(str)
-# Convert year and month into a numerical format YYYYMM for filtering
+
+# ✅ Convert `year` and `month` to `YYYYMM` integer format
 df_emissions["year_month"] = (
     df_emissions["year"].astype(str) + df_emissions["month"].astype(str).str.zfill(2)
 ).astype(int)
 
-# df_waiting = read_csv_from_s3(bucket_name, file_name_waiting)
-# df_energy = read_csv_from_s3(bucket_name, file_name_energy)
-
-
-# ➡️ Master Data
-master_emissions_years = sorted(df_emissions['year'].unique())
+# ✅ Create unique master lists for filters
 master_emissions_vessel_types = df_emissions['StandardVesselType'].unique()
 master_emission_types = df_emissions['emission_type'].unique()
 
-# Define min and max values for the slider
-#min_year_month = df_emissions["year_month_numeric"].min()
-#max_year_month = df_emissions["year_month_numeric"].max()
-
-# Create a sorted list of unique YYYYMM values
+# ✅ Create a sorted list of unique `YYYYMM` values for the date slider
 unique_year_months = sorted(df_emissions["year_month"].unique())
 
-# Create a mapping from YYYYMM to a linear index (0, 1, 2, ...)
-year_month_map = {ym: i for i, ym in enumerate(unique_year_months)}
-index_to_year_month = {i: ym for ym, i in year_month_map.items()}  # Reverse mapping
+# ✅ Create mappings for date filtering
+year_month_map = {ym: i for i, ym in enumerate(unique_year_months)}  # YYYYMM → index
+index_to_year_month = {i: ym for ym, i in year_month_map.items()}  # index → YYYYMM
 
-# Get min/max values
-min_index = min(year_month_map.values())  # 0
-max_index = max(year_month_map.values())  # Last index
+# ✅ Define min and max values for the slider
+min_index = min(year_month_map.values())  # First index (start date)
+max_index = max(year_month_map.values())  # Last index (end date)
 
 
+# ========================== 4️⃣ DATA PROCESSING ==========================
 
-# Data Processing
-# ➡️ Group by Year and Month
+# ✅ Aggregate emissions by Year & Month
 df_emissions_by_year_month = df_emissions.groupby(['year', 'month'])['emission_value'].sum().reset_index()
 
-# Group by 'StandardVesselType' and sum 'emission_value'
+# ✅ Aggregate emissions by Vessel Type
 df_emission_by_type = df_emissions.groupby('StandardVesselType')['emission_value'].sum().sort_values(ascending=False).head(6)
 
-# Group by StandardVesselType and year_month
+# ✅ Aggregate emissions by Vessel Type & Year-Month
 df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'year_month'])['emission_value'].sum().reset_index()
 
 
-# ➡️ Convert H3 to Polygon
+# ========================== 5️⃣ H3 MAP PROCESSING ==========================
+
 def h3_to_polygon(h3_index):
+    """Converts H3 cell index to a polygon"""
     boundary = cell_to_boundary(h3_index)  
     return Polygon([(lng, lat) for lat, lng in boundary])  # ✅ Swap (lat, lng) → (lng, lat)
 
-# ➡️ Process H3 Data
 def process_h3_data(df):
+    """Processes H3 spatial data for mapping"""
     if df.empty:
         raise ValueError("The DataFrame is empty. Check data input.")
 
@@ -105,35 +101,32 @@ def process_h3_data(df):
 
     return gdf_json, gdf  
 
-# Process H3 data
+# ✅ Process H3 data
 gdf_json, df_grouped = process_h3_data(df_emissions)
 
-## Create the chart
+
+# ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
+
 line_chart_emissions_by_year_month = charts.create_line_chart_emissions_by_year_month(df_emissions_by_year_month)
 bar_chart_emissions_by_type = charts.create_bar_chart_emissions_by_type(df_emission_by_type)
 line_chart_emissions_by_type_year_month = charts.create_line_chart_emissions_by_type_year_month(df_emissions_by_type_year_month)
-
-
-# Create the map figure
 h3_map = charts.create_h3_map(gdf_json, df_grouped)
 
 
+# ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
-# Layout Structure
 app.layout = dbc.Container([
-
-    ## ➡️ Header
+    
+    # ✅ Header Section
     dbc.Row([
-        ## Title
         dbc.Col([
             dbc.Row(html.H1("Panama Maritime Statistics")),
-            dbc.Row(html.H4("Efficiency and Sustaianability Indicators"))
-        ], width=9,
-        ),
+            dbc.Row(html.H4("Efficiency and Sustainability Indicators"))
+        ], width=9),
         dbc.Col(html.Img(src="/assets/sample_image.png", width="100%"))
     ], className="dashboard-header"),
 
-    ## ➡️ Tabs
+    # ✅ Tabs Section
     dbc.Row([
         dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
             dcc.Tab(label="Emissions", value="emissions"),
@@ -141,155 +134,71 @@ app.layout = dbc.Container([
             dcc.Tab(label="Energy", value="energy"),
             dcc.Tab(label="Explorer", value="explorer")
         ]), width=6)
-    ],  className="dashboard-navigation-bar"),
-    
-    ## ➡️ Buttons
-    #dbc.Row([
-    #    dbc.Col([dbc.Button("Emissions", color="primary", className="m-2"), 
-    #             dbc.Button("Waiting Time", color="secondary", className="m-2"),
-    #             dbc.Button("Energy", color="secondary", className="m-2"),
-    #             dbc.Button("Explorer", color="secondary", className="m-2")])
-    #], className="dashboard-navigation-bar"),
-    
-    ## ➡️ Main Components
+    ], className="dashboard-navigation-bar"),
+
+    # ✅ Sidebar (Filters)
     dbc.Row([
-
-        ## ➡️ Sidebar
         dbc.Col([
-            html.H3("ADD/REMOVE PARAMETERS", className="dashboard-sidebar-title") ,
-
-
-            html.Br(),
-
             html.H3("Date Range", className="dashboard-sidebar-title"),
             dcc.RangeSlider(
                 id="filter-date-range",
-                min=min_index,  # ✅ Use linear index
-                max=max_index,  # ✅ Use linear index
-                step=1,  # ✅ Step by 1 (each step = 1 month)
-                marks={
-                    min_index: str(unique_year_months[0]),  # First YYYYMM
-                    max_index: str(unique_year_months[-1])  # Last YYYYMM
-                },
-                value=[min_index, max_index],  # Default: full range
-                allowCross=False
+                min=min_index, max=max_index, step=1,
+                marks={min_index: str(unique_year_months[0]), max_index: str(unique_year_months[-1])},
+                value=[min_index, max_index], allowCross=False
             ),
-
             html.Br(),
 
             html.H3("Vessel Type", className="dashboard-sidebar-title"),
             dcc.Dropdown(
                 id="filter-emissions-type",
-                options=[{"label": vessel_type, "value": vessel_type} for vessel_type in master_emissions_vessel_types],
-                value=list(master_emissions_vessel_types),  # ✅ Start with all options selected
-                multi=True,  # ✅ Enables multi-selection
-                placeholder="Select Vessel Type(s)",
-                clearable=False,
-                style={"width": "100%"}
+                options=[{"label": v, "value": v} for v in master_emissions_vessel_types],
+                value=list(master_emissions_vessel_types), multi=True, clearable=False
             ),
-
             html.Br(),
-
 
             html.H3("Emission Type", className="dashboard-sidebar-title"),
             dcc.Dropdown(
                 id="filter-emissions-type-category",
-                options=[{"label": emission, "value": emission} for emission in master_emission_types],
-                value=list(master_emission_types),  # ✅ Start with all selected
-                multi=True,
-                placeholder="Select Emission Type(s)",
-                clearable=False,
-                style={"width": "100%"}
+                options=[{"label": e, "value": e} for e in master_emission_types],
+                value=list(master_emission_types), multi=True, clearable=False
             ),
-            
-            html.Br(),
-
-
-
         ], width=2, className="dashboard-sidebar-container"),
 
 
-        ## ➡️ Main Content
+        # ✅ Charts Section
         dbc.Col([
-
-            ## ➡️ Upper Row
-            dbc.Row ([
-
-                dbc.Col([
-                    html.H3("Total Emissions", className="dashboard-chart-title"),
-                    html.P("TONNES", className="dashboard-chart-subtitle"),
-                    #dcc.Graph(figure=line_chart_emissions_by_year_month)  # 📌 Chart inserted here
-                    dcc.Graph(id="line-chart-emissions-by-year-month", figure=line_chart_emissions_by_year_month),
-                ], className="dashboard-chart-container"),
-            
-                dbc.Col([
-                    html.H3("Emissions by Type of Vessel", className="dashboard-chart-title"),
-                    html.P("TONNES", className="dashboard-chart-subtitle"),
-                    #dcc.Graph(figure=bar_chart_emissions_by_type),
-                    dcc.Graph(id="bar-chart-emissions-by-type", figure=bar_chart_emissions_by_type),
-                ], className="dashboard-chart-container") 
-            ]),
-
-            ## ➡️ Lower Row            
             dbc.Row([
-                dbc.Col([
-                    html.H3("Emissions by Region", className="dashboard-chart-title"),
-                    html.P("TONNES", className="dashboard-chart-subtitle"),
-                    #dcc.Graph(figure=h3_map),  # 📌 Chart inserted here
-                    dcc.Graph(id="map-chart-emissions-map", figure=h3_map),
-                ], className="dashboard-chart-container"),
-                dbc.Col([
-                    html.H3("Emissions by Vessel type", className="dashboard-chart-title"),
-                    html.P("TONNES", className="dashboard-chart-subtitle"),
-                    #dcc.Graph(figure=line_chart_emissions_by_type_year_month),  # 📌 Chart inserted here
-                    dcc.Graph(id="line-chart-emissions-by-type-year-month", figure=line_chart_emissions_by_type_year_month),
-
-                ], className="dashboard-chart-container")
-
-            ]),
-
-
-        ], )
-
-
-
-    ], className="dashboard-main-content")
-
-
+                dbc.Col(dcc.Graph(id="line-chart-emissions-by-year-month", figure=line_chart_emissions_by_year_month),
+                        className="dashboard-chart-container"),
+                dbc.Col(dcc.Graph(id="bar-chart-emissions-by-type", figure=bar_chart_emissions_by_type),
+                        className="dashboard-chart-container")
+            ], ),
+            dbc.Row([
+                dbc.Col(dcc.Graph(id="map-chart-emissions-map", figure=h3_map),
+                        className="dashboard-chart-container"),
+                dbc.Col(dcc.Graph(id="line-chart-emissions-by-type-year-month", figure=line_chart_emissions_by_type_year_month),
+                        className="dashboard-chart-container")
+            ])
+        ])
+    ], className="dashboard-main-content" )
 ], fluid=True)
 
 
-from dash.dependencies import Input, Output
+# ========================== 8️⃣ CALLBACKS ==========================
 
 @callback(
     Output("filter-emissions-type-category", "value"),
     Input("filter-emissions-type-category", "value")
 )
 def update_emission_filter(selected_values):
-    """Resets selection to all options when empty."""
-    
-    all_emission_types = list(master_emission_types)  
-
-    # ✅ If nothing is selected, reset to all emission types
-    if not selected_values:
-        return all_emission_types
-
-    return selected_values  # Otherwise, return the user's selection
+    return list(master_emission_types) if not selected_values else selected_values
 
 @callback(
-    Output("filter-emissions-type", "value"),  # Updates the dropdown selection
-    Input("filter-emissions-type", "value")  # Gets selected values
+    Output("filter-emissions-type", "value"),
+    Input("filter-emissions-type", "value")
 )
 def update_vessel_filter(selected_values):
-    """Resets selection to all options when empty."""
-    
-    all_vessel_types = list(master_emissions_vessel_types)  # ✅ Convert to a list
-
-    # ✅ If nothing is selected, reset to all vessel types
-    if not selected_values:
-        return all_vessel_types
-
-    return selected_values  # Otherwise, return the user’s selection
+    return list(master_emissions_vessel_types) if not selected_values else selected_values
 
 @callback(
     [
