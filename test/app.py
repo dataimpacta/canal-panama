@@ -4,26 +4,43 @@ from dash import html, dcc, callback, Output, Input
 import pandas as pd
 import plotly.graph_objects as go
 import os
+import boto3
+from io import StringIO
 
 # My libraries
 from charts import create_emissions_chart 
-
-
-# Initialize Dash app
-app = dash.Dash(__name__)
-server = app.server
-
 
 # Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
+
+# Read the Data
+
+# ➡️ Here is the connection with pandas to read the CSV file
 # Get the absolute path to the root directory
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-csv_file_path = os.path.join(root_dir, "sample_data", "Generated_Emission_Data_Monthly.csv")
+# root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# csv_file_path = os.path.join(root_dir, "sample_data", "Generated_Emission_Data_Monthly.csv")
 
+# ➡️ Here is the connection, we need to change this to the S3
+# df = pd.read_csv(csv_file_path)
 
-df = pd.read_csv(csv_file_path)
+# Set up AWS S3 client
+s3_client = boto3.client('s3')
+
+# Bucket and file name
+bucket_name = 'buckect-canalpanama'
+file_name = 'Generated_Emission_Data_Monthly.csv'
+
+# Function to read CSV from S3
+def read_csv_from_s3(bucket, file):
+    obj = s3_client.get_object(Bucket=bucket, Key=file)
+    data = obj['Body'].read().decode('utf-8')
+    return pd.read_csv(StringIO(data))
+
+# Read the data from S3
+df = read_csv_from_s3(bucket_name, file_name)
+
 
 years = sorted(df['year'].unique())
 
