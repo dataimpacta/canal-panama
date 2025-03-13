@@ -11,6 +11,8 @@ Babel==2.15.0
 beautifulsoup4==4.12.3
 bleach==6.1.0
 blinker==1.9.0
+boto3==1.37.11
+botocore==1.37.11
 cachetools==5.5.2
 certifi==2023.7.22
 cffi==1.16.0
@@ -45,7 +47,6 @@ google-resumable-media==2.7.2
 googleapis-common-protos==1.69.1
 grpcio==1.70.0
 grpcio-status==1.70.0
-gunicorn==23.0.0
 h11==0.14.0
 httpcore==1.0.5
 httpx==0.27.0
@@ -58,6 +59,7 @@ itsdangerous==2.2.0
 jedi==0.19.1
 Jinja2==3.1.4
 jiter==0.6.1
+jmespath==1.0.1
 json5==0.9.25
 jsonpointer==2.4
 jsonschema==4.22.0
@@ -119,6 +121,7 @@ rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rpds-py==0.18.1
 rsa==4.9
+s3transfer==0.11.4
 scipy==1.13.0
 Send2Trash==1.8.3
 shapely==2.0.1
