@@ -1,8 +1,11 @@
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 
 
-def create_emissions_chart(df):
+# Emissions
+
+def create_line_chart_emissions_by_year_month(df):
 
     # ➡️ Create a Plotly Figure Instead of Matplotlib
     fig = go.Figure()
@@ -27,7 +30,7 @@ def create_emissions_chart(df):
 
     fig.update_layout(
         hovermode="x unified",  # Show all values for the same month
-        # autosize=True,  # Automatically takes the Bootstrap column width
+        #autosize=True,  # Automatically takes the Bootstrap column width
         width = 500,
         height=300,  # Keeps height fixed to avoid stretching
         dragmode=False,  # Disable all user interactions
@@ -57,3 +60,123 @@ def create_emissions_chart(df):
 
 
     return fig  
+
+def create_bar_chart_emissions_by_type(df):
+    
+    # ➡️ Create a Plotly Bar Chart
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        y=df.index,  # Vessel types on Y-axis
+        x=df.values,  # Emission values on X-axis
+        orientation="h",  # Horizontal bars
+        marker=dict(
+            color="#D9D9D9",  # Custom color for bars
+            line=dict(color="black", width=0)  # Border for better visibility
+        ),
+        text=df.values,  # Show values on bars
+        textposition="inside"  # Place text inside the bars
+    ))
+
+    fig.update_layout(
+        hovermode="y unified",  # Show all values for the same vessel type
+        #autosize=True,
+        width=500,
+        height=300,  # Keeps height fixed
+        dragmode=False,  # Disable user interactions
+        xaxis=dict(
+            showgrid=False, gridcolor="lightgray", gridwidth=0,
+            zeroline=False,  # Removes the thick zero line
+            range=[-df.values.max() * 0.02, df.values.max()] 
+        ),
+        yaxis=dict(
+            showgrid=False,
+            categoryorder="total ascending",  # Ensure correct sorting
+            #position=0
+            automargin=True,  # Allows automatic space adjustment for labels
+            tickmode="array",
+            tickfont=dict(size=13),  # Make labels more readable
+        ),
+        margin=dict(l=0, r=0, t=0, b=0),
+        plot_bgcolor="white"
+    )
+
+    return fig
+
+def create_line_chart_emissions_by_type_year_month(df):
+    
+    fig = go.Figure()
+
+    # Generate a color palette for different vessel types
+    unique_vessel_types = df["StandardVesselType"].unique()
+
+    for vessel_type in unique_vessel_types:
+        vessel_data = df[df["StandardVesselType"] == vessel_type]
+
+        fig.add_trace(go.Scatter(
+            x=vessel_data["year_month"],  # Time series
+            y=vessel_data["emission_value"],  # Emission values
+            mode="lines",
+            name=vessel_type,  # Name in the legend
+            #line=dict(color=color_map[vessel_type], width=2),
+            opacity=0.8
+        ))
+
+    fig.update_layout(
+        hovermode="x unified",  # Show all vessel emissions for a given month
+        width=500,
+        #width=800,
+        height=300,
+        dragmode=False,
+        xaxis=dict(
+            showgrid=True, gridcolor="lightgray", gridwidth=0.5,
+            tickangle=0,  # Rotate labels for better readability
+            type="category",  # Ensure categorical formatting of dates
+        ),
+        yaxis=dict(
+            showgrid=True, gridcolor="lightgray", gridwidth=1,
+        ),
+        legend=dict(
+            x=0, y=1, xanchor="left", yanchor="top",
+            orientation="h"  # Horizontal legend for better readability
+        ),
+        margin=dict(l=0, r=0, t=0, b=0),
+        plot_bgcolor="white"
+    )
+
+    return fig
+
+
+def create_h3_map(gdf_json, gdf):
+    if gdf.empty:
+        raise ValueError("The GeoDataFrame is empty. Check processed data.")
+
+    # ✅ Get the center of all hexagons correctly
+    map_center = gdf.geometry.unary_union.centroid  # ✅ Fix: Get a single centroid for the entire map
+
+    fig = px.choropleth_mapbox(
+        gdf,
+        geojson=gdf_json,
+        locations="resolution_id",  # H3 hexagons
+        featureidkey="properties.resolution_id",  # Matches H3 index in GeoJSON
+        color="emission_value",
+        color_continuous_scale="OrRd",  # Orange-Red color scale
+        mapbox_style="carto-positron",
+        zoom=200,
+        center={"lat": map_center.y, "lon": map_center.x},  # ✅ Correct center calculation
+        opacity=0.6
+    )
+
+    fig.update_layout(
+        width=500,
+        #width=800,
+        height=300,
+        margin=dict(l=0, r=0, t=0, b=0),
+        coloraxis_colorbar=dict(title="Emissions"),
+        mapbox=dict(
+            center={"lat": map_center.y, "lon": map_center.x},  
+            zoom=9
+        )
+    )
+
+    return fig

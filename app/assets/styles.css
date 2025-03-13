@@ -13,8 +13,8 @@ h1 {
 .dashboard-header {
     padding-top: 20px;    
     padding-bottom: 10px; 
-    padding-left: 30px;   
-    padding-right: 5px;   
+    padding-left: 0px;   
+    padding-right: 0px;   
     margin: 15px;
     border-radius: 10px;
     background-color: white;
@@ -43,8 +43,8 @@ h1 {
 .dashboard-navigation-bar {
     padding-top: 0px;    
     padding-bottom: 10px; 
-    padding-left: 30px;   
-    padding-right: 5px;   
+    padding-left: 0px;   
+    padding-right: 0px;   
     margin: 15px;
     border-radius: 10px;
     background-color: white;
@@ -53,8 +53,8 @@ h1 {
 .dashboard-main-content {
     padding-top: 0px;    
     padding-bottom: 10px; 
-    padding-left: 30px;   
-    padding-right: 5px;   
+    padding-left: 0px;   
+    padding-right: 0px;   
     margin: 15px;
     border-radius: 10px;
     background-color: white;
@@ -63,11 +63,11 @@ h1 {
 .dashboard-sidebar-container {
     padding-top: 20px;    
     padding-bottom: 20px; 
-    padding-left: 20px;   
-    padding-right: 20px;   
+    padding-left: 1%;   
+    padding-right: 1%;   
 
     margin-bottom: 10px;
-    margin-left: 10px;
+    margin-left: 1%;
 
     border: 1px solid black; 
     border-radius: 5px;
@@ -78,11 +78,11 @@ h1 {
 .dashboard-chart-container {
     padding-top: 20px;    
     padding-bottom: 20px; 
-    padding-left: 20px;   
-    padding-right: 2px;   
+    padding-left: 2%;   
+    padding-right: 2%;   
 
     margin-bottom: 10px;
-    margin-left: 10px;
+    margin-left: 1%;
 
 
     border: 1px solid black; 
