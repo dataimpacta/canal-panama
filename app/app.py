@@ -12,6 +12,8 @@ import os
 import boto3
 from io import StringIO
 from dash.dependencies import Input, Output
+from dotenv import load_dotenv
+
 
 # 📌 My custom module
 import charts
@@ -22,11 +24,23 @@ import charts
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
+load_dotenv()
+
+access_key = os.getenv("AWS_ACCESS_KEY_ID")
+secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+access_key = os.getenv("VICTOR_AWS_ACCESS_KEY_ID")
+secret_key = os.getenv("VICTOR_AWS_SECRET_ACCESS_KEY")
+
 
 # ========================== 2️⃣ DATABASE CONNECTION ==========================
 
 # ✅ Set up AWS S3 client
-s3_client = boto3.client('s3')
+
+s3_client = boto3.client(
+    "s3",
+    aws_access_key_id=access_key,
+    aws_secret_access_key=secret_key
+)
 
 def read_csv_from_s3(bucket, file):
     """Reads CSV from an S3 bucket and returns a DataFrame"""
