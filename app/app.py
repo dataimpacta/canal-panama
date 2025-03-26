@@ -105,11 +105,14 @@ df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'y
 
 # ========================== 5️⃣ H3 MAP PROCESSING ==========================
 
-def h3_to_polygon(h3_index):
-    """Convierte un índice H3 entero a un polígono"""
-    boundary = cell_to_boundary(h3_index)  # Manténlo como int
-    return Polygon([(lng, lat) for lat, lng in boundary])  # Swap (lat, lng)
+h3_polygon_cache = {}  # Dictionary: resolution_id (int) → Polygon
 
+def h3_to_polygon(h3_index):
+    """Convert H3 index to polygon, using cached results"""
+    if h3_index not in h3_polygon_cache:
+        boundary = cell_to_boundary(h3_index)
+        h3_polygon_cache[h3_index] = Polygon([(lng, lat) for lat, lng in boundary])
+    return h3_polygon_cache[h3_index]
 
 def process_h3_data(df):
     """Procesa datos espaciales H3 para generar GeoJSON"""
@@ -128,15 +131,19 @@ def process_h3_data(df):
 
 
 # ✅ Process H3 data
-gdf_json, df_grouped = process_h3_data(df_emissions)
+for h3_index in df_emissions["resolution_id"].unique():
+    h3_to_polygon(h3_index)
+
+#gdf_json, df_grouped = process_h3_data(df_emissions)
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
+
 
 line_chart_emissions_by_year_month = charts.create_line_chart_emissions_by_year_month(df_emissions_by_year_month)
 bar_chart_emissions_by_type = charts.create_bar_chart_emissions_by_type(df_emission_by_type)
 line_chart_emissions_by_type_year_month = charts.create_line_chart_emissions_by_type_year_month(df_emissions_by_type_year_month)
-h3_map = charts.create_h3_map(gdf_json, df_grouped)
-
+#h3_map = charts.create_h3_map(gdf_json, df_grouped)
+h3_map = go.Figure()
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
@@ -221,45 +228,43 @@ def update_vessel_filter(selected_values):
     ],
     [
         Input("filter-emissions-type", "value"),
-        Input("filter-date-range", "value"),  # 🔥 New filter added
+        Input("filter-date-range", "value"),
     ]
 )
 def update_charts(selected_vessel_types, selected_date_range):
-    """Update charts based on selected vessel type, emission type, and date range."""
+    """Efficiently update all charts using cached polygons and prefiltered data."""
 
-    filtered_df = df_emissions.copy()
-
-    # ✅ Convert slider index to actual YYYYMM values
+    # ✅ Filter data early
     start_ym = index_to_year_month[selected_date_range[0]]
     end_ym = index_to_year_month[selected_date_range[1]]
-
-    # ✅ Filter by date range
-    filtered_df = filtered_df[
-        (filtered_df["year_month"].astype(int) >= start_ym) &
-        (filtered_df["year_month"].astype(int) <= end_ym)
+    
+    filtered_df = df_emissions[
+        (df_emissions["year_month"] >= start_ym) &
+        (df_emissions["year_month"] <= end_ym) &
+        (df_emissions["StandardVesselType"].isin(selected_vessel_types))
     ]
 
-    # ✅ Filter by vessel type
-    if selected_vessel_types:
-        filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
+    # ✅ Grouping operations
+    df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
+    df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
+    df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
+    # ✅ H3 Aggregation
+    """
+    df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
+    df_h3["geometry"] = df_h3["resolution_id"].apply(h3_to_polygon)
+    gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
+    gdf_json = json.loads(gdf.to_json())"
+    """
 
-    # ✅ Recreate filtered data
-    df_filtered_by_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-    df_filtered_by_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-    df_filtered_by_type_year_month = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
-
-    # ✅ Process H3 data for the map
-    gdf_json, df_grouped = process_h3_data(filtered_df)
-
-    # ✅ Recreate charts with filtered data
-    updated_chart_emissions_by_year_month = charts.create_line_chart_emissions_by_year_month(df_filtered_by_year_month)
-    updated_chart_emissions_by_type = charts.create_bar_chart_emissions_by_type(df_filtered_by_type)
-    updated_chart_emissions_by_type_year_month = charts.create_line_chart_emissions_by_type_year_month(df_filtered_by_type_year_month)
-    updated_chart_map = charts.create_h3_map(gdf_json, df_grouped)
-
-    return updated_chart_emissions_by_year_month, updated_chart_emissions_by_type, updated_chart_emissions_by_type_year_month, updated_chart_map
-
+    # ✅ Create charts
+    return (
+        charts.create_line_chart_emissions_by_year_month(df_year_month),
+        charts.create_bar_chart_emissions_by_type(df_type),
+        charts.create_line_chart_emissions_by_type_year_month(df_type_ym),
+        #charts.create_h3_map(gdf_json, df_h3),
+        go.Figure(),
+    )
 
 # Run the app
 if __name__ == '__main__':
