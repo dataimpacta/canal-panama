@@ -19,7 +19,7 @@ def create_line_chart_emissions_by_year_month(df):
         year_data = df[df['year'] == year]
         fig.add_trace(go.Scatter(
             x=year_data['month'],
-            y=year_data['emission_value'],
+            y=year_data['co2_equivalent_t'],
             mode='lines',
             name=str(year),  # Name in the legend list
             line=dict(color=color_map.get(year, "#757575"), width=width_map.get(year, 2)),
@@ -115,7 +115,7 @@ def create_line_chart_emissions_by_type_year_month(df):
 
         fig.add_trace(go.Scatter(
             x=vessel_data["year_month"],  # Time series
-            y=vessel_data["emission_value"],  # Emission values
+            y=vessel_data["co2_equivalent_t"],  # Emission values
             mode="lines",
             name=vessel_type,  # Name in the legend
             #line=dict(color=color_map[vessel_type], width=2),
@@ -159,7 +159,7 @@ def create_h3_map(gdf_json, gdf):
         geojson=gdf_json,
         locations="resolution_id",  # H3 hexagons
         featureidkey="properties.resolution_id",  # Matches H3 index in GeoJSON
-        color="emission_value",
+        color="co2_equivalent_t",
         color_continuous_scale="OrRd",  # Orange-Red color scale
         mapbox_style="carto-positron",
         zoom=200,

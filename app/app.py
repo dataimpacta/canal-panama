@@ -5,10 +5,13 @@ from dash import html, dcc, callback, Output, Input
 import pandas as pd
 import plotly.graph_objects as go
 from h3.api.basic_str import cell_to_boundary
+from h3.api.basic_int import cell_to_boundary 
+from h3.api.basic_int import int_to_str
 from shapely.geometry import Polygon
 import geopandas as gpd
 import json
 import os
+import io
 import boto3
 from io import StringIO
 from dash.dependencies import Input, Output
@@ -28,9 +31,11 @@ load_dotenv()
 
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-access_key = os.getenv("VICTOR_AWS_ACCESS_KEY_ID")
-secret_key = os.getenv("VICTOR_AWS_SECRET_ACCESS_KEY")
+#access_key = os.getenv("VICTOR_AWS_ACCESS_KEY_ID")
+#secret_key = os.getenv("VICTOR_AWS_SECRET_ACCESS_KEY")
 
+bucket_name = os.getenv("bucket_name")
+file_name_emissions = os.getenv("key")
 
 # ========================== 2️⃣ DATABASE CONNECTION ==========================
 
@@ -48,24 +53,31 @@ def read_csv_from_s3(bucket, file):
     data = obj['Body'].read().decode('utf-8')
     return pd.read_csv(StringIO(data))
 
+def read_parquet_from_s3(bucket, file):
+    """Reads parket from an S3 bucket and returns a DataFrame"""
+    obj = s3_client.get_object(Bucket=bucket, Key=file)
+    data = obj['Body'].read()
+    return pd.read_parquet(io.BytesIO(data))
+
+
 
 # ========================== 3️⃣ READ & PREPROCESS DATA ==========================
 
 # ✅ Define file paths
-bucket_name = 'buckect-canalpanama'
-file_name_emissions = 'Generated_Emission_Data_Monthly.csv'
+#bucket_name = 'buckect-canalpanama'
+#file_name_emissions = 'Generated_Emission_Data_Monthly.csv'
 
 # ✅ Read the data
-df_emissions = read_csv_from_s3(bucket_name, file_name_emissions)
+df_emissions = read_parquet_from_s3(bucket_name, file_name_emissions)
 
 # ✅ Convert `year` and `month` to `YYYYMM` integer format
 df_emissions["year_month"] = (
     df_emissions["year"].astype(str) + df_emissions["month"].astype(str).str.zfill(2)
 ).astype(int)
 
-# ✅ Create unique master lists for filters
+# 🟡 Create unique master lists for filters - Delete the one with emissions
 master_emissions_vessel_types = df_emissions['StandardVesselType'].unique()
-master_emission_types = df_emissions['emission_type'].unique()
+#master_emission_types = df_emissions['emission_type'].unique()
 
 # ✅ Create a sorted list of unique `YYYYMM` values for the date slider
 unique_year_months = sorted(df_emissions["year_month"].unique())
@@ -82,42 +94,41 @@ max_index = max(year_month_map.values())  # Last index (end date)
 # ========================== 4️⃣ DATA PROCESSING ==========================
 
 # ✅ Aggregate emissions by Year & Month
-df_emissions_by_year_month = df_emissions.groupby(['year', 'month'])['emission_value'].sum().reset_index()
+df_emissions_by_year_month = df_emissions.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
 
 # ✅ Aggregate emissions by Vessel Type
-df_emission_by_type = df_emissions.groupby('StandardVesselType')['emission_value'].sum().sort_values(ascending=False).head(6)
+df_emission_by_type = df_emissions.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
 
 # ✅ Aggregate emissions by Vessel Type & Year-Month
-df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'year_month'])['emission_value'].sum().reset_index()
+df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
 
 # ========================== 5️⃣ H3 MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
-    """Converts H3 cell index to a polygon"""
-    boundary = cell_to_boundary(h3_index)  
-    return Polygon([(lng, lat) for lat, lng in boundary])  # ✅ Swap (lat, lng) → (lng, lat)
+    """Convierte un índice H3 entero a un polígono"""
+    boundary = cell_to_boundary(h3_index)  # Manténlo como int
+    return Polygon([(lng, lat) for lat, lng in boundary])  # Swap (lat, lng)
+
 
 def process_h3_data(df):
-    """Processes H3 spatial data for mapping"""
+    """Procesa datos espaciales H3 para generar GeoJSON"""
     if df.empty:
-        raise ValueError("The DataFrame is empty. Check data input.")
+        raise ValueError("El DataFrame está vacío. Revisa la fuente de datos.")
 
-    # ✅ Aggregate emissions by H3 resolution
-    df_grouped = df.groupby("resolution_id", as_index=False).agg({"emission_value": "sum"})
+    df_grouped = df.groupby("resolution_id", as_index=False).agg({
+        "co2_equivalent_t": "sum"
+    })
 
-    # ✅ Convert DataFrame to GeoDataFrame
     df_grouped["geometry"] = df_grouped["resolution_id"].apply(h3_to_polygon)
     gdf = gpd.GeoDataFrame(df_grouped, geometry="geometry")
 
-    # ✅ Convert GeoDataFrame to GeoJSON
     gdf_json = json.loads(gdf.to_json())
+    return gdf_json, gdf
 
-    return gdf_json, gdf  
 
 # ✅ Process H3 data
 gdf_json, df_grouped = process_h3_data(df_emissions)
-
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
 
@@ -170,12 +181,6 @@ app.layout = dbc.Container([
             ),
             html.Br(),
 
-            html.H3("Emission Type", className="dashboard-sidebar-title"),
-            dcc.Dropdown(
-                id="filter-emissions-type-category",
-                options=[{"label": e, "value": e} for e in master_emission_types],
-                value=list(master_emission_types), multi=True, clearable=False
-            ),
         ], width=2, className="dashboard-sidebar-container"),
 
 
@@ -201,13 +206,6 @@ app.layout = dbc.Container([
 # ========================== 8️⃣ CALLBACKS ==========================
 
 @callback(
-    Output("filter-emissions-type-category", "value"),
-    Input("filter-emissions-type-category", "value")
-)
-def update_emission_filter(selected_values):
-    return list(master_emission_types) if not selected_values else selected_values
-
-@callback(
     Output("filter-emissions-type", "value"),
     Input("filter-emissions-type", "value")
 )
@@ -223,11 +221,10 @@ def update_vessel_filter(selected_values):
     ],
     [
         Input("filter-emissions-type", "value"),
-        Input("filter-emissions-type-category", "value"),
         Input("filter-date-range", "value"),  # 🔥 New filter added
     ]
 )
-def update_charts(selected_vessel_types, selected_emission_types, selected_date_range):
+def update_charts(selected_vessel_types, selected_date_range):
     """Update charts based on selected vessel type, emission type, and date range."""
 
     filtered_df = df_emissions.copy()
@@ -246,14 +243,11 @@ def update_charts(selected_vessel_types, selected_emission_types, selected_date_
     if selected_vessel_types:
         filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
 
-    # ✅ Filter by emission type
-    if selected_emission_types:
-        filtered_df = filtered_df[filtered_df["emission_type"].isin(selected_emission_types)]
 
     # ✅ Recreate filtered data
-    df_filtered_by_year_month = filtered_df.groupby(['year', 'month'])['emission_value'].sum().reset_index()
-    df_filtered_by_type = filtered_df.groupby('StandardVesselType')['emission_value'].sum().sort_values(ascending=False).head(6)
-    df_filtered_by_type_year_month = filtered_df.groupby(['StandardVesselType', 'year_month'])['emission_value'].sum().reset_index()
+    df_filtered_by_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
+    df_filtered_by_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
+    df_filtered_by_type_year_month = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
     # ✅ Process H3 data for the map
     gdf_json, df_grouped = process_h3_data(filtered_df)
