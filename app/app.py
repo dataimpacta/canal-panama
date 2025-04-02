@@ -134,7 +134,7 @@ def process_h3_data(df):
 for h3_index in df_emissions["resolution_id"].unique():
     h3_to_polygon(h3_index)
 
-#gdf_json, df_grouped = process_h3_data(df_emissions)
+gdf_json, df_grouped = process_h3_data(df_emissions)
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
 
@@ -142,8 +142,8 @@ for h3_index in df_emissions["resolution_id"].unique():
 line_chart_emissions_by_year_month = charts.create_line_chart_emissions_by_year_month(df_emissions_by_year_month)
 bar_chart_emissions_by_type = charts.create_bar_chart_emissions_by_type(df_emission_by_type)
 line_chart_emissions_by_type_year_month = charts.create_line_chart_emissions_by_type_year_month(df_emissions_by_type_year_month)
-#h3_map = charts.create_h3_map(gdf_json, df_grouped)
-h3_map = go.Figure()
+h3_map = charts.create_h3_map(gdf_json, df_grouped)
+#h3_map = go.Figure()
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
@@ -250,20 +250,20 @@ def update_charts(selected_vessel_types, selected_date_range):
     df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
     # ✅ H3 Aggregation
-    """
+
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
     df_h3["geometry"] = df_h3["resolution_id"].apply(h3_to_polygon)
     gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
-    gdf_json = json.loads(gdf.to_json())"
-    """
+    gdf_json = json.loads(gdf.to_json())
+
 
     # ✅ Create charts
     return (
         charts.create_line_chart_emissions_by_year_month(df_year_month),
         charts.create_bar_chart_emissions_by_type(df_type),
         charts.create_line_chart_emissions_by_type_year_month(df_type_ym),
-        #charts.create_h3_map(gdf_json, df_h3),
-        go.Figure(),
+        charts.create_h3_map(gdf_json, df_h3),
+        #go.Figure(),
     )
 
 # Run the app

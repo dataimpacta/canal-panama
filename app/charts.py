@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
+import geopandas as gpd
 
 
 # Emissions
@@ -151,31 +152,30 @@ def create_h3_map(gdf_json, gdf):
     if gdf.empty:
         raise ValueError("The GeoDataFrame is empty. Check processed data.")
 
-    # ✅ Get the center of all hexagons correctly
-    map_center = gdf.geometry.unary_union.centroid  # ✅ Fix: Get a single centroid for the entire map
+    # ✅ Fix the map center calculation
+    map_center = gpd.GeoSeries(gdf.geometry).unary_union.centroid
 
     fig = px.choropleth_mapbox(
         gdf,
         geojson=gdf_json,
-        locations="resolution_id",  # H3 hexagons
-        featureidkey="properties.resolution_id",  # Matches H3 index in GeoJSON
+        locations="resolution_id",
+        featureidkey="properties.resolution_id",
         color="co2_equivalent_t",
-        color_continuous_scale="OrRd",  # Orange-Red color scale
+        color_continuous_scale="OrRd",
         mapbox_style="carto-positron",
-        zoom=200,
-        center={"lat": map_center.y, "lon": map_center.x},  # ✅ Correct center calculation
+        zoom=9,
+        center={"lat": map_center.y, "lon": map_center.x},
         opacity=0.6
     )
 
     fig.update_layout(
         width=500,
-        #width=800,
         height=300,
         margin=dict(l=0, r=0, t=0, b=0),
         coloraxis_colorbar=dict(title="Emissions"),
         mapbox=dict(
-            center={"lat": map_center.y, "lon": map_center.x},  
-            zoom=9
+            center={"lat": map_center.y, "lon": map_center.x},
+            zoom=7
         )
     )
 
