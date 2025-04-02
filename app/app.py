@@ -14,7 +14,7 @@ import os
 import io
 import boto3
 from io import StringIO
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv
 
 
@@ -146,7 +146,9 @@ h3_map = charts.create_h3_map(gdf_json, df_grouped)
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
 app.layout = dbc.Container([
-    
+    dcc.Store(id="store-gdf-json", data=gdf_json),  # ✅ Store GeoJSON
+    dcc.Store(id="store-gdf", data=df_grouped.to_json()),  # ✅ Store filtered GeoDataFrame (as JSON)
+
     # ✅ Header Section
     dbc.Row([
         dbc.Col([
@@ -188,7 +190,6 @@ app.layout = dbc.Container([
 
         ], width=2, className="dashboard-sidebar-container"),
 
-
         # ✅ Charts Section
         dbc.Col([
             dbc.Row([
@@ -196,7 +197,7 @@ app.layout = dbc.Container([
                         className="dashboard-chart-container"),
                 dbc.Col(dcc.Graph(id="bar-chart-emissions-by-type", figure=bar_chart_emissions_by_type),
                         className="dashboard-chart-container")
-            ], ),
+            ]),
             dbc.Row([
                 dbc.Col(dcc.Graph(id="map-chart-emissions-map", figure=h3_map),
                         className="dashboard-chart-container"),
@@ -204,9 +205,8 @@ app.layout = dbc.Container([
                         className="dashboard-chart-container")
             ])
         ])
-    ], className="dashboard-main-content" )
+    ], className="dashboard-main-content")
 ], fluid=True)
-
 
 # ========================== 8️⃣ CALLBACKS ==========================
 
@@ -227,45 +227,38 @@ def update_vessel_filter(selected_values):
     [
         Input("filter-emissions-type", "value"),
         Input("filter-date-range", "value"),
+    ],
+    [
+        State("store-gdf-json", "data"),
+        State("store-gdf", "data"),
     ]
 )
-def update_charts(selected_vessel_types, selected_date_range):
-    """Efficiently update all charts using cached polygons and prefiltered data."""
+def update_charts(selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
+    """Efficiently update charts using cached GeoJSON and filtered data"""
 
-    # ✅ Filter data early
     start_ym = index_to_year_month[selected_date_range[0]]
     end_ym = index_to_year_month[selected_date_range[1]]
-    
+
     filtered_df = df_emissions[
         (df_emissions["year_month"] >= start_ym) &
         (df_emissions["year_month"] <= end_ym) &
         (df_emissions["StandardVesselType"].isin(selected_vessel_types))
     ]
 
-    # ✅ Grouping operations
     df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
     df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
     df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
-    # ✅ H3 Aggregation
-
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
-
-    # Instead of recalculating polygons, use precomputed ones
-    #df_h3["geometry"] = df_h3["resolution_id"].apply(h3_to_polygon)
     df_h3 = df_h3.merge(unique_polygons, on="resolution_id", how="left")
     gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
     gdf_json = json.loads(gdf.to_json())
-    
 
-
-    # ✅ Create charts
     return (
         charts.create_line_chart_emissions_by_year_month(df_year_month),
         charts.create_bar_chart_emissions_by_type(df_type),
         charts.create_line_chart_emissions_by_type_year_month(df_type_ym),
         charts.create_h3_map(gdf_json, df_h3),
-        #go.Figure(),
     )
 
 # Run the app
