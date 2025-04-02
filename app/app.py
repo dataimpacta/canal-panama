@@ -105,36 +105,34 @@ df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'y
 
 # ========================== 5️⃣ H3 MAP PROCESSING ==========================
 
-h3_polygon_cache = {}  # Dictionary: resolution_id (int) → Polygon
-
 def h3_to_polygon(h3_index):
-    """Convert H3 index to polygon, using cached results"""
-    if h3_index not in h3_polygon_cache:
-        boundary = cell_to_boundary(h3_index)
-        h3_polygon_cache[h3_index] = Polygon([(lng, lat) for lat, lng in boundary])
-    return h3_polygon_cache[h3_index]
+    boundary = cell_to_boundary(h3_index)
+    return Polygon([(lng, lat) for lat, lng in boundary])
 
-def process_h3_data(df):
-    """Procesa datos espaciales H3 para generar GeoJSON"""
+
+def process_h3_data(df, unique_polygons):
+    """Processes H3 spatial data for mapping using precomputed geometry"""
     if df.empty:
-        raise ValueError("El DataFrame está vacío. Revisa la fuente de datos.")
+        raise ValueError("The DataFrame is empty. Check data input.")
 
-    df_grouped = df.groupby("resolution_id", as_index=False).agg({
+    df_grouped = df.groupby(["resolution_id"], as_index=False).agg({
         "co2_equivalent_t": "sum"
     })
 
-    df_grouped["geometry"] = df_grouped["resolution_id"].apply(h3_to_polygon)
-    gdf = gpd.GeoDataFrame(df_grouped, geometry="geometry")
+    df_grouped = df_grouped.merge(unique_polygons, on="resolution_id", how="left")
 
+    gdf = gpd.GeoDataFrame(df_grouped, geometry="geometry", crs="EPSG:4326")
     gdf_json = json.loads(gdf.to_json())
     return gdf_json, gdf
 
 
-# ✅ Process H3 data
-for h3_index in df_emissions["resolution_id"].unique():
-    h3_to_polygon(h3_index)
+# Pre-Process H3 data
+# ✅ Create a unique DataFrame for H3 polygons
+unique_polygons = df_emissions[["resolution_id"]].drop_duplicates().copy()
+unique_polygons["geometry"] = unique_polygons["resolution_id"].apply(h3_to_polygon)
 
-gdf_json, df_grouped = process_h3_data(df_emissions)
+
+gdf_json, df_grouped = process_h3_data(df_emissions, unique_polygons)
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
 
@@ -252,9 +250,13 @@ def update_charts(selected_vessel_types, selected_date_range):
     # ✅ H3 Aggregation
 
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
-    df_h3["geometry"] = df_h3["resolution_id"].apply(h3_to_polygon)
+
+    # Instead of recalculating polygons, use precomputed ones
+    #df_h3["geometry"] = df_h3["resolution_id"].apply(h3_to_polygon)
+    df_h3 = df_h3.merge(unique_polygons, on="resolution_id", how="left")
     gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
     gdf_json = json.loads(gdf.to_json())
+    
 
 
     # ✅ Create charts
