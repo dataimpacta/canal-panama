@@ -161,8 +161,9 @@ def process_h3_data(df, unique_polygons):
 
     df_grouped = df_grouped.merge(unique_polygons, on="resolution_id", how="left")
 
-    gdf = gpd.GeoDataFrame(df_grouped, geometry="geometry", crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df_grouped, geometry="geometry", crs="EPSG:4326", )
     gdf_json = json.loads(gdf.to_json())
+    #gdf_json = simplify_geojson_precision(gdf_json, decimals=5)
     return gdf_json, gdf
 
 
