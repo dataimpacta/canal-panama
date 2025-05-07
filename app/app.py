@@ -19,9 +19,26 @@ from dotenv import load_dotenv
 import psutil
 import time
 
+import logging
+import psutil
+import os
+
+
+# Get the current process info for tracking resource usage
+process = psutil.Process(os.getpid())
+
 
 # 📌 My custom module
 import charts
+
+# ========================== 1️⃣ LOGS CONFIGURATION ==========================
+
+# Configure logging to show up in nohup.out
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # ========================== 1️⃣ APP INITIALIZATION ==========================
 
@@ -239,53 +256,50 @@ import psutil
     ]
 )
 def update_charts(selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
-    """Efficiently update charts using cached GeoJSON and filtered data"""
-
-    process = psutil.Process()
     start_time = time.time()
-    cpu_start = process.cpu_times()
+    logger.info("🟢 Callback started")
 
-    # ✅ Filter data
-    t0 = time.time()
+    def log_step(step_name):
+        cpu = process.cpu_percent()  # Percentage over interval (this shows better on repeated calls)
+        mem = process.memory_info().rss / 1024 / 1024  # in MB
+        logger.info(f"✅ Step: {step_name} | CPU: {cpu:.1f}%% | Memory: {mem:.1f}MB")
+
     start_ym = index_to_year_month[selected_date_range[0]]
     end_ym = index_to_year_month[selected_date_range[1]]
+
     filtered_df = df_emissions[
         (df_emissions["year_month"] >= start_ym) &
         (df_emissions["year_month"] <= end_ym) &
         (df_emissions["StandardVesselType"].isin(selected_vessel_types))
     ]
-    print(f"🔹 Data filtered in {time.time() - t0:.2f}s")
+    log_step("Filtered DataFrame")
 
-    # ✅ Grouping operations
-    t0 = time.time()
     df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-    df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-    df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
-    print(f"🔹 Grouping done in {time.time() - t0:.2f}s")
+    log_step("Grouped by year & month")
 
-    # ✅ H3 aggregation and geo conversion
-    t0 = time.time()
+    df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
+    log_step("Grouped by vessel type")
+
+    df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
+    log_step("Grouped by vessel type & year_month")
+
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
     df_h3 = df_h3.merge(unique_polygons, on="resolution_id", how="left")
+    log_step("H3 grouping and merge")
+
     gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
     gdf_json = json.loads(gdf.to_json())
-    print(f"🔹 H3 map processing in {time.time() - t0:.2f}s")
+    log_step("GeoDataFrame to JSON")
 
-    # ✅ Chart creation
-    t0 = time.time()
-    line1 = charts.create_line_chart_emissions_by_year_month(df_year_month)
-    bar = charts.create_bar_chart_emissions_by_type(df_type)
-    line2 = charts.create_line_chart_emissions_by_type_year_month(df_type_ym)
-    map_fig = charts.create_h3_map(gdf_json, df_h3)
-    print(f"🔹 Charts created in {time.time() - t0:.2f}s")
-
-    # ✅ Overall summary
     total_time = time.time() - start_time
-    cpu_end = process.cpu_times()
-    cpu_time = (cpu_end.user - cpu_start.user) + (cpu_end.system - cpu_start.system)
-    print(f"✅ Total callback time: {total_time:.2f}s | CPU time: {cpu_time:.2f}s")
+    logger.info(f"🟣 Callback finished in {total_time:.2f} seconds")
 
-    return (line1, bar, line2, map_fig)
+    return (
+        charts.create_line_chart_emissions_by_year_month(df_year_month),
+        charts.create_bar_chart_emissions_by_type(df_type),
+        charts.create_line_chart_emissions_by_type_year_month(df_type_ym),
+        charts.create_h3_map(gdf_json, df_h3),
+    )
 
 # Run the app
 if __name__ == '__main__':
