@@ -227,6 +227,13 @@ app.layout = dbc.Container([
     ], className="dashboard-main-content")
 ], fluid=True)
 
+
+def log_step(step_name, start_time):
+    elapsed = time.time() - start_time
+    mem = process.memory_info().rss / 1024 / 1024
+    logger.info(f"✅ Step: {step_name} | Time: {elapsed:.2f}s | Memory: {mem:.1f}MB")
+    return time.time()
+
 # ========================== 8️⃣ CALLBACKS ==========================
 
 @callback(
@@ -256,13 +263,8 @@ import psutil
     ]
 )
 def update_charts(selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
-    start_time = time.time()
     logger.info("🟢 Callback started")
-
-    def log_step(step_name):
-        cpu = process.cpu_percent()  # Percentage over interval (this shows better on repeated calls)
-        mem = process.memory_info().rss / 1024 / 1024  # in MB
-        logger.info(f"✅ Step: {step_name} | CPU: {cpu:.1f}%% | Memory: {mem:.1f}MB")
+    t = time.time()
 
     start_ym = index_to_year_month[selected_date_range[0]]
     end_ym = index_to_year_month[selected_date_range[1]]
@@ -272,27 +274,27 @@ def update_charts(selected_vessel_types, selected_date_range, stored_geojson, st
         (df_emissions["year_month"] <= end_ym) &
         (df_emissions["StandardVesselType"].isin(selected_vessel_types))
     ]
-    log_step("Filtered DataFrame")
+    t = log_step("Filtered DataFrame", t)
 
     df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-    log_step("Grouped by year & month")
+    t = log_step("Grouped by year & month", t)
 
     df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-    log_step("Grouped by vessel type")
+    t = log_step("Grouped by vessel type", t)
 
     df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
-    log_step("Grouped by vessel type & year_month")
+    t = log_step("Grouped by vessel type & year_month", t)
 
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
     df_h3 = df_h3.merge(unique_polygons, on="resolution_id", how="left")
-    log_step("H3 grouping and merge")
+    t = log_step("H3 grouping and merge", t)
 
     gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
     gdf_json = json.loads(gdf.to_json())
-    log_step("GeoDataFrame to JSON")
+    t = log_step("GeoDataFrame to JSON", t)
 
-    total_time = time.time() - start_time
-    logger.info(f"🟣 Callback finished in {total_time:.2f} seconds")
+    total_time = time.time() - t
+    logger.info(f"🟣 Callback finished. Total: {total_time:.2f}s")
 
     return (
         charts.create_line_chart_emissions_by_year_month(df_year_month),
