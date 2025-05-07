@@ -16,6 +16,8 @@ import boto3
 from io import StringIO
 from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv
+import psutil
+import time
 
 
 # 📌 My custom module
@@ -217,6 +219,9 @@ app.layout = dbc.Container([
 def update_vessel_filter(selected_values):
     return list(master_emissions_vessel_types) if not selected_values else selected_values
 
+import time
+import psutil
+
 @callback(
     [
         Output("line-chart-emissions-by-year-month", "figure"),
@@ -236,30 +241,51 @@ def update_vessel_filter(selected_values):
 def update_charts(selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
     """Efficiently update charts using cached GeoJSON and filtered data"""
 
+    process = psutil.Process()
+    start_time = time.time()
+    cpu_start = process.cpu_times()
+
+    # ✅ Filter data
+    t0 = time.time()
     start_ym = index_to_year_month[selected_date_range[0]]
     end_ym = index_to_year_month[selected_date_range[1]]
-
     filtered_df = df_emissions[
         (df_emissions["year_month"] >= start_ym) &
         (df_emissions["year_month"] <= end_ym) &
         (df_emissions["StandardVesselType"].isin(selected_vessel_types))
     ]
+    print(f"🔹 Data filtered in {time.time() - t0:.2f}s")
 
+    # ✅ Grouping operations
+    t0 = time.time()
     df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
     df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
     df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
+    print(f"🔹 Grouping done in {time.time() - t0:.2f}s")
 
+    # ✅ H3 aggregation and geo conversion
+    t0 = time.time()
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
     df_h3 = df_h3.merge(unique_polygons, on="resolution_id", how="left")
     gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
     gdf_json = json.loads(gdf.to_json())
+    print(f"🔹 H3 map processing in {time.time() - t0:.2f}s")
 
-    return (
-        charts.create_line_chart_emissions_by_year_month(df_year_month),
-        charts.create_bar_chart_emissions_by_type(df_type),
-        charts.create_line_chart_emissions_by_type_year_month(df_type_ym),
-        charts.create_h3_map(gdf_json, df_h3),
-    )
+    # ✅ Chart creation
+    t0 = time.time()
+    line1 = charts.create_line_chart_emissions_by_year_month(df_year_month)
+    bar = charts.create_bar_chart_emissions_by_type(df_type)
+    line2 = charts.create_line_chart_emissions_by_type_year_month(df_type_ym)
+    map_fig = charts.create_h3_map(gdf_json, df_h3)
+    print(f"🔹 Charts created in {time.time() - t0:.2f}s")
+
+    # ✅ Overall summary
+    total_time = time.time() - start_time
+    cpu_end = process.cpu_times()
+    cpu_time = (cpu_end.user - cpu_start.user) + (cpu_end.system - cpu_start.system)
+    print(f"✅ Total callback time: {total_time:.2f}s | CPU time: {cpu_time:.2f}s")
+
+    return (line1, bar, line2, map_fig)
 
 # Run the app
 if __name__ == '__main__':
