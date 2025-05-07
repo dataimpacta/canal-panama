@@ -263,4 +263,4 @@ def update_charts(selected_vessel_types, selected_date_range, stored_geojson, st
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False, host='0.0.0.0', port=8050)
