@@ -206,6 +206,8 @@ app.layout = dbc.Container([
                 value=list(master_emissions_vessel_types), multi=True, clearable=False
             ),
             html.Br(),
+            html.Button("Apply Filters", id="apply-filters-btn", n_clicks=0),
+            html.Br()
 
         ], width=2, className="dashboard-sidebar-container"),
 
@@ -254,15 +256,16 @@ import psutil
         Output("map-chart-emissions-map", "figure"),
     ],
     [
-        Input("filter-emissions-type", "value"),
-        Input("filter-date-range", "value"),
+    Input("apply-filters-btn", "n_clicks")
     ],
     [
+        State("filter-emissions-type", "value"),
+        State("filter-date-range", "value"),
         State("store-gdf-json", "data"),
         State("store-gdf", "data"),
     ]
 )
-def update_charts(selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
+def update_charts(n_clicks, selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
     logger.info("🟢 Callback started")
     t = time.time()
 
