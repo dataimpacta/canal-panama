@@ -153,7 +153,9 @@ def create_h3_map(gdf_json, gdf):
         raise ValueError("The GeoDataFrame is empty. Check processed data.")
 
     # ✅ Fix the map center calculation
-    map_center = gpd.GeoSeries(gdf.geometry).unary_union.centroid
+    #map_center = gpd.GeoSeries(gdf.geometry).unary_union.centroid
+    fixed_center = {"lat": 9.117975, "lon": -79.735890}
+
 
     fig = px.choropleth_mapbox(
         gdf,
@@ -163,20 +165,17 @@ def create_h3_map(gdf_json, gdf):
         color="co2_equivalent_t",
         color_continuous_scale="OrRd",
         mapbox_style="carto-positron",
-        zoom=9,
-        center={"lat": map_center.y, "lon": map_center.x},
+        zoom=7,
+        center=fixed_center,
         opacity=0.6
     )
 
     fig.update_layout(
         width=500,
         height=300,
+        #autosize=True,
         margin=dict(l=0, r=0, t=0, b=0),
-        coloraxis_colorbar=dict(title="Emissions"),
-        mapbox=dict(
-            center={"lat": map_center.y, "lon": map_center.x},
-            zoom=7
-        )
+        coloraxis_colorbar=dict(title="Emissions")
     )
 
     return fig
