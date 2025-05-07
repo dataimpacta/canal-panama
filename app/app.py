@@ -237,16 +237,52 @@ app.layout = dbc.Container([
         # ✅ Charts Section
         dbc.Col([
             dbc.Row([
-                dbc.Col(dcc.Graph(id="line-chart-emissions-by-year-month", figure=line_chart_emissions_by_year_month),
-                        className="dashboard-chart-container"),
-                dbc.Col(dcc.Graph(id="bar-chart-emissions-by-type", figure=bar_chart_emissions_by_type),
-                        className="dashboard-chart-container")
+                dbc.Col(
+                    dcc.Loading(
+                        id="loading-line-year-month",
+                        type="circle",
+                        children=dcc.Graph(
+                            id="line-chart-emissions-by-year-month",
+                            figure=line_chart_emissions_by_year_month
+                        )
+                    ),
+                    className="dashboard-chart-container"
+                ),
+                dbc.Col(
+                    dcc.Loading(
+                        id="loading-bar-type",
+                        type="circle",
+                        children=dcc.Graph(
+                            id="bar-chart-emissions-by-type",
+                            figure=bar_chart_emissions_by_type
+                        )
+                    ),
+                    className="dashboard-chart-container"
+                )
             ]),
             dbc.Row([
-                dbc.Col(dcc.Graph(id="map-chart-emissions-map", figure=h3_map),
-                        className="dashboard-chart-container"),
-                dbc.Col(dcc.Graph(id="line-chart-emissions-by-type-year-month", figure=line_chart_emissions_by_type_year_month),
-                        className="dashboard-chart-container")
+                dbc.Col(
+                    dcc.Loading(
+                        id="loading-map",
+                        type="circle",
+                        children=dcc.Graph(
+                            id="map-chart-emissions-map",
+                            figure=h3_map
+                        )
+                    ),
+                    className="dashboard-chart-container"
+                ),
+                dbc.Col(
+                    dcc.Loading(
+                        id="loading-line-type-year-month",
+                        type="circle",
+                        children=dcc.Graph(
+                            id="line-chart-emissions-by-type-year-month",
+                            figure=line_chart_emissions_by_type_year_month
+                        )
+                    ),
+                    className="dashboard-chart-container"
+                )
             ])
         ])
     ], className="dashboard-main-content")
