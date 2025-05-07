@@ -18,6 +18,7 @@ from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv
 import psutil
 import time
+from copy import deepcopy
 
 import logging
 import psutil
@@ -124,6 +125,25 @@ df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'y
 
 # ========================== 5️⃣ H3 MAP PROCESSING ==========================
 
+def create_geojson_template(unique_polygons_gdf):
+    """
+    Create a reusable GeoJSON template from the precomputed H3 polygons.
+    Only needs to be run once during app startup.
+    """
+    return json.loads(unique_polygons_gdf.to_json())
+
+def inject_values_into_geojson(template, values_by_id):
+    """
+    Inject new 'value' properties into a static GeoJSON template.
+    Used in callback to avoid recomputing geometries.
+    """
+    updated_geojson = deepcopy(template)
+    for feature in updated_geojson["features"]:
+        res_id = feature["properties"]["resolution_id"]
+        feature["properties"]["value"] = values_by_id.get(res_id, 0)
+    return updated_geojson
+
+
 def h3_to_polygon(h3_index):
     boundary = cell_to_boundary(h3_index)
     return Polygon([(lng, lat) for lat, lng in boundary])
@@ -147,11 +167,14 @@ def process_h3_data(df, unique_polygons):
 
 # Pre-Process H3 data
 # ✅ Create a unique DataFrame for H3 polygons
-unique_polygons = df_emissions[["resolution_id"]].drop_duplicates().copy()
-unique_polygons["geometry"] = unique_polygons["resolution_id"].apply(h3_to_polygon)
+unique_polygons_gdf = gpd.GeoDataFrame(
+    df_emissions[["resolution_id"]].drop_duplicates().copy(),
+    geometry=df_emissions[["resolution_id"]].drop_duplicates()["resolution_id"].apply(h3_to_polygon),
+    crs="EPSG:4326"
+)
 
-
-gdf_json, df_grouped = process_h3_data(df_emissions, unique_polygons)
+geojson_template = create_geojson_template(unique_polygons_gdf)
+gdf_json, df_grouped = process_h3_data(df_emissions, unique_polygons_gdf)
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
 
@@ -245,8 +268,6 @@ def log_step(step_name, start_time):
 def update_vessel_filter(selected_values):
     return list(master_emissions_vessel_types) if not selected_values else selected_values
 
-import time
-import psutil
 
 @callback(
     [
@@ -255,17 +276,13 @@ import psutil
         Output("line-chart-emissions-by-type-year-month", "figure"),
         Output("map-chart-emissions-map", "figure"),
     ],
-    [
-    Input("apply-filters-btn", "n_clicks")
-    ],
+    Input("apply-filters-btn", "n_clicks"),
     [
         State("filter-emissions-type", "value"),
         State("filter-date-range", "value"),
-        State("store-gdf-json", "data"),
-        State("store-gdf", "data"),
     ]
 )
-def update_charts(n_clicks, selected_vessel_types, selected_date_range, stored_geojson, stored_gdf_json):
+def update_charts(n_clicks, selected_vessel_types, selected_date_range):
     logger.info("🟢 Callback started")
     t = time.time()
 
@@ -289,15 +306,14 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range, stored_g
     t = log_step("Grouped by vessel type & year_month", t)
 
     df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
-    df_h3 = df_h3.merge(unique_polygons, on="resolution_id", how="left")
+    df_h3 = df_h3.merge(unique_polygons_gdf, on="resolution_id", how="left")  
     t = log_step("H3 grouping and merge", t)
 
-    gdf = gpd.GeoDataFrame(df_h3, geometry="geometry", crs="EPSG:4326")
-    gdf_json = json.loads(gdf.to_json())
-    t = log_step("GeoDataFrame to JSON", t)
+    values_by_id = df_h3.set_index("resolution_id")["co2_equivalent_t"].to_dict()
+    gdf_json = inject_values_into_geojson(geojson_template, values_by_id)
+    t = log_step("Injected values into GeoJSON", t)
 
-    total_time = time.time() - t
-    logger.info(f"🟣 Callback finished. Total: {total_time:.2f}s")
+    logger.info(f"🟣 Callback finished. Total time: {time.time() - t:.2f}s")
 
     return (
         charts.create_line_chart_emissions_by_year_month(df_year_month),
