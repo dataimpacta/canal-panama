@@ -347,6 +347,7 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
 
     values_by_id = df_h3.set_index("resolution_id")["co2_equivalent_t"].to_dict()
     gdf_json = inject_values_into_geojson(geojson_template, values_by_id)
+    logger.info(f"📦 GeoJSON payload size: {sys.getsizeof(json.dumps(gdf_json)) / 1024:.2f} KB")
     t = log_step("Injected values into GeoJSON", t)
 
     logger.info(f"🟣 Callback finished. Total time: {time.time() - t:.2f}s")
