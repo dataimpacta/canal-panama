@@ -138,29 +138,6 @@ def create_geojson_template(geo_df):
     """
     return json.loads(geo_df.to_json())
 
-def simplify_geojson_precision(geojson, decimals=4):
-    """
-    Rounds coordinates in a GeoJSON dictionary to reduce payload size.
-    """
-    from copy import deepcopy
-
-    def round_coords(coords):
-        return [round(c, decimals) for c in coords]
-
-    def traverse(obj):
-        if isinstance(obj, list):
-            return [traverse(item) for item in obj]
-        elif isinstance(obj, dict):
-            if 'coordinates' in obj:
-                obj['coordinates'] = traverse(obj['coordinates'])
-            else:
-                for k, v in obj.items():
-                    obj[k] = traverse(v)
-            return obj
-        return obj
-
-    return traverse(deepcopy(geojson))
-
 def inject_values_into_geojson(template, values_by_id):
     updated_geojson = {"type": "FeatureCollection", "features": []}
     for feature in template["features"]:
@@ -193,7 +170,6 @@ def generate_h3_map_data(df_filtered, unique_polygons_gdf, geojson_template):
 
 unique_polygons_gdf = generate_unique_polygons(df_emissions)
 geojson_template = create_geojson_template(unique_polygons_gdf)
-geojson_template = simplify_geojson_precision(geojson_template, decimals=4)
 
 gdf_json, df_grouped = generate_h3_map_data(df_emissions, unique_polygons_gdf, geojson_template)
 
@@ -217,7 +193,7 @@ app.layout = dbc.Container([
             dbc.Row(html.H1("Panama Maritime Statistics")),
             dbc.Row(html.H4("Efficiency and Sustainability Indicators"))
         ], width=9),
-        dbc.Col(html.Img(src="/assets/sample_image.png", width="100%"))
+        #dbc.Col(html.Img(src="/assets/sample_image.png", width="100%"))
     ], className="dashboard-header"),
 
     # ✅ Tabs Section
@@ -287,7 +263,12 @@ app.layout = dbc.Container([
                         type="circle",
                         children=dcc.Graph(
                             id="map-chart-emissions-map",
-                            figure=h3_map
+                            figure=h3_map,
+                            config={
+                            'scrollZoom': True,       # Enables zooming with scroll
+                            'displayModeBar': True,   # Shows the plotly toolbar
+                            'doubleClick': 'reset'    # Double-click to reset view
+                        }
                         )
                     ),
                     className="dashboard-chart-container"
