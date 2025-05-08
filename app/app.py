@@ -1,39 +1,36 @@
 # 📌 Import Necessary Libraries
-import dash
-import dash_bootstrap_components as dbc
-from dash import html, dcc, callback, Output, Input
-import pandas as pd
-import plotly.graph_objects as go
-from h3.api.basic_str import cell_to_boundary
-from h3.api.basic_int import cell_to_boundary 
-from h3.api.basic_int import int_to_str
-from shapely.geometry import Polygon
-import geopandas as gpd
-import json
+# ========== 🔧 Standard Libraries ==========
 import os
 import io
-import boto3
-from io import StringIO
-from dash.dependencies import Input, Output, State
-from dotenv import load_dotenv
-import psutil
-import time
-from copy import deepcopy
 import sys
-
+import json
+import time
 import logging
+from copy import deepcopy
+from io import StringIO
+
+# ========== 📦 Third-Party Libraries ==========
+import dash
+from dash import html, dcc, callback
+from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
+
+import pandas as pd
+import plotly.graph_objects as go
+import geopandas as gpd
+import boto3
 import psutil
-import os
+from dotenv import load_dotenv
 
+from shapely.geometry import Polygon
+from h3.api.basic_int import cell_to_boundary, int_to_str
 
-# Get the current process info for tracking resource usage
-process = psutil.Process(os.getpid())
-
-
-# 📌 My custom module
+# ========== 🧩 Custom Modules ==========
 import charts
 
-# ========================== 1️⃣ LOGS CONFIGURATION ==========================
+
+
+# ========================== LOGS CONFIGURATION ==========================
 
 # Configure logging to show up in nohup.out
 logging.basicConfig(
@@ -41,6 +38,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+# Memory and CPU ustage
+process = psutil.Process(os.getpid())
 
 # ========================== 1️⃣ APP INITIALIZATION ==========================
 
@@ -52,9 +52,6 @@ load_dotenv()
 
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-#access_key = os.getenv("VICTOR_AWS_ACCESS_KEY_ID")
-#secret_key = os.getenv("VICTOR_AWS_SECRET_ACCESS_KEY")
-
 bucket_name = os.getenv("bucket_name")
 file_name_emissions = os.getenv("key")
 
@@ -83,10 +80,6 @@ def read_parquet_from_s3(bucket, file):
 
 
 # ========================== 3️⃣ READ & PREPROCESS DATA ==========================
-
-# ✅ Define file paths
-#bucket_name = 'buckect-canalpanama'
-#file_name_emissions = 'Generated_Emission_Data_Monthly.csv'
 
 # ✅ Read the data
 df_emissions = read_parquet_from_s3(bucket_name, file_name_emissions)
@@ -124,74 +117,99 @@ df_emission_by_type = df_emissions.groupby('StandardVesselType')['co2_equivalent
 df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
 
-# ========================== 5️⃣ H3 MAP PROCESSING ==========================
-
-def create_geojson_template(unique_polygons_gdf):
-    """
-    Create a reusable GeoJSON template from the precomputed H3 polygons.
-    Only needs to be run once during app startup.
-    """
-    return json.loads(unique_polygons_gdf.to_json())
-
-def inject_values_into_geojson(template, values_by_id):
-    """
-    Inject new 'value' properties into a static GeoJSON template.
-    Used in callback to avoid recomputing geometries.
-    """
-    updated_geojson = deepcopy(template)
-    for feature in updated_geojson["features"]:
-        res_id = feature["properties"]["resolution_id"]
-        feature["properties"]["value"] = values_by_id.get(res_id, 0)
-    return updated_geojson
-
+# ========================== 5️⃣ MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
     boundary = cell_to_boundary(h3_index)
     return Polygon([(lng, lat) for lat, lng in boundary])
 
+def generate_unique_polygons(df_emissions):
+    """
+    Generates a GeoDataFrame with unique resolution_id polygons.
+    Only needs to be run once at app startup.
+    """
+    unique_ids = df_emissions[["resolution_id"]].drop_duplicates().copy()
+    unique_ids["geometry"] = unique_ids["resolution_id"].apply(h3_to_polygon)
+    return gpd.GeoDataFrame(unique_ids, geometry="geometry", crs="EPSG:4326")
 
-def process_h3_data(df, unique_polygons):
-    """Processes H3 spatial data for mapping using precomputed geometry"""
-    if df.empty:
-        raise ValueError("The DataFrame is empty. Check data input.")
+def create_geojson_template(geo_df):
+    """
+    Converts a GeoDataFrame to a GeoJSON dictionary.
+    """
+    return json.loads(geo_df.to_json())
 
-    df_grouped = df.groupby(["resolution_id"], as_index=False).agg({
-        "co2_equivalent_t": "sum"
-    })
+def simplify_geojson_precision(geojson, decimals=4):
+    """
+    Rounds coordinates in a GeoJSON dictionary to reduce payload size.
+    """
+    from copy import deepcopy
 
-    df_grouped = df_grouped.merge(unique_polygons, on="resolution_id", how="left")
+    def round_coords(coords):
+        return [round(c, decimals) for c in coords]
 
-    gdf = gpd.GeoDataFrame(df_grouped, geometry="geometry", crs="EPSG:4326", )
-    gdf_json = json.loads(gdf.to_json())
-    #gdf_json = simplify_geojson_precision(gdf_json, decimals=5)
-    return gdf_json, gdf
+    def traverse(obj):
+        if isinstance(obj, list):
+            return [traverse(item) for item in obj]
+        elif isinstance(obj, dict):
+            if 'coordinates' in obj:
+                obj['coordinates'] = traverse(obj['coordinates'])
+            else:
+                for k, v in obj.items():
+                    obj[k] = traverse(v)
+            return obj
+        return obj
 
+    return traverse(deepcopy(geojson))
 
-# Pre-Process H3 data
-# ✅ Create a unique DataFrame for H3 polygons
-unique_polygons_gdf = gpd.GeoDataFrame(
-    df_emissions[["resolution_id"]].drop_duplicates().copy(),
-    geometry=df_emissions[["resolution_id"]].drop_duplicates()["resolution_id"].apply(h3_to_polygon),
-    crs="EPSG:4326"
-)
+def inject_values_into_geojson(template, values_by_id):
+    updated_geojson = {"type": "FeatureCollection", "features": []}
+    for feature in template["features"]:
+        res_id = feature["properties"]["resolution_id"]
+        value = values_by_id.get(res_id, 0)
+        if value > 0:
+            new_feature = deepcopy(feature)
+            new_feature["properties"]["value"] = value
+            updated_geojson["features"].append(new_feature)
+    return updated_geojson
 
+def generate_h3_map_data(df_filtered, unique_polygons_gdf, geojson_template):
+    """
+    From a filtered DataFrame:
+    - Groups by resolution_id and aggregates CO₂.
+    - Merges with unique polygon geometries.
+    - Injects values into the precomputed GeoJSON template.
+    
+    Returns:
+        - df_grouped: GeoDataFrame with geometry and emissions
+        - gdf_json: GeoJSON ready for plotting
+    """
+    df_grouped = df_filtered.groupby("resolution_id", as_index=False)["co2_equivalent_t"].sum()
+    df_grouped = df_grouped.merge(unique_polygons_gdf, on="resolution_id", how="left")
+
+    values_by_id = df_grouped.set_index("resolution_id")["co2_equivalent_t"].to_dict()
+    gdf_json = inject_values_into_geojson(geojson_template, values_by_id)
+
+    return gdf_json, df_grouped
+
+unique_polygons_gdf = generate_unique_polygons(df_emissions)
 geojson_template = create_geojson_template(unique_polygons_gdf)
-gdf_json, df_grouped = process_h3_data(df_emissions, unique_polygons_gdf)
+geojson_template = simplify_geojson_precision(geojson_template, decimals=4)
+
+gdf_json, df_grouped = generate_h3_map_data(df_emissions, unique_polygons_gdf, geojson_template)
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
 
-
-line_chart_emissions_by_year_month = charts.create_line_chart_emissions_by_year_month(df_emissions_by_year_month)
-bar_chart_emissions_by_type = charts.create_bar_chart_emissions_by_type(df_emission_by_type)
-line_chart_emissions_by_type_year_month = charts.create_line_chart_emissions_by_type_year_month(df_emissions_by_type_year_month)
-h3_map = charts.create_h3_map(gdf_json, df_grouped)
+line_chart_emissions_by_year_month = charts.plot_line_chart_emissions_by_year_month(df_emissions_by_year_month)
+bar_chart_emissions_by_type = charts.plot_bar_chart_emissions_by_type(df_emission_by_type)
+line_chart_emissions_by_type_year_month = charts.plot_line_chart_emissions_by_type_year_month(df_emissions_by_type_year_month)
+h3_map = charts.plot_emissions_map(gdf_json, df_grouped)
 #h3_map = go.Figure()
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
 app.layout = dbc.Container([
-    dcc.Store(id="store-gdf-json", data=gdf_json),  # ✅ Store GeoJSON
-    dcc.Store(id="store-gdf", data=df_grouped.to_json()),  # ✅ Store filtered GeoDataFrame (as JSON)
+    #dcc.Store(id="store-gdf-json", data=gdf_json),  # ✅ Store GeoJSON
+    #dcc.Store(id="store-gdf", data=df_grouped.to_json()),  # ✅ Store filtered GeoDataFrame (as JSON)
 
     # ✅ Header Section
     dbc.Row([
@@ -343,12 +361,8 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
     df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
     t = log_step("Grouped by vessel type & year_month", t)
 
-    df_h3 = filtered_df.groupby("resolution_id", as_index=False)['co2_equivalent_t'].sum()
-    df_h3 = df_h3.merge(unique_polygons_gdf, on="resolution_id", how="left")  
-    t = log_step("H3 grouping and merge", t)
+    gdf_json, df_h3 = generate_h3_map_data(filtered_df, unique_polygons_gdf, geojson_template)
 
-    values_by_id = df_h3.set_index("resolution_id")["co2_equivalent_t"].to_dict()
-    gdf_json = inject_values_into_geojson(geojson_template, values_by_id)
     size_kb = len(json.dumps(gdf_json).encode("utf-8")) / 1024
     logger.info(f"📦 GeoJSON payload size: {size_kb:.2f} KB")
     t = log_step("Injected values into GeoJSON", t)
@@ -356,10 +370,10 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
     logger.info(f"🟣 Callback finished. Total time: {time.time() - t:.2f}s")
 
     return (
-        charts.create_line_chart_emissions_by_year_month(df_year_month),
-        charts.create_bar_chart_emissions_by_type(df_type),
-        charts.create_line_chart_emissions_by_type_year_month(df_type_ym),
-        charts.create_h3_map(gdf_json, df_h3),
+        charts.plot_line_chart_emissions_by_year_month(df_year_month),
+        charts.plot_bar_chart_emissions_by_type(df_type),
+        charts.plot_line_chart_emissions_by_type_year_month(df_type_ym),
+        charts.plot_emissions_map(gdf_json, df_h3),
     )
 
 # Run the app

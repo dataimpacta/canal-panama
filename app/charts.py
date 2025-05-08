@@ -6,7 +6,7 @@ import geopandas as gpd
 
 # Emissions
 
-def create_line_chart_emissions_by_year_month(df):
+def plot_line_chart_emissions_by_year_month(df):
 
     # ➡️ Create a Plotly Figure Instead of Matplotlib
     fig = go.Figure()
@@ -62,7 +62,7 @@ def create_line_chart_emissions_by_year_month(df):
 
     return fig  
 
-def create_bar_chart_emissions_by_type(df):
+def plot_bar_chart_emissions_by_type(df):
     
     # ➡️ Create a Plotly Bar Chart
     fig = go.Figure()
@@ -104,7 +104,7 @@ def create_bar_chart_emissions_by_type(df):
 
     return fig
 
-def create_line_chart_emissions_by_type_year_month(df):
+def plot_line_chart_emissions_by_type_year_month(df):
     
     fig = go.Figure()
 
@@ -148,7 +148,7 @@ def create_line_chart_emissions_by_type_year_month(df):
     return fig
 
 
-def create_h3_map(gdf_json, gdf):
+def plot_emissions_map(gdf_json, gdf):
     if gdf.empty:
         raise ValueError("The GeoDataFrame is empty. Check processed data.")
 
