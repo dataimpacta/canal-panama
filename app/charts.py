@@ -152,30 +152,28 @@ def plot_emissions_map(gdf_json, gdf):
     if gdf.empty:
         raise ValueError("The GeoDataFrame is empty. Check processed data.")
 
-    # ✅ Fix the map center calculation
-    #map_center = gpd.GeoSeries(gdf.geometry).unary_union.centroid
-    fixed_center = {"lat": 9.117975, "lon": -79.735890}
+    values = gdf["co2_equivalent_t"]
 
-
-    fig = px.choropleth_mapbox(
-        gdf,
+    fig = go.Figure(go.Choroplethmap(
         geojson=gdf_json,
-        locations="resolution_id",
+        locations=gdf["resolution_id"],
+        z=values,
         featureidkey="properties.resolution_id",
-        color="co2_equivalent_t",
-        color_continuous_scale="OrRd",
-        mapbox_style="carto-positron",
-        zoom=7,
-        center=fixed_center,
-        opacity=0.6
-    )
+        colorscale="OrRd",
+        marker_opacity=0.5,
+        marker_line_width=0,
+        colorbar_title="Emissions (tons)"
+    ))
 
     fig.update_layout(
+        map=dict(
+            center={"lat": 9.117975, "lon": -79.735890},
+            zoom=7,
+            style="light"  # or "white-bg", "stamen-terrain", etc.
+        ),
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
         width=500,
-        height=300,
-        #autosize=True,
-        margin=dict(l=0, r=0, t=0, b=0),
-        coloraxis_colorbar=dict(title="Emissions")
+        height=300
     )
 
     return fig
