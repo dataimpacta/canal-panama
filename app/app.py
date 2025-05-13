@@ -27,6 +27,7 @@ from h3.api.basic_int import cell_to_boundary, int_to_str
 
 # ========== 🧩 Custom Modules ==========
 import charts
+import layout
 
 
 
@@ -41,6 +42,12 @@ logger = logging.getLogger(__name__)
 
 # Memory and CPU ustage
 process = psutil.Process(os.getpid())
+
+def log_step(step_name, start_time):
+    elapsed = time.time() - start_time
+    mem = process.memory_info().rss / 1024 / 1024
+    logger.info(f"✅ Step: {step_name} | Time: {elapsed:.2f}s | Memory: {mem:.1f}MB")
+    return time.time()
 
 # ========================== 1️⃣ APP INITIALIZATION ==========================
 
@@ -105,18 +112,6 @@ min_index = min(year_month_map.values())  # First index (start date)
 max_index = max(year_month_map.values())  # Last index (end date)
 
 
-# ========================== 4️⃣ DATA PROCESSING ==========================
-
-# ✅ Aggregate emissions by Year & Month
-df_emissions_by_year_month = df_emissions.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-
-# ✅ Aggregate emissions by Vessel Type
-df_emission_by_type = df_emissions.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-
-# ✅ Aggregate emissions by Vessel Type & Year-Month
-df_emissions_by_type_year_month = df_emissions.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
-
-
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
@@ -173,128 +168,28 @@ geojson_template = create_geojson_template(unique_polygons_gdf)
 
 gdf_json, df_grouped = generate_h3_map_data(df_emissions, unique_polygons_gdf, geojson_template)
 
+
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
 
-line_chart_emissions_by_year_month = charts.plot_line_chart_emissions_by_year_month(df_emissions_by_year_month)
-bar_chart_emissions_by_type = charts.plot_bar_chart_emissions_by_type(df_emission_by_type)
-line_chart_emissions_by_type_year_month = charts.plot_line_chart_emissions_by_type_year_month(df_emissions_by_type_year_month)
-h3_map = charts.plot_emissions_map(gdf_json, df_grouped)
-#h3_map = go.Figure()
+line_chart_emissions_by_year_month = go.Figure()
+bar_chart_emissions_by_type = go.Figure()
+line_chart_emissions_by_type_year_month = go.Figure()
+h3_map = go.Figure()
+
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
-app.layout = dbc.Container([
-    #dcc.Store(id="store-gdf-json", data=gdf_json),  # ✅ Store GeoJSON
-    #dcc.Store(id="store-gdf", data=df_grouped.to_json()),  # ✅ Store filtered GeoDataFrame (as JSON)
+app.layout = layout.build_dashboard_layout(
+    {"id": "chart-1", "fig": line_chart_emissions_by_year_month},
+    {"id": "chart-2", "fig": bar_chart_emissions_by_type},
+    {"id": "chart-3", "fig": h3_map},
+    {"id": "chart-4", "fig": line_chart_emissions_by_type_year_month},
+    min_index,
+    max_index,
+    unique_year_months,
+    master_emissions_vessel_types
+)
 
-    # ✅ Header Section
-    dbc.Row([
-        dbc.Col([
-            dbc.Row(html.H1("Panama Maritime Statistics")),
-            dbc.Row(html.H4("Efficiency and Sustainability Indicators"))
-        ], width=9),
-        #dbc.Col(html.Img(src="/assets/sample_image.png", width="100%"))
-    ], className="dashboard-header"),
-
-    # ✅ Tabs Section
-    dbc.Row([
-        dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
-            dcc.Tab(label="Emissions", value="emissions"),
-            dcc.Tab(label="Waiting Time", value="waiting"),
-            dcc.Tab(label="Energy", value="energy"),
-            dcc.Tab(label="Explorer", value="explorer")
-        ]), width=6)
-    ], className="dashboard-navigation-bar"),
-
-    # ✅ Sidebar (Filters)
-    dbc.Row([
-        dbc.Col([
-            html.H3("Date Range", className="dashboard-sidebar-title"),
-            dcc.RangeSlider(
-                id="filter-date-range",
-                min=min_index, max=max_index, step=1,
-                marks={min_index: str(unique_year_months[0]), max_index: str(unique_year_months[-1])},
-                value=[min_index, max_index], allowCross=False
-            ),
-            html.Br(),
-
-            html.H3("Vessel Type", className="dashboard-sidebar-title"),
-            dcc.Dropdown(
-                id="filter-emissions-type",
-                options=[{"label": v, "value": v} for v in master_emissions_vessel_types],
-                value=list(master_emissions_vessel_types), multi=True, clearable=False
-            ),
-            html.Br(),
-            html.Button("Apply Filters", id="apply-filters-btn", n_clicks=0),
-            html.Br()
-
-        ], width=2, className="dashboard-sidebar-container"),
-
-        # ✅ Charts Section
-        dbc.Col([
-            dbc.Row([
-                dbc.Col(
-                    dcc.Loading(
-                        id="loading-line-year-month",
-                        type="circle",
-                        children=dcc.Graph(
-                            id="line-chart-emissions-by-year-month",
-                            figure=line_chart_emissions_by_year_month
-                        )
-                    ),
-                    className="dashboard-chart-container"
-                ),
-                dbc.Col(
-                    dcc.Loading(
-                        id="loading-bar-type",
-                        type="circle",
-                        children=dcc.Graph(
-                            id="bar-chart-emissions-by-type",
-                            figure=bar_chart_emissions_by_type
-                        )
-                    ),
-                    className="dashboard-chart-container"
-                )
-            ]),
-            dbc.Row([
-                dbc.Col(
-                    dcc.Loading(
-                        id="loading-map",
-                        type="circle",
-                        children=dcc.Graph(
-                            id="map-chart-emissions-map",
-                            figure=h3_map,
-                            config={
-                            'scrollZoom': True,       # Enables zooming with scroll
-                            'displayModeBar': True,   # Shows the plotly toolbar
-                            'doubleClick': 'reset'    # Double-click to reset view
-                        }
-                        )
-                    ),
-                    className="dashboard-chart-container"
-                ),
-                dbc.Col(
-                    dcc.Loading(
-                        id="loading-line-type-year-month",
-                        type="circle",
-                        children=dcc.Graph(
-                            id="line-chart-emissions-by-type-year-month",
-                            figure=line_chart_emissions_by_type_year_month
-                        )
-                    ),
-                    className="dashboard-chart-container"
-                )
-            ])
-        ])
-    ], className="dashboard-main-content")
-], fluid=True)
-
-
-def log_step(step_name, start_time):
-    elapsed = time.time() - start_time
-    mem = process.memory_info().rss / 1024 / 1024
-    logger.info(f"✅ Step: {step_name} | Time: {elapsed:.2f}s | Memory: {mem:.1f}MB")
-    return time.time()
 
 # ========================== 8️⃣ CALLBACKS ==========================
 
@@ -308,10 +203,10 @@ def update_vessel_filter(selected_values):
 
 @callback(
     [
-        Output("line-chart-emissions-by-year-month", "figure"),
-        Output("bar-chart-emissions-by-type", "figure"),
-        Output("line-chart-emissions-by-type-year-month", "figure"),
-        Output("map-chart-emissions-map", "figure"),
+        Output("chart-1", "figure"),
+        Output("chart-2", "figure"),
+        Output("chart-3", "figure"),
+        Output("chart-4", "figure"),
     ],
     Input("apply-filters-btn", "n_clicks"),
     [
@@ -353,8 +248,8 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
     return (
         charts.plot_line_chart_emissions_by_year_month(df_year_month),
         charts.plot_bar_chart_emissions_by_type(df_type),
-        charts.plot_line_chart_emissions_by_type_year_month(df_type_ym),
         charts.plot_emissions_map(gdf_json, df_h3),
+        charts.plot_line_chart_emissions_by_type_year_month(df_type_ym),
     )
 
 # Run the app
