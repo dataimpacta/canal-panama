@@ -181,9 +181,9 @@ h3_map = go.Figure()
 
 app.layout = layout.build_dashboard_layout(
     {"id": "chart-1", "fig": line_chart_emissions_by_year_month, "title": "Total Emissions", "subtitle": "TONNES"},
-    {"id": "chart-2", "fig": bar_chart_emissions_by_type, "title": "Emissions by Tipe of Vessel", "subtitle": "TONNES"},
+    {"id": "chart-2", "fig": bar_chart_emissions_by_type, "title": "Emissions by Type of Vessel", "subtitle": "TONNES"},
     {"id": "chart-3", "fig": h3_map, "title": "Emissions by Region", "subtitle": "TONNES"},
-    {"id": "chart-4", "fig": line_chart_emissions_by_type_year_month, "title": "Emissions by Tipe of Vessel", "subtitle": "TONNES"},
+    {"id": "chart-4", "fig": line_chart_emissions_by_type_year_month, "title": "Emissions by Type of Vessel", "subtitle": "TONNES"},
     min_index,
     max_index,
     unique_year_months,
