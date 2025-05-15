@@ -42,6 +42,14 @@ def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
         dbc.Button("Apply Filters", id="apply-filters-btn", n_clicks=0, color="primary")
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
+def build_kpi():
+    return dbc.Row([
+        dbc.Col([
+            html.H1("Panama Maritime Statistics"),
+            html.H4("Efficiency and Sustainability Indicators")
+        ])
+    ], className="dashboard-header pb-4")
+
 def build_navigation_bar():
     return dbc.Row([
         dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
