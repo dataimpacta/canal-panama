@@ -7,3 +7,4 @@ myenv/
 venv/
 secrets/
 sample_data/
+*.log

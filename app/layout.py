@@ -52,11 +52,15 @@ def build_navigation_bar():
             dcc.Tab(label="Energy", value="energy"),
             dcc.Tab(label="Explorer", value="explorer")
         ]), width=12)
-    ], className="dashboard-navigation-bar")
+    ], className="")
 
 
-def create_chart_container(graph_id, figure, config=None):
-    return html.Div(
+def create_chart_container(graph_id, figure, config=None, title="Total Emissions", subtitle="Tonnes"):
+    return html.Div([
+        html.Div([
+            html.H5(title, className="mb-1", style={"fontWeight": "bold", "color": "#333"}),
+            html.P(subtitle, className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
+        ]),
         dcc.Loading(
             id=f"loading-{graph_id}",
             type="circle",
@@ -65,24 +69,24 @@ def create_chart_container(graph_id, figure, config=None):
                 figure=figure,
                 config=config or {}
             )
-        ),
-        className="border bg-light p-2"
-    )
+        )
+    ],
+    className="dashboard-chart-container p-4 m-0 g-0")
 
 
 def build_chart_grid(chart_items):
     rows = []
     for i in range(0, len(chart_items), 2):
-        row = dbc.Row([
+        row = html.Div(dbc.Row([
             dbc.Col(
-                create_chart_container(item["id"], item["fig"], item.get("config")),
-                className="", 
+                create_chart_container(item["id"], item["fig"], item.get("config"), title=item.get("title"), subtitle=item.get("subtitle")),
+                className="", # gaps between columns
                 xs=12, sm=12, md=6, lg=6, xl=6)
             for item in chart_items[i:i+2]
-        ], class_name="border bg-light g-1 p-0 m-0")
+        ], class_name="border g-2 p-2 m-0"))
         rows.append(row)
 
-    return dbc.Col(rows, className="container g-0", xs=12, md=12, lg=10, width=10)
+    return dbc.Col(rows, className="p-0 g-2 m-0", xs=12, md=12, lg=10, width=10)
 
 
 def build_dashboard_layout(

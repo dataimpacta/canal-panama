@@ -166,7 +166,7 @@ def generate_h3_map_data(df_filtered, unique_polygons_gdf, geojson_template):
 unique_polygons_gdf = generate_unique_polygons(df_emissions)
 geojson_template = create_geojson_template(unique_polygons_gdf)
 
-gdf_json, df_grouped = generate_h3_map_data(df_emissions, unique_polygons_gdf, geojson_template)
+#gdf_json, df_grouped = generate_h3_map_data(df_emissions, unique_polygons_gdf, geojson_template)
 
 
 # ========================== 6️⃣ INITIAL CHARTS CREATION ==========================
@@ -180,10 +180,10 @@ h3_map = go.Figure()
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
 app.layout = layout.build_dashboard_layout(
-    {"id": "chart-1", "fig": line_chart_emissions_by_year_month},
-    {"id": "chart-2", "fig": bar_chart_emissions_by_type},
-    {"id": "chart-3", "fig": h3_map},
-    {"id": "chart-4", "fig": line_chart_emissions_by_type_year_month},
+    {"id": "chart-1", "fig": line_chart_emissions_by_year_month, "title": "Total Emissions", "subtitle": "TONNES"},
+    {"id": "chart-2", "fig": bar_chart_emissions_by_type, "title": "Emissions by Tipe of Vessel", "subtitle": "TONNES"},
+    {"id": "chart-3", "fig": h3_map, "title": "Emissions by Region", "subtitle": "TONNES"},
+    {"id": "chart-4", "fig": line_chart_emissions_by_type_year_month, "title": "Emissions by Tipe of Vessel", "subtitle": "TONNES"},
     min_index,
     max_index,
     unique_year_months,
