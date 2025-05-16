@@ -11,6 +11,17 @@ def build_header():
     ], className="dashboard-header pb-4")
 
 
+def build_navigation_bar():
+    return dbc.Row([
+        dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
+            dcc.Tab(label="Emissions", value="emissions"),
+            dcc.Tab(label="Waiting Time", value="waiting"),
+            dcc.Tab(label="Energy", value="energy"),
+            dcc.Tab(label="Explorer", value="explorer")
+        ]), width=12)
+    ], className="")
+
+
 def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
     return dbc.Col([
         dbc.Accordion([
@@ -41,18 +52,18 @@ def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
         ]),
         html.Br(),
         dbc.Button("Apply Filters", id="apply-filters-btn", n_clicks=0, color="primary")
-    ], className="border p-3", xs=12, md=12, lg=2, width=2)
+    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
-def build_navigation_bar():
-    return dbc.Row([
-        dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
-            dcc.Tab(label="Emissions", value="emissions"),
-            dcc.Tab(label="Waiting Time", value="waiting"),
-            dcc.Tab(label="Energy", value="energy"),
-            dcc.Tab(label="Explorer", value="explorer")
-        ]), width=12)
-    ], className="")
+def build_kpi_grid(kpi_cards, items_per_row=2):
+    rows = []
+    for i in range(0, len(kpi_cards), items_per_row):
+        row = dbc.Row([
+            dcc.Loading(type="circle", children=dbc.Col(card, xs=12, sm=6, md=6, lg=int(12/items_per_row), id="kpi-1"))
+            for card in kpi_cards[i:i+items_per_row]
+        ], class_name="g-2 mt-2 me-2 ms-2")
+        rows.append(row)
+    return html.Div(rows)
 
 
 def create_chart_container(graph_id, figure, config=None, title="Total Emissions", subtitle="Tonnes"):
@@ -71,7 +82,7 @@ def create_chart_container(graph_id, figure, config=None, title="Total Emissions
             )
         )
     ],
-    className="dashboard-chart-container p-4 m-0 g-0")
+    className="border rounded p-3 m-0 g-0")
 
 
 def build_chart_grid(chart_items):
@@ -83,13 +94,14 @@ def build_chart_grid(chart_items):
                 className="", # gaps between columns
                 xs=12, sm=12, md=6, lg=6, xl=6)
             for item in chart_items[i:i+2]
-        ], class_name="border g-2 p-2 m-0"))
+        ], class_name="g-2 mt-0 me-2 ms-2"))
         rows.append(row)
 
-    return dbc.Col(rows, className="p-0 g-2 m-0", xs=12, md=12, lg=10, width=10)
+    return html.Div(rows)
 
 
 def build_dashboard_layout(
+    kpi_cards,
     chart_1,
     chart_2,
     chart_3,
@@ -114,14 +126,15 @@ def build_dashboard_layout(
             build_sidebar(unique_year_months, min_index, max_index, master_emissions_vessel_types),
 
             # =============== CHART ZONE ===============
-            
-            build_chart_grid([
-                chart_1,
-                chart_2,
-                chart_3,
-                chart_4,
-            ])
-
-        ], className="g-0",),
+            dbc.Col([
+                build_kpi_grid(kpi_cards),  # ✅ Add KPI grid here
+                build_chart_grid([
+                    chart_1,
+                    chart_2,
+                    chart_3,
+                    chart_4,
+                ])
+            ], xs=12, md=12, lg=10, width=10)
+        ], className="g-0"),
 
     ],className="g-0 p-4", fluid=True)

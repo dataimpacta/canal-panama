@@ -85,7 +85,6 @@ def read_parquet_from_s3(bucket, file):
     return pd.read_parquet(io.BytesIO(data))
 
 
-
 # ========================== 3️⃣ READ & PREPROCESS DATA ==========================
 
 # ✅ Read the data
@@ -176,10 +175,15 @@ bar_chart_emissions_by_type = go.Figure()
 line_chart_emissions_by_type_year_month = go.Figure()
 h3_map = go.Figure()
 
+# ========================== KPI TEST ==========================
+
+kpi_1 = charts.plot_kpi("", 0.0, "", "", 0.0)
+kpi_2 = charts.plot_kpi("", 0.0, "", "", 0.0)
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
 app.layout = layout.build_dashboard_layout(
+    [kpi_1],
     {"id": "chart-1", "fig": line_chart_emissions_by_year_month, "title": "Total Emissions", "subtitle": "TONNES"},
     {"id": "chart-2", "fig": bar_chart_emissions_by_type, "title": "Emissions by Type of Vessel", "subtitle": "TONNES"},
     {"id": "chart-3", "fig": h3_map, "title": "Emissions by Region", "subtitle": "TONNES"},
@@ -207,6 +211,7 @@ def update_vessel_filter(selected_values):
         Output("chart-2", "figure"),
         Output("chart-3", "figure"),
         Output("chart-4", "figure"),
+        Output("kpi-1", "children")
     ],
     Input("apply-filters-btn", "n_clicks"),
     [
@@ -228,14 +233,33 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
     ]
     t = log_step("Filtered DataFrame", t)
 
+
+    # KPI Calculation
+    sorted_ym = sorted(filtered_df["year_month"].unique())
+    kpi_component = html.Div("Insufficient data", style={"color": "#999"})  # fallback default
+
+    if len(sorted_ym) >= 2:
+        latest_ym = sorted_ym[-1]
+        previous_ym = sorted_ym[-2]
+
+        latest_total = filtered_df[filtered_df["year_month"] == latest_ym]["co2_equivalent_t"].sum()
+        previous_total = filtered_df[filtered_df["year_month"] == previous_ym]["co2_equivalent_t"].sum()
+        change = latest_total - previous_total
+        pct_change = (change / previous_total * 100) if previous_total != 0 else 0
+
+        comparison_label = "Last Month"
+        kpi_component = charts.plot_kpi(
+            name="Total Emissions",
+            value=latest_total,
+            date=f"{str(latest_ym)}",
+            comparison_label=comparison_label,
+            comparison_value=previous_total
+        )
+
+
     df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-    t = log_step("Grouped by year & month", t)
-
     df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-    t = log_step("Grouped by vessel type", t)
-
     df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
-    t = log_step("Grouped by vessel type & year_month", t)
 
     gdf_json, df_h3 = generate_h3_map_data(filtered_df, unique_polygons_gdf, geojson_template)
 
@@ -250,6 +274,7 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
         charts.plot_bar_chart_emissions_by_type(df_type),
         charts.plot_emissions_map(gdf_json, df_h3),
         charts.plot_line_chart_emissions_by_type_year_month(df_type_ym),
+        kpi_component
     )
 
 # Run the app
