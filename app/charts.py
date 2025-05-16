@@ -1,3 +1,4 @@
+from dash import html
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
@@ -5,6 +6,30 @@ import geopandas as gpd
 
 
 # Emissions
+
+from dash import html
+
+def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, delta_percent=None):
+    return html.Div([
+        # Title and date on same line
+        html.Span([
+            name,
+            html.Span(f" as of {date}", style={"color": "#999", "fontSize": "0.8rem", "fontWeight": "normal"})
+        ], style={"fontWeight": "bold", "color": "#555", "fontSize": "1rem"}),
+
+        # Main value with optional delta % next to it
+        html.Div([
+            html.Span(f"{value:,.0f} tonnes", style={"fontSize": "1.5rem", "fontWeight": "bold", "color": "#222"}),
+            html.Span(f" ↑ {delta_percent:.2%}" if delta_percent is not None else "", style={
+                "color": "#02ACA3", "fontSize": "1rem", "marginLeft": "1rem", "fontWeight": "bold"
+            })
+        ], style={"marginTop": "0.25rem", "marginBottom": "0.25rem"}),
+
+        # Comparison below (e.g. Last Year: $82,655 (+$13,261))
+        html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes" + 
+                 (f" (+${delta:,.0f})" if delta is not None else ""),
+            style={"color": "#999", "fontSize": "0.8rem"})
+    ], className="border rounded p-3 bg-white")
 
 def plot_line_chart_emissions_by_year_month(df):
     fig = go.Figure()
@@ -196,7 +221,6 @@ def plot_line_chart_emissions_by_type_year_month(df):
     )
 
     return fig
-
 
 def plot_emissions_map(gdf_json, gdf):
     if gdf.empty:
