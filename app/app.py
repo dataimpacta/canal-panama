@@ -1,8 +1,8 @@
-# 📌 Import Necessary Libraries
+"""App to monitor the emissions in the Panama Canal."""
+
 # ========== 🔧 Standard Libraries ==========
 import os
 import io
-import sys
 import json
 import time
 import logging
@@ -11,7 +11,7 @@ from io import StringIO
 
 # ========== 📦 Third-Party Libraries ==========
 import dash
-from dash import html, dcc, callback
+from dash import html, callback, ctx
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
@@ -23,7 +23,7 @@ import psutil
 from dotenv import load_dotenv
 
 from shapely.geometry import Polygon
-from h3.api.basic_int import cell_to_boundary, int_to_str
+from h3.api.basic_int import cell_to_boundary
 
 # ========== 🧩 Custom Modules ==========
 import charts
@@ -44,9 +44,10 @@ logger = logging.getLogger(__name__)
 process = psutil.Process(os.getpid())
 
 def log_step(step_name, start_time):
+    """Function to log the time and memory usage of a step"""
     elapsed = time.time() - start_time
     mem = process.memory_info().rss / 1024 / 1024
-    logger.info(f"✅ Step: {step_name} | Time: {elapsed:.2f}s | Memory: {mem:.1f}MB")
+    logger.info("✅ Step: %s | Time: %.2fs | Memory: %.1fMB", step_name, elapsed, mem)
     return time.time()
 
 # ========================== 1️⃣ APP INITIALIZATION ==========================
@@ -114,15 +115,16 @@ max_index = max(year_month_map.values())  # Last index (end date)
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
+    """Converts an H3 index to a Shapely Polygon."""
     boundary = cell_to_boundary(h3_index)
     return Polygon([(lng, lat) for lat, lng in boundary])
 
-def generate_unique_polygons(df_emissions):
+def generate_unique_polygons(df_with_resolution_id):
     """
     Generates a GeoDataFrame with unique resolution_id polygons.
     Only needs to be run once at app startup.
     """
-    unique_ids = df_emissions[["resolution_id"]].drop_duplicates().copy()
+    unique_ids = df_with_resolution_id[["resolution_id"]].drop_duplicates().copy()
     unique_ids["geometry"] = unique_ids["resolution_id"].apply(h3_to_polygon)
     return gpd.GeoDataFrame(unique_ids, geometry="geometry", crs="EPSG:4326")
 
@@ -133,6 +135,9 @@ def create_geojson_template(geo_df):
     return json.loads(geo_df.to_json())
 
 def inject_values_into_geojson(template, values_by_id):
+    """
+    Injects values into a GeoJSON template based on resolution_id.
+    """
     updated_geojson = {"type": "FeatureCollection", "features": []}
     for feature in template["features"]:
         res_id = feature["properties"]["resolution_id"]
@@ -143,9 +148,9 @@ def inject_values_into_geojson(template, values_by_id):
             updated_geojson["features"].append(new_feature)
     return updated_geojson
 
-def generate_h3_map_data(df_filtered, unique_polygons_gdf, geojson_template):
+def generate_h3_map_data(df_to_map, gdf_polygons, precomputed_geojson_template):
     """
-    From a filtered DataFrame:
+    From a DataFrame:
     - Groups by resolution_id and aggregates CO₂.
     - Merges with unique polygon geometries.
     - Injects values into the precomputed GeoJSON template.
@@ -154,11 +159,11 @@ def generate_h3_map_data(df_filtered, unique_polygons_gdf, geojson_template):
         - df_grouped: GeoDataFrame with geometry and emissions
         - gdf_json: GeoJSON ready for plotting
     """
-    df_grouped = df_filtered.groupby("resolution_id", as_index=False)["co2_equivalent_t"].sum()
-    df_grouped = df_grouped.merge(unique_polygons_gdf, on="resolution_id", how="left")
+    df_grouped = df_to_map.groupby("resolution_id", as_index=False)["co2_equivalent_t"].sum()
+    df_grouped = df_grouped.merge(gdf_polygons, on="resolution_id", how="left")
 
     values_by_id = df_grouped.set_index("resolution_id")["co2_equivalent_t"].to_dict()
-    gdf_json = inject_values_into_geojson(geojson_template, values_by_id)
+    gdf_json = inject_values_into_geojson(precomputed_geojson_template, values_by_id)
 
     return gdf_json, df_grouped
 
@@ -184,10 +189,22 @@ kpi_2 = charts.plot_kpi("", 0.0, "", "", 0.0)
 
 app.layout = layout.build_dashboard_layout(
     [kpi_1],
-    {"id": "chart-1", "fig": line_chart_emissions_by_year_month, "title": "Total Emissions", "subtitle": "TONNES"},
-    {"id": "chart-2", "fig": bar_chart_emissions_by_type, "title": "Emissions by Type of Vessel", "subtitle": "TONNES"},
-    {"id": "chart-3", "fig": h3_map, "title": "Emissions by Region", "subtitle": "TONNES"},
-    {"id": "chart-4", "fig": line_chart_emissions_by_type_year_month, "title": "Emissions by Type of Vessel", "subtitle": "TONNES"},
+    {"id": "chart-1",
+     "fig": line_chart_emissions_by_year_month, 
+     "title": "Total Emissions", 
+     "subtitle": "TONNES"},
+    {"id": "chart-2",
+     "fig": bar_chart_emissions_by_type, 
+     "title": "Emissions by Type of Vessel", 
+     "subtitle": "TONNES"},
+    {"id": "chart-3",
+     "fig": h3_map, "title": 
+     "Emissions by Region", 
+     "subtitle": "TONNES"},
+    {"id": "chart-4",
+     "fig": line_chart_emissions_by_type_year_month, 
+     "title": "Emissions by Type of Vessel", 
+     "subtitle": "TONNES"},
     min_index,
     max_index,
     unique_year_months,
@@ -197,13 +214,36 @@ app.layout = layout.build_dashboard_layout(
 
 # ========================== 8️⃣ CALLBACKS ==========================
 
-@callback(
-    Output("filter-emissions-type", "value"),
-    Input("filter-emissions-type", "value")
-)
-def update_vessel_filter(selected_values):
-    return list(master_emissions_vessel_types) if not selected_values else selected_values
+# @callback(
+#     Output("filter-emissions-type", "value"),
+#     Input("filter-emissions-type", "value")
+# )
+# def update_vessel_filter(selected_values):
+#     """
+#     If selected_values is empty or falsy (like None or []), 
+#     return the full list master_emissions_vessel_types. 
+#     Otherwise, return selected_values.
+#     """
+#     return list(master_emissions_vessel_types) if not selected_values else selected_values
 
+
+@app.callback(
+    Output("filter-emissions-type", "value"),
+Input("btn-select-all", "n_clicks"),
+Input("btn-clear-all", "n_clicks"),
+    prevent_initial_call=True
+)
+def update_checklist(select_all_clicks, clear_all_clicks):
+    """
+    Updates the checklist based on button clicks.
+    """
+
+    triggered_id = ctx.triggered_id
+
+    if triggered_id == "btn-select-all":
+        return list(master_emissions_vessel_types)
+    elif triggered_id == "btn-clear-all":
+        return []
 
 @callback(
     [
@@ -211,7 +251,8 @@ def update_vessel_filter(selected_values):
         Output("chart-2", "figure"),
         Output("chart-3", "figure"),
         Output("chart-4", "figure"),
-        Output("kpi-1", "children")
+        Output("kpi-1", "children"),
+        Output("no-data-modal", "is_open"),  
     ],
     Input("apply-filters-btn", "n_clicks"),
     [
@@ -220,6 +261,9 @@ def update_vessel_filter(selected_values):
     ]
 )
 def update_charts(n_clicks, selected_vessel_types, selected_date_range):
+    """
+    Updates the charts and KPI based on user-selected filters.
+    """
     logger.info("🟢 Callback started")
     t = time.time()
 
@@ -231,6 +275,14 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
         (df_emissions["year_month"] <= end_ym) &
         (df_emissions["StandardVesselType"].isin(selected_vessel_types))
     ]
+
+    if filtered_df.empty:
+        empty_fig = go.Figure()
+        return (
+            empty_fig, empty_fig, empty_fig, empty_fig,
+            html.Div("No data available", style={"color": "#999"}),
+            True  # modal open
+        )
     t = log_step("Filtered DataFrame", t)
 
 
@@ -242,7 +294,8 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
         latest_ym = sorted_ym[-1]
         previous_ym = sorted_ym[-2]
 
-        latest_total = filtered_df[filtered_df["year_month"] == latest_ym]["co2_equivalent_t"].sum()
+        latest_total = filtered_df[
+            filtered_df["year_month"] == latest_ym]["co2_equivalent_t"].sum()
         previous_total = filtered_df[filtered_df["year_month"] == previous_ym]["co2_equivalent_t"].sum()
         change = latest_total - previous_total
         pct_change = (change / previous_total * 100) if previous_total != 0 else 0
@@ -264,17 +317,17 @@ def update_charts(n_clicks, selected_vessel_types, selected_date_range):
     gdf_json, df_h3 = generate_h3_map_data(filtered_df, unique_polygons_gdf, geojson_template)
 
     size_kb = len(json.dumps(gdf_json).encode("utf-8")) / 1024
-    logger.info(f"📦 GeoJSON payload size: {size_kb:.2f} KB")
+    logger.info("📦 GeoJSON payload size: %.2f KB", size_kb)
     t = log_step("Injected values into GeoJSON", t)
-
-    logger.info(f"🟣 Callback finished. Total time: {time.time() - t:.2f}s")
+    logger.info("🟣 Callback finished. Total time: %.2f s", time.time() - t)
 
     return (
         charts.plot_line_chart_emissions_by_year_month(df_year_month),
         charts.plot_bar_chart_emissions_by_type(df_type),
         charts.plot_emissions_map(gdf_json, df_h3),
         charts.plot_line_chart_emissions_by_type_year_month(df_type_ym),
-        kpi_component
+        kpi_component,
+        False 
     )
 
 # Run the app
