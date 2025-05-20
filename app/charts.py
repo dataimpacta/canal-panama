@@ -34,6 +34,9 @@ def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, 
 def plot_line_chart_emissions_by_year_month(df):
     fig = go.Figure()
 
+    if df.empty:
+        return fig  # Return an empty figure 
+
     # === Styling Setup ===
     last_year = df['year'].max()
     y_max = df['co2_equivalent_t'].max()
@@ -112,6 +115,9 @@ def plot_line_chart_emissions_by_year_month(df):
 def plot_bar_chart_emissions_by_type(df):
     
     fig = go.Figure()
+
+    if df.empty:
+        return fig  # Return an empty figure 
     
     # === Add traces ===
     fig.add_trace(go.Bar(
@@ -156,21 +162,24 @@ def plot_bar_chart_emissions_by_type(df):
 def plot_line_chart_emissions_by_type_year_month(df):
     fig = go.Figure()
 
+    if df.empty or "StandardVesselType" not in df.columns:
+        return fig  # Return empty figure if no data
+
     # Top 3 vessel types by average emissions
     avg_emissions = df.groupby("StandardVesselType")["co2_equivalent_t"].mean()
     top_3_types = avg_emissions.sort_values(ascending=False).head(3).index.tolist()
 
-    # Highlight colors
-    highlight_colors = {
-        top_3_types[0]: "#F78671",
-        top_3_types[1]: "#02ACA3",
-        top_3_types[2]: "#4273EE"
-    }
+    # Assign highlight colors only for available top types
+    base_colors = ["#F78671", "#02ACA3", "#4273EE"]
+    highlight_colors = {vt: color for vt, color in zip(top_3_types, base_colors)}
 
     for vessel_type in df["StandardVesselType"].unique():
         vessel_data = df[df["StandardVesselType"] == vessel_type]
+        if vessel_data.empty:
+            continue  # skip if no data
+
         is_top = vessel_type in top_3_types
-        avg_value = avg_emissions[vessel_type]
+        avg_value = avg_emissions.get(vessel_type, 0)
 
         fig.add_trace(go.Scatter(
             x=vessel_data["year_month"],
@@ -183,9 +192,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
             ),
             opacity=1 if is_top else 0.5,
             showlegend=is_top,
-            #hovertemplate=f"{vessel_type}: %{y:.2s}"
-            
-            hovertemplate = f'{vessel_type}: ' + '%{y:.2s}' + '<extra></extra>'
+            hovertemplate=f'{vessel_type}: ' + '%{y:.2s}' + '<extra></extra>'
         ))
 
 
@@ -224,7 +231,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
 
 def plot_emissions_map(gdf_json, gdf):
     if gdf.empty:
-        raise ValueError("The GeoDataFrame is empty. Check processed data.")
+        raise ValueError("The GeoDataFrame is empty. Check processed data.")    
 
     values = gdf["co2_equivalent_t"]
 
@@ -256,7 +263,15 @@ def plot_emissions_map(gdf_json, gdf):
             title="Emissions (tons)"
         )
 
-    ))
+
+
+    )
+    
+    )
+
+    if gdf.empty:
+        return fig  # Return an empty figure gracefully
+
 
     fig.update_layout(
         height=300,

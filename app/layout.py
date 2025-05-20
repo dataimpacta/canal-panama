@@ -24,6 +24,14 @@ def build_navigation_bar():
 
 def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
     return dbc.Col([
+        dbc.Modal(
+            [
+                dbc.ModalHeader("No Data Available"),
+                dbc.ModalBody("Please select at least one vessel type to view the emissions data."),
+            ],
+            id="no-data-modal",
+            is_open=False,
+        ),
         dbc.Accordion([
             dbc.AccordionItem(
                 [
@@ -39,7 +47,25 @@ def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
             ),
             dbc.AccordionItem(
                 [
-                    dbc.Label("Select Vessel Types"),
+                    html.Div([
+                        html.Span(
+                            "Select All",
+                            id="btn-select-all",
+                            n_clicks=0,
+                            style={"color": "#007bff", "cursor": "pointer", "marginRight": "0.24em"}
+                        ),
+                        html.Span(
+                            "•",
+                            style={"color": "#999", "fontSize": "0.8rem", "marginRight": "0.2rem"}
+                        ),
+                        html.Span(
+                            "Clear",
+                            id="btn-clear-all",
+                            n_clicks=0,
+                            style={"color": "#007bff", "cursor": "pointer"}
+                        )
+                    ], style={"marginBottom": "0.5rem"}),
+
                     dbc.Checklist(
                         id="filter-emissions-type",
                         options=[{"label": v, "value": v} for v in vessel_types],
@@ -51,7 +77,7 @@ def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
             )
         ]),
         html.Br(),
-        dbc.Button("Apply Filters", id="apply-filters-btn", n_clicks=0, color="primary")
+        dbc.Button("Refresh Charts", id="apply-filters-btn", n_clicks=0, color="primary")
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
