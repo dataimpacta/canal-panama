@@ -1,45 +1,54 @@
+"""
+This module contains functions to create various charts related to emissions data.
+"""
+
 from dash import html
 import plotly.graph_objects as go
-import plotly.express as px
-import pandas as pd
-import geopandas as gpd
 
-
-# Emissions
-
-from dash import html
 
 def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, delta_percent=None):
+    """
+    Function to create a KPI card with title, value, date, and comparison.
+    """
     return html.Div([
         # Title and date on same line
         html.Span([
             name,
-            html.Span(f" as of {date}", style={"color": "#999", "fontSize": "0.8rem", "fontWeight": "normal"})
+            html.Span(f" as of {date}",
+                      style={"color": "#999",
+                             "fontSize": "0.8rem",
+                             "fontWeight": "normal"})
         ], style={"fontWeight": "bold", "color": "#555", "fontSize": "1rem"}),
 
         # Main value with optional delta % next to it
         html.Div([
-            html.Span(f"{value:,.0f} tonnes", style={"fontSize": "1.5rem", "fontWeight": "bold", "color": "#222"}),
+            html.Span(f"{value:,.0f} tonnes",
+                      style={"fontSize": "1.5rem",
+                             "fontWeight": "bold",
+                             "color": "#222"}),
             html.Span(f" ↑ {delta_percent:.2%}" if delta_percent is not None else "", style={
                 "color": "#02ACA3", "fontSize": "1rem", "marginLeft": "1rem", "fontWeight": "bold"
             })
         ], style={"marginTop": "0.25rem", "marginBottom": "0.25rem"}),
 
         # Comparison below (e.g. Last Year: $82,655 (+$13,261))
-        html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes" + 
-                 (f" (+${delta:,.0f})" if delta is not None else ""),
+        html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes"
+                + (f" (+${delta:,.0f})" if delta is not None else ""),
             style={"color": "#999", "fontSize": "0.8rem"})
     ], className="border rounded p-3 bg-white")
 
 def plot_line_chart_emissions_by_year_month(df):
+    """
+    Function to create a line chart of emissions by year and month.
+    """
     fig = go.Figure()
 
     if df.empty:
-        return fig  # Return an empty figure 
+        return fig  # Return an empty figure
 
     # === Styling Setup ===
     last_year = df['year'].max()
-    y_max = df['co2_equivalent_t'].max()
+    #y_max = df['co2_equivalent_t'].max()
 
     line_general_color = "#757575"
     line_general_width = 2
@@ -79,7 +88,11 @@ def plot_line_chart_emissions_by_year_month(df):
         xaxis=dict(
             tickmode="array",
             tickvals=list(range(1, 13)),
-            ticktext=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            ticktext=[
+                'Jan', 'Feb', 'Mar', 
+                'Apr', 'May', 'Jun', 
+                'Jul', 'Aug', 'Sep', 
+                'Oct', 'Nov', 'Dec'],
             tickangle=0,
             showgrid=True
         ),
@@ -113,17 +126,19 @@ def plot_line_chart_emissions_by_year_month(df):
     return fig
 
 def plot_bar_chart_emissions_by_type(df):
-    
+    """
+    Function to create a horizontal bar chart of emissions by vessel type.
+    """
     fig = go.Figure()
 
     if df.empty:
-        return fig  # Return an empty figure 
-    
+        return fig
+
     # === Add traces ===
     fig.add_trace(go.Bar(
         y=df.index,  # Vessel types on Y-axis
         x=df.values,  # Emission values on X-axis
-        orientation="h", 
+        orientation="h",
         marker=dict(
             color="#D9D9D9",  # Custom color for bars
             line=dict(color="black", width=0)  # Border for better visibility
@@ -135,12 +150,12 @@ def plot_bar_chart_emissions_by_type(df):
     fig.update_layout(
         height=300,  # Keeps height fixed
 
-        dragmode=False,  # Disable user interactions
-        
+        dragmode=False,
+
         xaxis=dict(
             showgrid=True, gridcolor="lightgray", gridwidth=0,
             zeroline=False,  # Removes the thick zero line
-            range=[-df.values.max() * 0.02, df.values.max()] 
+            range=[-df.values.max() * 0.02, df.values.max()]
         ),
         yaxis=dict(
             showgrid=False,
@@ -160,6 +175,9 @@ def plot_bar_chart_emissions_by_type(df):
     return fig
 
 def plot_line_chart_emissions_by_type_year_month(df):
+    """
+    Function to create a line chart of emissions by vessel type and year/month.
+    """
     fig = go.Figure()
 
     if df.empty or "StandardVesselType" not in df.columns:
@@ -179,7 +197,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
             continue  # skip if no data
 
         is_top = vessel_type in top_3_types
-        avg_value = avg_emissions.get(vessel_type, 0)
+        #avg_value = avg_emissions.get(vessel_type, 0)
 
         fig.add_trace(go.Scatter(
             x=vessel_data["year_month"],
@@ -230,20 +248,24 @@ def plot_line_chart_emissions_by_type_year_month(df):
     return fig
 
 def plot_emissions_map(gdf_json, gdf):
+    """
+    Function to create a map of emissions using Plotly.
+    """
+
     if gdf.empty:
-        raise ValueError("The GeoDataFrame is empty. Check processed data.")    
+        raise ValueError("The GeoDataFrame is empty. Check processed data.")
 
     values = gdf["co2_equivalent_t"]
 
     fig = go.Figure(go.Choroplethmap(
-        
+
         geojson=gdf_json,
         locations=gdf["resolution_id"],
         z=values,
-        
+
         featureidkey="properties.resolution_id",
         colorscale=[[0, 'rgb(238,238,238)'], [1, 'rgb(247,134,113)']],
-        
+
         marker_opacity=0.8,
         marker_line_width=0.5,
         marker_line_color="lightgray",
@@ -262,11 +284,7 @@ def plot_emissions_map(gdf_json, gdf):
             tickfont=dict(size=9),
             title="Emissions (tons)"
         )
-
-
-
     )
-    
     )
 
     if gdf.empty:
