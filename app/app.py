@@ -13,6 +13,8 @@ from io import StringIO
 import dash
 import dash_bootstrap_components as dbc
 
+from dash import Input, Output, callback
+
 import pandas as pd
 import geopandas as gpd
 import boto3
@@ -183,16 +185,14 @@ geojson_template = create_geojson_template(unique_polygons_gdf)
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
+app = dash.Dash(__name__,
+                external_stylesheets=[dbc.themes.BOOTSTRAP],
+                suppress_callback_exceptions=True)
 server = app.server
 
 app.layout = layout.build_main_layout()
 
 # ========================== 8️⃣ CALLBACKS ==========================
-
-
-from dash import Input, Output, callback
-import layout
 
 callbacks_emissions.setup_emissions_callbacks(
     app,
@@ -212,7 +212,9 @@ callbacks_waiting.setup_waiting_times_callbacks(
 )
 
 def update_tab_content(selected_tab):
-
+    """
+    Update the dashboard depending on the differnt tabs. 
+    """
     if selected_tab == "emissions":
         return dbc.Row([
             layout.build_sidebar_emissions(controls_emissions),  # Your existing sidebar

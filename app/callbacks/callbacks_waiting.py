@@ -21,7 +21,7 @@ def setup_waiting_times_callbacks(app, df):
             Output("chart-44", "figure"),
         ],
         Input("apply-filters-btn", "n_clicks"),
-        State("chart-tabs", "value"), 
+        State("chart-tabs", "value"),
     )
     def update_charts(_n_clicks, current_tab):
         """
