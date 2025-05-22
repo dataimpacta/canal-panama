@@ -35,7 +35,7 @@ def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, 
         html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes"
                 + (f" (+${delta:,.0f})" if delta is not None else ""),
             style={"color": "#999", "fontSize": "0.8rem"})
-    ], className="border rounded p-3 bg-white")
+    ], className="")
 
 def plot_line_chart_emissions_by_year_month(df):
     """
@@ -184,7 +184,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
         return fig  # Return empty figure if no data
 
     # Top 3 vessel types by average emissions
-    avg_emissions = df.groupby("StandardVesselType")["co2_equivalent_t"].mean()
+    avg_emissions = df.groupby("StandardVesselType")["co2_equivalent_t"].sum()
     top_3_types = avg_emissions.sort_values(ascending=False).head(3).index.tolist()
 
     # Assign highlight colors only for available top types
@@ -197,7 +197,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
             continue  # skip if no data
 
         is_top = vessel_type in top_3_types
-        #avg_value = avg_emissions.get(vessel_type, 0)
+        avg_value = avg_emissions[vessel_type]
 
         fig.add_trace(go.Scatter(
             x=vessel_data["year_month"],
@@ -210,7 +210,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
             ),
             opacity=1 if is_top else 0.5,
             showlegend=is_top,
-            hovertemplate=f'{vessel_type}: ' + '%{y:.2s}' + '<extra></extra>'
+            hovertemplate=f'{vessel_type}: ' + '%{y:.2s} hrs<br>Month: %{x}<extra></extra>'
         ))
 
 
@@ -220,6 +220,8 @@ def plot_line_chart_emissions_by_type_year_month(df):
         xaxis=dict(
             showgrid=False,
             type="category",
+            categoryorder="array",
+            categoryarray=sorted(df["year_month"].unique()),
             tickangle=0,
             ticklabelstep=5
         ),
@@ -228,7 +230,6 @@ def plot_line_chart_emissions_by_type_year_month(df):
             gridcolor="lightgray",
             gridwidth=1,
             zeroline=True,
-            zerolinecolor="#000000",
             zerolinewidth=1.5,
             side="left",
             anchor="free",
