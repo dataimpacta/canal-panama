@@ -214,7 +214,6 @@ callbacks_waiting.setup_waiting_times_callbacks(
 def update_tab_content(selected_tab):
 
     if selected_tab == "emissions":
-
         return dbc.Row([
             layout.build_sidebar_emissions(controls_emissions),  # Your existing sidebar
             layout.build_main_container_emissions()
@@ -225,7 +224,12 @@ def update_tab_content(selected_tab):
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_waiting_times()
         ], className="g-0")
-                       
+    elif selected_tab == "service":
+        return dbc.Row([
+            layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
+            layout.build_main_container_service_times()
+        ], className="g-0")
+                             
 
 # Run the app
 if __name__ == '__main__':

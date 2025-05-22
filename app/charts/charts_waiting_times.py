@@ -4,7 +4,7 @@ This module contains functions to create the charts related to emissions data.
 
 import plotly.graph_objects as go
 
-def plot_line_chart_waiting_time_by_year_month(df):
+def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time"):
     """
     Function to create a line chart of waiting times by year and month.
     """
@@ -26,7 +26,7 @@ def plot_line_chart_waiting_time_by_year_month(df):
         is_latest = year == last_year
         fig.add_trace(go.Scatter(
             x=year_data['month'],
-            y=year_data['waiting_time'],
+            y=year_data[value_column],
             mode='lines',
             name=str(year),
             line=dict(
@@ -75,13 +75,13 @@ def plot_line_chart_waiting_time_by_year_month(df):
     return fig
 
 
-def plot_bar_chart_waiting_by_stop_area(df):
+def plot_bar_chart_waiting_by_stop_area(df, value_column="waiting_time"):
 
     fig = go.Figure()
 
     fig.add_trace(go.Bar(
         y=df['stop_area'],
-        x=df['waiting_time'],
+        x=df[value_column],
         orientation='h',
         marker=dict(
             color="#02ACA3",  # Custom blue-green color
@@ -97,7 +97,7 @@ def plot_bar_chart_waiting_by_stop_area(df):
         xaxis=dict(
             showgrid=True, gridcolor="lightgray", gridwidth=0,
             zeroline=False,
-            range=[-df['waiting_time'].max() * 0.05, df['waiting_time'].max()]
+            range=[-df[value_column].max() * 0.05, df[value_column].max()]
         ),
         yaxis=dict(
             showgrid=False,
@@ -113,7 +113,7 @@ def plot_bar_chart_waiting_by_stop_area(df):
     return fig
 
 
-def plot_bar_chart_waiting_by_vessel_type(df_summary):
+def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time"):
     fig = go.Figure()
 
     fig.add_trace(go.Bar(
@@ -150,14 +150,14 @@ def plot_bar_chart_waiting_by_vessel_type(df_summary):
     return fig
 
 
-def plot_line_chart_waiting_by_type_week(df):
+def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
     fig = go.Figure()
 
     if df.empty or "StandardVesselType" not in df.columns:
         return fig  # Return empty figure if no data
 
     # Top 3 vessel types by average waiting time
-    avg_waiting = df.groupby("StandardVesselType")["waiting_time"].mean()
+    avg_waiting = df.groupby("StandardVesselType")[value_column].mean()
     top_3_types = avg_waiting.sort_values(ascending=False).head(3).index.tolist()
 
     # Assign highlight colors only for available top types
@@ -173,7 +173,7 @@ def plot_line_chart_waiting_by_type_week(df):
 
         fig.add_trace(go.Scatter(
             x=vessel_data["year_month"],
-            y=vessel_data["waiting_time"],
+            y=vessel_data[value_column],
             mode="lines",
             name=vessel_type,
             line=dict(

@@ -23,6 +23,7 @@ def build_navigation_bar():
         dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
             dcc.Tab(label="Emissions", value="emissions"),
             dcc.Tab(label="Waiting Time", value="waiting"),
+            dcc.Tab(label="Service Time", value="service"),
             dcc.Tab(label="Energy", value="energy"),
             dcc.Tab(label="Explorer", value="explorer")
         ]), width=12)
@@ -240,6 +241,40 @@ def build_main_container_waiting_times():
         ], xs=12, md=12, lg=10, width=10)
 
 
+def build_main_container_service_times():
+    """
+    Here we only have statick content, with the tags
+    - KPI grid
+    - Chart grid
+    """
+    return dbc.Col([
+        # build_kpi_grid([
+        #     {
+        #         "id": "kpi-11",
+        #         "title": "Total Emissions",
+        #         "subtitle": "TONNES"
+        #     },
+        # ]),
+        build_chart_grid([
+            {
+                "id": "chart-11",
+                "title": "Total Emissions", 
+                "subtitle": "TONNES"
+            },
+            {
+                "id": "chart-22",
+                "title": "Emissions by Type of Vessel", 
+                "subtitle": "TONNES"},
+            {
+                "id": "chart-33",
+                "title": "Emissions by Region", 
+                "subtitle": "TONNES"},
+            {
+                "id": "chart-44",
+                "title": "Emissions by Type of Vessel", 
+                "subtitle": "TONNES"},
+        ])
+        ], xs=12, md=12, lg=10, width=10)
 
 
 
