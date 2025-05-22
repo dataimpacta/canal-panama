@@ -10,7 +10,7 @@ from data_utils import map_processing
 from charts import charts_emissions
 
 
-def setup_emissions_callbacks(app, df_emissions, index_to_year_month, master_emissions_vessel_types, geojson_template, unique_polygons_gdf):
+def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_template, unique_polygons_gdf):
     """
     These are the callbacks for the emissions dashboard.
     """
@@ -27,12 +27,12 @@ def setup_emissions_callbacks(app, df_emissions, index_to_year_month, master_emi
         triggered_id = ctx.triggered_id
 
         if triggered_id == "btn-select-all":
-            return list(master_emissions_vessel_types)
+            return list(controls_emissions["vessel_types"])
         elif triggered_id == "btn-clear-all":
             return []
 
 
-    @callback(
+    @app.callback(
         [
             Output("chart-1", "figure"),
             Output("chart-2", "figure"),
@@ -54,8 +54,8 @@ def setup_emissions_callbacks(app, df_emissions, index_to_year_month, master_emi
         #logger.info("🟢 Callback started")
         #t = time.time()
 
-        start_ym = index_to_year_month[selected_date_range[0]]
-        end_ym = index_to_year_month[selected_date_range[1]]
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][selected_date_range[0]]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][selected_date_range[1]]
 
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
@@ -70,8 +70,6 @@ def setup_emissions_callbacks(app, df_emissions, index_to_year_month, master_emi
                 html.Div("No data available", style={"color": "#999"}),
                 True  # modal open
             )
-        #t = log_step("Filtered DataFrame", t)
-
 
         # KPI Calculation
         sorted_ym = sorted(filtered_df["year_month"].unique())
@@ -102,11 +100,6 @@ def setup_emissions_callbacks(app, df_emissions, index_to_year_month, master_emi
         df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
         gdf_json, df_h3 = map_processing.generate_h3_map_data(filtered_df, unique_polygons_gdf, geojson_template)
-
-        #size_kb = len(json.dumps(gdf_json).encode("utf-8")) / 1024
-        #logger.info("📦 GeoJSON payload size: %.2f KB", size_kb)
-        #t = log_step("Injected values into GeoJSON", t)
-        #logger.info("🟣 Callback finished. Total time: %.2f s", time.time() - t)
 
         return (
             charts_emissions.plot_line_chart_emissions_by_year_month(df_year_month),

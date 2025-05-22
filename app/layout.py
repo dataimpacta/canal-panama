@@ -1,6 +1,13 @@
+# pylint: disable=import-error
+
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 
+from charts import charts_emissions
+from controls import controls_emissions
+
+
+# FIXED VALUES
 
 def build_header():
     return dbc.Row([
@@ -22,57 +29,102 @@ def build_navigation_bar():
     ], className="")
 
 
-def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
+# ============================
+# Funcitons for the charts and KPIs
+
+def create_standard_kpi_container(kpi_id):
+    return html.Div([
+        dcc.Loading(
+            id=f"loading-{kpi_id}",
+            type="circle",
+            children=dbc.Col(
+                id=kpi_id,
+            )
+        )
+    ],
+    className="border rounded p-3 m-0 g-0")
+
+def build_kpi_grid(kpi_cards, items_per_row=2):
+    rows = []
+    for i in range(0, len(kpi_cards), items_per_row):
+        row = dbc.Row([
+            dbc.Col(
+                create_standard_kpi_container(kpi_id=card["id"]),
+                xs=12, sm=6, md=6, lg=int(12/items_per_row))
+            for card in kpi_cards[i:i+items_per_row]
+        ], class_name="g-2 mt-2 me-2 ms-2")
+        rows.append(row)
+    return html.Div(rows)
+
+
+
+def create_standard_chart_container(chart):
+    """
+    Create the standar html DIV for the charts.
+    Args:
+        Title
+        Subtitle
+        Id for updating the box
+        Margins
+    """
+    return html.Div([
+        html.Div([
+            html.H5(chart["title"], className="mb-1", style={"fontWeight": "bold", "color": "#333"}),
+            html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
+        ]),
+        dcc.Loading(
+            id=f"loading-{chart['id']}",
+            type="circle",
+            children=dcc.Graph(
+                id=chart["id"]
+            )
+        )
+    ],
+    className="border rounded p-3 m-0 g-0")
+
+def build_chart_grid(chart_items):
+    """
+    Build the chart grid with a list of chart items.
+    - Separation between columns
+    """
+    rows = []
+    for i in range(0, len(chart_items), 2):
+        row = html.Div(
+            dbc.Row([
+                dbc.Col(
+                    create_standard_chart_container(item),
+                    xs=12, sm=12, md=6, lg=6, xl=6)
+            for item in chart_items[i:i+2]
+        ],
+        class_name="g-2 mt-0 me-2 ms-2"))
+
+        rows.append(row)
+
+    return html.Div(rows)
+
+
+# ===========================
+
+# Emissions
+
+def build_sidebar_emissions(controls):
+    """
+    Build the sidebar for the emissions dashboard.
+    - Message box
+    - Accordion with:
+        - Date range slider
+        - Vessel type checklist
+    - Refresh button
+    """
     return dbc.Col([
-        dbc.Modal(
-            [
-                dbc.ModalHeader("No Data Available"),
-                dbc.ModalBody("Please select at least one vessel type to view the emissions data."),
-            ],
-            id="no-data-modal",
-            is_open=False,
-        ),
+        controls_emissions.build_message_box(),
         dbc.Accordion([
             dbc.AccordionItem(
-                [
-                    dcc.RangeSlider(
-                        id="filter-date-range",
-                        min=min_index, max=max_index,
-                        value=[min_index, max_index],
-                        marks={min_index: str(unique_year_months[0]), max_index: str(unique_year_months[-1])},
-                        step=1, allowCross=False
-                    )
-                ],
+                [controls_emissions.build_date_range_slider(controls["date_range"])],
                 title="Date Range"
             ),
             dbc.AccordionItem(
-                [
-                    html.Div([
-                        html.Span(
-                            "Select All",
-                            id="btn-select-all",
-                            n_clicks=0,
-                            style={"color": "#007bff", "cursor": "pointer", "marginRight": "0.24em"}
-                        ),
-                        html.Span(
-                            "•",
-                            style={"color": "#999", "fontSize": "0.8rem", "marginRight": "0.2rem"}
-                        ),
-                        html.Span(
-                            "Clear",
-                            id="btn-clear-all",
-                            n_clicks=0,
-                            style={"color": "#007bff", "cursor": "pointer"}
-                        )
-                    ], style={"marginBottom": "0.5rem"}),
-
-                    dbc.Checklist(
-                        id="filter-emissions-type",
-                        options=[{"label": v, "value": v} for v in vessel_types],
-                        value=list(vessel_types),
-                        inline=True
-                    )
-                ],
+                [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
                 title="Vessel Type"
             )
         ]),
@@ -81,86 +133,110 @@ def build_sidebar(unique_year_months, min_index, max_index, vessel_types):
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
-def build_kpi_grid(kpi_cards, items_per_row=2):
-    rows = []
-    for i in range(0, len(kpi_cards), items_per_row):
-        row = dbc.Row([
-            dcc.Loading(type="circle", children=dbc.Col(card, xs=12, sm=6, md=6, lg=int(12/items_per_row), id="kpi-1"))
-            for card in kpi_cards[i:i+items_per_row]
-        ], class_name="g-2 mt-2 me-2 ms-2")
-        rows.append(row)
-    return html.Div(rows)
 
 
-def create_chart_container(graph_id, figure, config=None, title="Total Emissions", subtitle="Tonnes"):
-    return html.Div([
-        html.Div([
-            html.H5(title, className="mb-1", style={"fontWeight": "bold", "color": "#333"}),
-            html.P(subtitle, className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
+
+
+def build_main_container_emissions():
+    """
+    Here we only have statick content, with the tags
+    - KPI grid
+    - Chart grid
+    """
+    return dbc.Col([
+        build_kpi_grid([
+            {
+                "id": "kpi-1",
+                "title": "Total Emissions",
+                "subtitle": "TONNES"
+            },
         ]),
-        dcc.Loading(
-            id=f"loading-{graph_id}",
-            type="circle",
-            children=dcc.Graph(
-                id=graph_id,
-                figure=figure,
-                config=config or {}
-            )
-        )
-    ],
-    className="border rounded p-3 m-0 g-0")
+        build_chart_grid([
+            {
+                "id": "chart-1",
+                "title": "Total Emissions", 
+                "subtitle": "TONNES"
+            },
+            {
+                "id": "chart-2",
+                "title": "Emissions by Type of Vessel", 
+                "subtitle": "TONNES"},
+            {
+                "id": "chart-3",
+                "title": "Emissions by Region", 
+                "subtitle": "TONNES"},
+            {
+                "id": "chart-4",
+                "title": "Emissions by Type of Vessel", 
+                "subtitle": "TONNES"},
+        ])
+        ], xs=12, md=12, lg=10, width=10)
 
 
-def build_chart_grid(chart_items):
-    rows = []
-    for i in range(0, len(chart_items), 2):
-        row = html.Div(dbc.Row([
-            dbc.Col(
-                create_chart_container(item["id"], item["fig"], item.get("config"), title=item.get("title"), subtitle=item.get("subtitle")),
-                className="", # gaps between columns
-                xs=12, sm=12, md=6, lg=6, xl=6)
-            for item in chart_items[i:i+2]
-        ], class_name="g-2 mt-0 me-2 ms-2"))
-        rows.append(row)
+def build_sidebar_waiting_times():
+    """
+    Build the sidebar for the emissions dashboard.
+    - Message box
+    - Accordion with:
+        - Date range slider
+        - Vessel type checklist
+    - Refresh button
+    """
+    return dbc.Col([
+        controls_emissions.build_message_box(),
+        html.Br(),
+        dbc.Button("Refresh Charts", id="apply-filters-btn", n_clicks=0, color="primary")
 
-    return html.Div(rows)
+    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
-def build_dashboard_layout(
-    kpi_cards,
-    chart_1,
-    chart_2,
-    chart_3,
-    chart_4,
-    min_index,
-    max_index,
-    unique_year_months,
-    master_emissions_vessel_types
-):
-    
+def build_main_container_waiting_times():
+    """
+    Here we only have statick content, with the tags
+    - KPI grid
+    - Chart grid
+    """
+    return dbc.Col([
+        # build_kpi_grid([
+        #     {
+        #         "id": "kpi-11",
+        #         "title": "Total Emissions",
+        #         "subtitle": "TONNES"
+        #     },
+        # ]),
+        build_chart_grid([
+            {
+                "id": "chart-11",
+                "title": "Total Emissions", 
+                "subtitle": "TONNES"
+            },
+            {
+                "id": "chart-22",
+                "title": "Emissions by Type of Vessel", 
+                "subtitle": "TONNES"},
+            {
+                "id": "chart-33",
+                "title": "Emissions by Region", 
+                "subtitle": "TONNES"},
+            {
+                "id": "chart-44",
+                "title": "Emissions by Type of Vessel", 
+                "subtitle": "TONNES"},
+        ])
+        ], xs=12, md=12, lg=10, width=10)
 
+
+
+
+
+# ============================
+
+
+
+
+def build_main_layout():
     return dbc.Container([
-
-        # Header
-        build_header(),  
-        build_navigation_bar(),  
-        
-        # Main Content
-        dbc.Row([
-
-            # =============== Sidebar ===============
-            build_sidebar(unique_year_months, min_index, max_index, master_emissions_vessel_types),
-
-            # =============== CHART ZONE ===============
-            dbc.Col([
-                build_kpi_grid(kpi_cards),  # ✅ Add KPI grid here
-                build_chart_grid([
-                    chart_1,
-                    chart_2,
-                    chart_3,
-                    chart_4,
-                ])
-            ], xs=12, md=12, lg=10, width=10)
-        ], className="g-0"),
-
-    ],className="g-0 p-4", fluid=True)
+        build_header(),
+        build_navigation_bar(),  # This has id="chart-tabs"
+        html.Div(id="tab-content")  # ✅ Dynamic container for tab-specific layout
+    ], className="g-0 p-4", fluid=True)
