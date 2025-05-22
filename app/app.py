@@ -206,7 +206,6 @@ callbacks_waiting.setup_waiting_times_callbacks(
     df_waiting_times
 )
 
-
 @app.callback(
     Output("tab-content", "children"),
     Input("chart-tabs", "value")
@@ -223,7 +222,7 @@ def update_tab_content(selected_tab):
     
     elif selected_tab == "waiting":
         return dbc.Row([
-            layout.build_sidebar_waiting_times(),  # Your existing sidebar
+            layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_waiting_times()
         ], className="g-0")
                        

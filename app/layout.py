@@ -173,7 +173,7 @@ def build_main_container_emissions():
         ], xs=12, md=12, lg=10, width=10)
 
 
-def build_sidebar_waiting_times():
+def build_sidebar_waiting_times(controls):
     """
     Build the sidebar for the emissions dashboard.
     - Message box
@@ -184,6 +184,20 @@ def build_sidebar_waiting_times():
     """
     return dbc.Col([
         controls_emissions.build_message_box(),
+        dbc.Accordion([
+            dbc.AccordionItem(
+                [controls_emissions.build_date_range_slider(controls["date_range"])],
+                title="Date Range"
+            ),
+            dbc.AccordionItem(
+                [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
+                title="Vessel Type"
+            ),
+            dbc.AccordionItem(
+                [controls_emissions.build_vessel_type_checklist(controls["stop_area"])],
+                title="Stop Area"
+            )
+        ]),
         html.Br(),
         dbc.Button("Refresh Charts", id="apply-filters-btn", n_clicks=0, color="primary")
 

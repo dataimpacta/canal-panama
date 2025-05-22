@@ -30,10 +30,37 @@ def setup_waiting_times_callbacks(app, df):
 
         df_waiting_time_avg = df.groupby(['year', 'month'])['waiting_time'].mean().reset_index()
         line_chart_waiting_times_by_year_month = charts_waiting_times.plot_line_chart_waiting_time_by_year_month(df_waiting_time_avg)
+
+
+        avg_waiting_times = df.groupby('stop_area')['waiting_time'].mean().reset_index()
+        top_areas = avg_waiting_times.sort_values('waiting_time', ascending=False).head(6)
+        bar_chart = charts_waiting_times.plot_bar_chart_waiting_by_stop_area(top_areas)
+
+
+        top_waiting_by_vessel = (
+            df.groupby('StandardVesselType')['service_time']
+            .mean()  
+            .sort_values(ascending=False)
+            .head(6)
+        )
+        bar_chart_2 = charts_waiting_times.plot_bar_chart_waiting_by_vessel_type(top_waiting_by_vessel)
         
+
+        df["year_month"] = (
+        df["year"].astype(str) + "-" + df["month"].astype(str).str.zfill(2))   
+
+        df_type_week = (
+            df.groupby(["StandardVesselType", "year_month"])["waiting_time"]
+            .mean()
+            .reset_index()
+        )
+        line_chart = charts_waiting_times.plot_line_chart_waiting_by_type_week(df_type_week)
+
+
+
         return (
             line_chart_waiting_times_by_year_month,
-            line_chart_waiting_times_by_year_month,
-            line_chart_waiting_times_by_year_month,
-            line_chart_waiting_times_by_year_month,
+            bar_chart,
+            bar_chart_2,
+            line_chart,
         )
