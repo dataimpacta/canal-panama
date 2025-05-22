@@ -58,6 +58,6 @@ def setup_waiting_times_callbacks(app, df):
         return (
             line_chart_waiting_times_by_year_month,
             bar_chart,
-            bar_chart_2,
             line_chart,
+            bar_chart_2,
         )

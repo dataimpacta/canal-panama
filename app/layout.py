@@ -81,7 +81,7 @@ def create_standard_chart_container(chart):
             )
         )
     ],
-    className="border rounded p-3 m-0 g-0")
+    className="border rounded p-4 m-0 g-0")
 
 def build_chart_grid(chart_items):
     """
@@ -156,20 +156,20 @@ def build_main_container_emissions():
             {
                 "id": "chart-1",
                 "title": "Total Emissions", 
-                "subtitle": "TONNES"
+                "subtitle": "TONNES CO2 EQUIVALENT"
             },
             {
                 "id": "chart-2",
                 "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES"},
+                "subtitle": "TONNES CO2 EQUIVALENT"},
             {
                 "id": "chart-3",
                 "title": "Emissions by Region", 
-                "subtitle": "TONNES"},
+                "subtitle": "TONNES CO2 EQUIVALENT"},
             {
                 "id": "chart-4",
                 "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES"},
+                "subtitle": "TONNES CO2 EQUIVALENT"},
         ])
         ], xs=12, md=12, lg=10, width=10)
 
@@ -222,21 +222,21 @@ def build_main_container_waiting_times():
         build_chart_grid([
             {
                 "id": "chart-11",
-                "title": "Total Emissions", 
-                "subtitle": "TONNES"
+                "title": "Overall Waiting Time", 
+                "subtitle": "HOURS"
             },
             {
                 "id": "chart-22",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES"},
+                "title": "AVG Waiting Time by Stop Area", 
+                "subtitle": "HOURS"},
             {
                 "id": "chart-33",
-                "title": "Emissions by Region", 
-                "subtitle": "TONNES"},
+                "title": "Waiting Time by Vessel  ", 
+                "subtitle": "HOURS"},
             {
                 "id": "chart-44",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES"},
+                "title": "AVG Waiting Time by Vessel Type", 
+                "subtitle": "HOURS"},
         ])
         ], xs=12, md=12, lg=10, width=10)
 
@@ -258,21 +258,21 @@ def build_main_container_service_times():
         build_chart_grid([
             {
                 "id": "chart-11",
-                "title": "Total Emissions", 
-                "subtitle": "TONNES"
+                "title": "Overall Service Time", 
+                "subtitle": "HOURS"
             },
             {
                 "id": "chart-22",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES"},
+                "title": "AVG Service Time by Stop Area", 
+                "subtitle": "HOURS"},
             {
                 "id": "chart-33",
-                "title": "Emissions by Region", 
-                "subtitle": "TONNES"},
+                "title": "Service Time by Vessel  ", 
+                "subtitle": "HOURS"},
             {
                 "id": "chart-44",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES"},
+                "title": "AVG Service Time by Vessel Type", 
+                "subtitle": "HOURS"},
         ])
         ], xs=12, md=12, lg=10, width=10)
 
