@@ -182,27 +182,42 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
 
 def create_standard_chart_container(chart):
     """
-    Create the standar html DIV for the charts.
-    Args:
-        Title
-        Subtitle
-        Id for updating the box
-        Margins
+    Create the standard HTML DIV for the charts with a title, subtitle, and tooltip on the title.
     """
     return html.Div([
         html.Div([
-            html.H5(chart["title"], className="mb-1", style={"fontWeight": "bold", "color": "#333"}),
+            dbc.Row([
+                dbc.Col([
+                    html.Span(
+                        chart["title"],
+                        id=f"title-tooltip-{chart['id']}",
+                        style={
+                            "fontWeight": "bold",
+                            "color": "#333",
+                            "fontSize": "1.1rem",
+                            "cursor": "help",
+                            "textDecoration": "none"
+                        },
+                        className="chart-title-tooltip"  # style in CSS
+                    ),
+                    dbc.Tooltip(
+                        chart.get("description", "No description available."),
+                        target=f"title-tooltip-{chart['id']}",
+                        placement="right",
+                        style={"maxWidth": "300px"}
+                    )
+                ], width="auto")
+            ], className="align-items-center g-1"),
+
             html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
         ]),
+
         dcc.Loading(
             id=f"loading-{chart['id']}",
             type="circle",
-            children=dcc.Graph(
-                id=chart["id"]
-            )
+            children=dcc.Graph(id=chart["id"])
         )
-    ],
-    className="border rounded p-4 m-0 g-0")
+    ], className="border rounded p-4 m-0 g-0")
 
 def build_chart_grid(chart_items):
     """
@@ -273,7 +288,8 @@ def build_main_container_emissions():
             {
                 "id": "chart-1",
                 "title": "Total Emissions", 
-                "subtitle": "TONNES CO2 EQUIVALENT"
+                "subtitle": "TONNES CO2 EQUIVALENT",
+                "description": "This is the description for total emissions."
             },
             {
                 "id": "chart-2",
