@@ -10,12 +10,133 @@ from controls import controls_emissions
 # FIXED VALUES
 
 def build_header():
+    return html.Div([
+        # Logo only visible on small screens (above the title)
+        html.Div([
+            html.Img(
+                src="/assets/logo_senacyt.jpg",
+                alt="SENACYT Logo",
+                style={
+                    "height": "40px",
+                    "margin": "0 auto",
+                    "display": "block",
+                    "alignItems": "left",
+                }
+            )
+        ], className="d-flex d-md-none mb-3"),  # Show on xs-md only
+
+        dbc.Row([
+            # Title column
+            dbc.Col([
+                html.Div([
+                    html.H1("Panama Maritime Statistics", style={"margin": 0}),
+                    html.H4("Efficiency and Sustainability Indicators", style={"margin": 0, "fontWeight": "normal"})
+                ])
+            ], xs=12, md=10, lg=10),
+
+            # Logo column (only visible on lg and up)
+            dbc.Col([
+                html.Div([
+                    html.Img(
+                        src="/assets/logo_senacyt.jpg",
+                        alt="SENACYT Logo",
+                        style={
+                            "height": "60px",
+                            "marginLeft": "auto"
+                        }
+                    )
+                ],
+                className="d-none d-md-flex",
+                style={
+                    "justifyContent": "flex-end",
+                    "alignItems": "center",
+                    "height": "100%"
+                })
+            ], md=2)
+        ], className="dashboard-header pb-4")
+    ])
+
+
+def build_footer():
     return dbc.Row([
         dbc.Col([
-            html.H1("Panama Maritime Statistics"),
-            html.H4("Efficiency and Sustainability Indicators")
+            html.Hr(),
+            html.Small([
+                "Created in collaboration with ",
+                html.A("Data Impacta", href="https://dataimpacta.com", target="_blank", style={"fontWeight": "bold"}),
+                ". "
+                "This dashboard is a collaborative effort aimed at enhancing transparency and promoting sustainable practices in maritime operations. "
+                "The insights and data presented are intended for informational purposes and should not be the sole basis for decision-making.",
+            ], className="text-muted")
         ])
-    ], className="dashboard-header pb-4")
+    ], className="dashboard-footer mt-4 mb-2")
+
+
+def build_about_us():
+    return dbc.Container([
+        html.Br(),
+
+
+
+        html.P(
+            "This dashboard is inspired by the study "
+            "'Greenhouse Gas Mitigation at Maritime Chokepoints: The Case of the Panama Canal', "
+            "led by Gabriel Fuentes. The goal is to visualize maritime emissions and performance indicators "
+            "to support sustainable shipping practices and informed decision-making."
+        ),
+
+
+        html.Br(),
+
+        dbc.Row([
+            dbc.Col([
+                html.Img(
+                    src="/assets/gabriel_moises_fuentes.jpg",
+                    alt="Gabriel Fuentes",
+                    style={"width": "100%", "maxWidth": "150px", "borderRadius": "8px"}
+                )
+            ], xs=12, md=12, lg=3, width=3),
+
+            dbc.Col([
+                html.H5("Gabriel Fuentes"),
+                html.P(
+                    "Assistant Professor at the Norwegian School of Economics (NHH), Gabriel Fuentes specializes in maritime analytics and operations research. "
+                    "He co-authored the study that serves as the foundation for this dashboard. "
+                    "His research focuses on improving operational efficiency to reduce emissions in maritime transport."
+                ),
+                html.P([
+                    "Read the full study: ",
+                    html.A(
+                        "Greenhouse Gas Mitigation at Maritime Chokepoints",
+                        href="https://doi.org/10.1016/j.trd.2023.103694",
+                        target="_blank",
+                        style={"textDecoration": "underline"}
+                    )
+                ])
+            ], xs=12, md=12, lg=9, width=9)
+        ], className="mb-4 g-4"),
+
+        html.Br(),
+
+        dbc.Row([
+            dbc.Col([
+                html.Img(
+                    src="/assets/logo_senacyt.jpg",
+                    alt="SENACYT",
+                    style={"width": "100%", "maxWidth": "200px"}
+                )
+            ], xs=12, md=12, lg=3, width=3),
+            dbc.Col([
+                html.H5("SENACYT"),
+                html.P(
+                    "The National Secretariat of Science, Technology and Innovation (SENACYT) of Panama supports scientific research and technological development. "
+                    "SENACYT has been instrumental in providing resources and support for projects aimed at sustainable development, including initiatives in maritime emissions reduction."
+                )
+            ], xs=12, md=12, lg=9, width=9)
+        ], className="mb-4 g-4"),
+
+        html.Br()
+    ], className="")
 
 
 def build_navigation_bar():
@@ -25,10 +146,10 @@ def build_navigation_bar():
             dcc.Tab(label="Waiting Time", value="waiting"),
             dcc.Tab(label="Service Time", value="service"),
             dcc.Tab(label="Energy", value="energy"),
-            dcc.Tab(label="Explorer", value="explorer")
+            dcc.Tab(label="Explorer", value="explorer"),
+            dcc.Tab(label="About Us", value="about")
         ]), width=12)
     ], className="")
-
 
 # ============================
 # Funcitons for the charts and KPIs
@@ -51,7 +172,7 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
         row = dbc.Row([
             dbc.Col(
                 create_standard_kpi_container(kpi_id=card["id"]),
-                xs=12, sm=6, md=6, lg=int(12/items_per_row))
+                xs=12, sm=12, md=6, lg=int(12/items_per_row))
             for card in kpi_cards[i:i+items_per_row]
         ], class_name="g-2 mt-2 me-2 ms-2")
         rows.append(row)
@@ -132,10 +253,6 @@ def build_sidebar_emissions(controls):
         html.Br(),
         dbc.Button("Refresh Charts", id="apply-filters-btn", n_clicks=0, color="primary")
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
-
-
-
-
 
 
 def build_main_container_emissions():
@@ -287,5 +404,6 @@ def build_main_layout():
     return dbc.Container([
         build_header(),
         build_navigation_bar(),  # This has id="chart-tabs"
-        html.Div(id="tab-content")  # ✅ Dynamic container for tab-specific layout
+        html.Div(id="tab-content"),  # ✅ Dynamic container for tab-specific layout
+        build_footer()
     ], className="g-0 p-4", fluid=True)

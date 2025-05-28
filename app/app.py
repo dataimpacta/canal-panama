@@ -13,7 +13,7 @@ from io import StringIO
 import dash
 import dash_bootstrap_components as dbc
 
-from dash import Input, Output, callback
+from dash import Input, Output
 
 import pandas as pd
 import geopandas as gpd
@@ -182,7 +182,6 @@ def create_geojson_template(geo_df):
 unique_polygons_gdf = generate_unique_polygons(df_emissions)
 geojson_template = create_geojson_template(unique_polygons_gdf)
 
-
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
 app = dash.Dash(__name__,
@@ -231,7 +230,11 @@ def update_tab_content(selected_tab):
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_service_times()
         ], className="g-0")
-                             
+    elif selected_tab == "about":
+        return dbc.Container([
+            layout.build_about_us()
+        ], fluid=True)
+
 
 # Run the app
 if __name__ == '__main__':
