@@ -80,3 +80,7 @@ h1 {
 .maplibregl-ctrl-attrib-inner,.maplibregl-ctrl-attrib-button {
     display: none !important;
 }
+
+.chart-title-tooltip:hover {
+    text-decoration: underline;
+}
