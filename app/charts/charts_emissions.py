@@ -22,7 +22,7 @@ def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, 
 
         # Main value with optional delta % next to it
         html.Div([
-            html.Span(f"{value:,.0f} tonnes CO2 equivalent",
+            html.Span(f"{value:,.0f} tonnes CO2-eq",
                       style={"fontSize": "1.5rem",
                              "fontWeight": "bold",
                              "color": "#222"}),
@@ -32,7 +32,7 @@ def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, 
         ], style={"marginTop": "0.25rem", "marginBottom": "0.25rem"}),
 
         # Comparison below (e.g. Last Year: $82,655 (+$13,261))
-        html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes CO2 equivalent"
+        html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes CO2-eq"
                 + (f" (+${delta:,.0f})" if delta is not None else ""),
             style={"color": "#999", "fontSize": "0.8rem"})
     ], className="")

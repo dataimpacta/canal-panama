@@ -13,7 +13,7 @@ from io import StringIO
 import dash
 import dash_bootstrap_components as dbc
 
-from dash import Input, Output
+from dash import Input, Output, ctx, html
 
 import pandas as pd
 import geopandas as gpd
@@ -207,34 +207,76 @@ callbacks_waiting.setup_waiting_times_callbacks(
 )
 
 @app.callback(
+    Output("chart-tabs-store", "data"),
+    [
+        Input("tab-emissions", "n_clicks"),
+        Input("tab-waiting", "n_clicks"),
+        Input("tab-service", "n_clicks"),
+        Input("tab-energy", "n_clicks"),
+        Input("tab-explorer", "n_clicks"),
+        Input("tab-about", "n_clicks"),
+    ],
+    prevent_initial_call=True
+)
+
+def update_tab(*args):
+    """Update name of the tab"""
+    triggered_id = ctx.triggered_id
+    return triggered_id.replace("tab-", "") if triggered_id else "emissions"
+
+
+
+@app.callback(
     Output("tab-content", "children"),
-    Input("chart-tabs", "value")
+    Input("chart-tabs-store", "data")
 )
 
 def update_tab_content(selected_tab):
     """
     Update the dashboard depending on the differnt tabs. 
     """
+    nav_bar = layout.build_navigation_bar(active_tab=selected_tab)
+
     if selected_tab == "emissions":
-        return dbc.Row([
-            layout.build_sidebar_emissions(controls_emissions),  # Your existing sidebar
-            layout.build_main_container_emissions()
-        ], className="g-0")
+        return html.Div([
+            nav_bar,
+            dbc.Row([
+                layout.build_sidebar_emissions(controls_emissions),
+                layout.build_main_container_emissions()
+            ], className="g-0")
+        ])
     
     elif selected_tab == "waiting":
-        return dbc.Row([
+        return html.Div([
+            nav_bar,
+            dbc.Row([
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_waiting_times()
         ], className="g-0")
+        ])
     elif selected_tab == "service":
-        return dbc.Row([
+        return html.Div([
+            nav_bar,
+            dbc.Row([
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_service_times()
         ], className="g-0")
+        ])
+    elif selected_tab == "energy":
+        return html.Div([
+            nav_bar,
+        ])
+    elif selected_tab == "explorer":
+        return html.Div([
+            nav_bar,
+        ])
     elif selected_tab == "about":
-        return dbc.Container([
+        return html.Div([
+            nav_bar,
+            dbc.Container([
             layout.build_about_us()
         ], fluid=True)
+        ])
 
 
 # Run the app

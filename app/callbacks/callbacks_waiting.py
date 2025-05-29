@@ -60,7 +60,7 @@ def setup_waiting_times_callbacks(app, df, controls):
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
-            State("chart-tabs", "value"),
+            State("chart-tabs-store", "value"),
             State("time--range--date", "value"),
             State("time--checklist--vessel", "value"),
             State("time--checklist--stop-area", "value")

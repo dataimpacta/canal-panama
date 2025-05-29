@@ -140,17 +140,20 @@ def build_about_us():
     ], className="")
 
 
-def build_navigation_bar():
-    return dbc.Row([
-        dbc.Col(dcc.Tabs(id="chart-tabs", value="emissions", children=[
-            dcc.Tab(label="Emissions", value="emissions"),
-            dcc.Tab(label="Waiting Time", value="waiting"),
-            dcc.Tab(label="Service Time", value="service"),
-            dcc.Tab(label="Energy", value="energy"),
-            dcc.Tab(label="Explorer", value="explorer"),
-            dcc.Tab(label="About Us", value="about")
-        ]), width=12)
-    ], className="")
+def build_navigation_bar(active_tab="emissions"):
+    return dbc.Nav(
+        [
+            dbc.NavItem(dbc.NavLink("Emissions", href="#", id="tab-emissions", active=(active_tab == "emissions"))),
+            dbc.NavItem(dbc.NavLink("Waiting Time", href="#", id="tab-waiting", active=(active_tab == "waiting"))),
+            dbc.NavItem(dbc.NavLink("Service Time", href="#", id="tab-service", active=(active_tab == "service"))),
+            dbc.NavItem(dbc.NavLink("Energy", href="#", id="tab-energy", active=(active_tab == "energy"))),
+            dbc.NavItem(dbc.NavLink("Explorer", href="#", id="tab-explorer", active=(active_tab == "explorer"))),
+            dbc.NavItem(dbc.NavLink("About Us", href="#", id="tab-about", active=(active_tab == "about"))),
+        ],
+        pills=True,
+        vertical=False,
+        className="mb-2"
+    )
 
 # ============================
 # Funcitons for the charts and KPIs
@@ -175,7 +178,7 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
                 create_standard_kpi_container(kpi_id=card["id"]),
                 xs=12, sm=12, md=6, lg=int(12/items_per_row))
             for card in kpi_cards[i:i+items_per_row]
-        ], class_name="g-2 mt-2 me-2 ms-2")
+        ], class_name="g-2 mt-0 me-2 ms-2")
         rows.append(row)
     return html.Div(rows)
 
@@ -289,23 +292,23 @@ def build_main_container_emissions():
             {
                 "id": "emissions--chart--1",
                 "title": "Total Emissions", 
-                "subtitle": "TONNES CO2 EQUIVALENT",
+                "subtitle": "TONNES CO2-eq",
                 "description": "This is the description for total emissions."
             },
             {
                 "id": "emissions--chart--2",
                 "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2 EQUIVALENT"},
+                "subtitle": "TONNES CO2-eq"},
             {
                 "id": "emissions--chart--3",
                 "title": "Emissions by Region", 
-                "subtitle": "TONNES CO2 EQUIVALENT"},
+                "subtitle": "TONNES CO2-eq"},
             {
                 "id": "emissions--chart--4",
                 "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2 EQUIVALENT"},
+                "subtitle": "TONNES CO2-eq"},
         ])
-        ], xs=12, md=12, lg=10, width=10)
+        ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
 def build_sidebar_waiting_times(controls):
@@ -413,8 +416,9 @@ def build_main_container_service_times():
 
 def build_main_layout():
     return dbc.Container([
+        dcc.Store(id="chart-tabs-store", data="emissions"),
         build_header(),
-        build_navigation_bar(),  # This has id="chart-tabs"
+        #build_navigation_bar(),  # This has id="chart-tabs"
         html.Div(id="tab-content"),  # ✅ Dynamic container for tab-specific layout
         build_footer()
     ], className="g-0 p-4", fluid=True)
