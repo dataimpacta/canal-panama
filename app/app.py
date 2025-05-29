@@ -202,7 +202,8 @@ callbacks_emissions.setup_emissions_callbacks(
 
 callbacks_waiting.setup_waiting_times_callbacks(
     app,
-    df_waiting_times
+    df_waiting_times,
+    controls_waiting_times
 )
 
 @app.callback(

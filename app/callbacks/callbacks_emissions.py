@@ -15,9 +15,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
     These are the callbacks for the emissions dashboard.
     """
     @app.callback(
-        Output("filter-emissions-type", "value"),
-        Input("btn-select-all", "n_clicks"),
-        Input("btn-clear-all", "n_clicks"),
+        Output("emissions--checklist--vessel", "value"),
+        Input("emissions--btn--vessel-select", "n_clicks"),
+        Input("emissions--btn--vessel-clear", "n_clicks"),
         prevent_initial_call=True
     )
     def update_checklist(_select_all_clicks, _clear_all_clicks):
@@ -26,25 +26,25 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         """
         triggered_id = ctx.triggered_id
 
-        if triggered_id == "btn-select-all":
+        if triggered_id == "emissions--btn--vessel-select":
             return list(controls_emissions["vessel_types"])
-        elif triggered_id == "btn-clear-all":
+        elif triggered_id == "emissions--btn--vessel-clear":
             return []
 
 
     @app.callback(
         [
-            Output("chart-1", "figure"),
-            Output("chart-2", "figure"),
-            Output("chart-3", "figure"),
-            Output("chart-4", "figure"),
-            Output("kpi-1", "children"),
-            Output("no-data-modal", "is_open"),
+            Output("emissions--chart--1", "figure"),
+            Output("emissions--chart--2", "figure"),
+            Output("emissions--chart--3", "figure"),
+            Output("emissions--chart--4", "figure"),
+            Output("emissions--kpi--1", "children"),
+            Output("modal-no-data", "is_open"),
         ],
-        Input("apply-filters-btn", "n_clicks"),
+        Input("emissions--btn--refresh", "n_clicks"),
         [
-            State("filter-emissions-type", "value"),
-            State("filter-date-range", "value"),
+            State("emissions--checklist--vessel", "value"),
+            State("emissions--range--date", "value"),
         ]
     )
     def update_charts(_n_clicks, selected_vessel_types, selected_date_range):
