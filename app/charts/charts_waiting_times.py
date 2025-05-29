@@ -155,6 +155,8 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
 
     if df.empty or "StandardVesselType" not in df.columns:
         return fig  # Return empty figure if no data
+    
+    df["year_month_int"] = df["year_month"].astype(int)
 
     # Top 3 vessel types by average waiting time
     avg_waiting = df.groupby("StandardVesselType")[value_column].mean()
@@ -185,36 +187,40 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
             hovertemplate=f'{vessel_type}: ' + '%{y:.2s} hrs<br>Month: %{x}<extra></extra>'
         ))
 
-    fig.update_layout(
-        height=300,
-        dragmode=False,
-        xaxis=dict(
-            type="category",
-            tickangle=45,
-            ticklabelstep=5,
-            showgrid=False
-        ),
-        yaxis=dict(
-            showgrid=True,
-            gridcolor="lightgray",
-            gridwidth=1,
-            zeroline=True,
-            zerolinecolor="#000000",
-            zerolinewidth=1.5,
-            side="left",
-            anchor="free",
-            tickfont_color="#757575",
-            shift=-10
-        ),
-        legend=dict(
-            x=0,
-            y=1,
-            xanchor="left",
-            yanchor="top",
-            orientation="h"
-        ),
-        margin=dict(l=0, r=0, t=0, b=0),
-        plot_bgcolor="white"
-    )
+        sorted_year_month = sorted(df["year_month"].unique(), key=lambda x: int(x))
+
+        fig.update_layout(
+            height=300,
+            dragmode=False,
+            xaxis=dict(
+                type="category",
+                categoryorder="array",
+                categoryarray=sorted_year_month,
+                tickangle=45,
+                ticklabelstep=5,
+                showgrid=False
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridcolor="lightgray",
+                gridwidth=1,
+                zeroline=True,
+                zerolinecolor="#000000",
+                zerolinewidth=1.5,
+                side="left",
+                anchor="free",
+                tickfont_color="#757575",
+                shift=-10
+            ),
+            legend=dict(
+                x=0,
+                y=1,
+                xanchor="left",
+                yanchor="top",
+                orientation="h"
+            ),
+            margin=dict(l=0, r=0, t=0, b=0),
+            plot_bgcolor="white"
+        )
 
     return fig

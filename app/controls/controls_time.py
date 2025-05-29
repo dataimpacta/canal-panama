@@ -4,6 +4,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
+
 def build_message_box():
     """
     Build a message box to inform the user that no data is available
@@ -13,7 +14,7 @@ def build_message_box():
                 dbc.ModalHeader("No Data Available"),
                 dbc.ModalBody("Please select at least one vessel type to view the emissions data."),
             ],
-            id="modal-no-data",
+            id="time--modal--no-data",
             is_open=False,
         )
 
@@ -29,7 +30,7 @@ def build_date_range_slider(date_range):
         dcc.RangeSlider: A Dash RangeSlider component for selecting a date range.
     """
     return dcc.RangeSlider(
-        id="emissions--range--date",
+        id="time--range--date",
         min=date_range["min_index"],
         max=date_range["max_index"],
         value=[date_range["min_index"], date_range["max_index"]],
@@ -41,19 +42,20 @@ def build_date_range_slider(date_range):
         allowCross=False
     )
 
+
 def build_vessel_type_checklist(vessel_types):
     return html.Div([
         html.Div([
             html.Span(
                 "Select All",
-                id="emissions--btn--vessel-select",
+                id="time--btn--vessel-select",
                 n_clicks=0,
                 style={"color": "#007bff", "cursor": "pointer", "marginRight": "0.24em"}
             ),
             html.Span("•", style={"color": "#999", "fontSize": "0.8rem", "marginRight": "0.2rem"}),
             html.Span(
                 "Clear",
-                id="emissions--btn--vessel-clear",
+                id="time--btn--vessel-clear",
                 n_clicks=0,
                 style={"color": "#007bff", "cursor": "pointer"}
             )
@@ -61,14 +63,14 @@ def build_vessel_type_checklist(vessel_types):
 
         html.Div(
             dbc.Checklist(
-                id="emissions--checklist--vessel",
+                id="time--checklist--vessel",
                 options=[{"label": v, "value": v} for v in vessel_types],
                 value=list(vessel_types),
-                inline=False,  # Use vertical layout
+                inline=False,
                 switch=False
             ),
             style={
-                "maxHeight": "200px",  # Adjust height as needed
+                "maxHeight": "200px",
                 "overflowY": "scroll",
                 "overflowX": "hidden",
                 "border": "1px solid #dee2e6",
@@ -79,5 +81,41 @@ def build_vessel_type_checklist(vessel_types):
         )
     ])
 
-def build_button_refresh_charts():
-    return dbc.Button("Refresh Charts", id="emissions--btn--refresh", n_clicks=0, color="primary")
+
+def build_stop_area_checklist(vessel_types):
+    return html.Div([
+        html.Div([
+            html.Span(
+                "Select All",
+                id="time--btn--stop-area-select",
+                n_clicks=0,
+                style={"color": "#007bff", "cursor": "pointer", "marginRight": "0.24em"}
+            ),
+            html.Span("•", style={"color": "#999", "fontSize": "0.8rem", "marginRight": "0.2rem"}),
+            html.Span(
+                "Clear",
+                id="time--btn--stop-area-clear",
+                n_clicks=0,
+                style={"color": "#007bff", "cursor": "pointer"}
+            )
+        ], style={"marginBottom": "0.5rem"}),
+
+        html.Div(
+            dbc.Checklist(
+                id="time--checklist--stop-area",
+                options=[{"label": v, "value": v} for v in vessel_types],
+                value=list(vessel_types),
+                inline=False,
+                switch=False
+            ),
+            style={
+                "maxHeight": "200px",
+                "overflowY": "scroll",
+                "overflowX": "hidden",
+                "border": "1px solid #dee2e6",
+                "padding": "0.5rem",
+                "borderRadius": "4px",
+                "backgroundColor": "#f9f9f9"
+            }
+        )
+    ])

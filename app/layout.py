@@ -5,6 +5,7 @@ from dash import html, dcc
 
 from charts import charts_emissions
 from controls import controls_emissions
+from controls import controls_time
 
 
 # FIXED VALUES
@@ -266,7 +267,7 @@ def build_sidebar_emissions(controls):
             )
         ]),
         html.Br(),
-        dbc.Button("Refresh Charts", id="apply-filters-btn", n_clicks=0, color="primary")
+        controls_emissions.build_button_refresh_charts()
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
@@ -279,28 +280,28 @@ def build_main_container_emissions():
     return dbc.Col([
         build_kpi_grid([
             {
-                "id": "kpi-1",
+                "id": "emissions--kpi--1",
                 "title": "Total Emissions",
                 "subtitle": "TONNES"
             },
         ]),
         build_chart_grid([
             {
-                "id": "chart-1",
+                "id": "emissions--chart--1",
                 "title": "Total Emissions", 
                 "subtitle": "TONNES CO2 EQUIVALENT",
                 "description": "This is the description for total emissions."
             },
             {
-                "id": "chart-2",
+                "id": "emissions--chart--2",
                 "title": "Emissions by Type of Vessel", 
                 "subtitle": "TONNES CO2 EQUIVALENT"},
             {
-                "id": "chart-3",
+                "id": "emissions--chart--3",
                 "title": "Emissions by Region", 
                 "subtitle": "TONNES CO2 EQUIVALENT"},
             {
-                "id": "chart-4",
+                "id": "emissions--chart--4",
                 "title": "Emissions by Type of Vessel", 
                 "subtitle": "TONNES CO2 EQUIVALENT"},
         ])
@@ -317,23 +318,23 @@ def build_sidebar_waiting_times(controls):
     - Refresh button
     """
     return dbc.Col([
-        controls_emissions.build_message_box(),
+        controls_time.build_message_box(),
         dbc.Accordion([
             dbc.AccordionItem(
-                [controls_emissions.build_date_range_slider(controls["date_range"])],
+                [controls_time.build_date_range_slider(controls["date_range"])],
                 title="Date Range"
             ),
             dbc.AccordionItem(
-                [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
+                [controls_time.build_vessel_type_checklist(controls["vessel_types"])],
                 title="Vessel Type"
             ),
             dbc.AccordionItem(
-                [controls_emissions.build_vessel_type_checklist(controls["stop_area"])],
+                [controls_time.build_stop_area_checklist(controls["stop_area"])],
                 title="Stop Area"
             )
         ]),
         html.Br(),
-        dbc.Button("Refresh Charts", id="apply-filters-btn", n_clicks=0, color="primary")
+        controls_emissions.build_button_refresh_charts()
 
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
@@ -345,29 +346,23 @@ def build_main_container_waiting_times():
     - Chart grid
     """
     return dbc.Col([
-        # build_kpi_grid([
-        #     {
-        #         "id": "kpi-11",
-        #         "title": "Total Emissions",
-        #         "subtitle": "TONNES"
-        #     },
-        # ]),
+
         build_chart_grid([
             {
-                "id": "chart-11",
+                "id": "time--chart--1",
                 "title": "Overall Waiting Time", 
                 "subtitle": "HOURS"
             },
             {
-                "id": "chart-22",
+                "id": "time--chart--2",
                 "title": "AVG Waiting Time by Stop Area", 
                 "subtitle": "HOURS"},
             {
-                "id": "chart-33",
+                "id": "time--chart--3",
                 "title": "Waiting Time by Vessel  ", 
                 "subtitle": "HOURS"},
             {
-                "id": "chart-44",
+                "id": "time--chart--4",
                 "title": "AVG Waiting Time by Vessel Type", 
                 "subtitle": "HOURS"},
         ])
@@ -390,20 +385,20 @@ def build_main_container_service_times():
         # ]),
         build_chart_grid([
             {
-                "id": "chart-11",
+                "id": "time--chart--1",
                 "title": "Overall Service Time", 
                 "subtitle": "HOURS"
             },
             {
-                "id": "chart-22",
+                "id": "time--chart--2",
                 "title": "AVG Service Time by Stop Area", 
                 "subtitle": "HOURS"},
             {
-                "id": "chart-33",
+                "id": "time--chart--3",
                 "title": "Service Time by Vessel  ", 
                 "subtitle": "HOURS"},
             {
-                "id": "chart-44",
+                "id": "time--chart--4",
                 "title": "AVG Service Time by Vessel Type", 
                 "subtitle": "HOURS"},
         ])
