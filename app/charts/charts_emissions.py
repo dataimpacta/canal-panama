@@ -6,36 +6,63 @@ from dash import html
 import plotly.graph_objects as go
 
 
-def plot_kpi(name, value, date, comparison_label, comparison_value, delta=None, delta_percent=None):
+def plot_kpi(name, value, start_date, end_date, comparison_label, comparison_value, delta=None, delta_percent=None):
     """
-    Function to create a KPI card with title, value, date, and comparison.
+    Function to create a KPI card with title, value, and comparison range.
     """
+    # Format dates from YYYYMM to YYYY-MM
+    def format_date(yyyymm):
+        return f"{str(yyyymm)[:4]}-{str(yyyymm)[4:]}"
+    
     return html.Div([
-        # Title and date on same line
-        html.Span([
-            name,
-            html.Span(f" as of {date}",
-                      style={"color": "#999",
-                             "fontSize": "0.8rem",
-                             "fontWeight": "normal"})
-        ], style={"fontWeight": "bold", "color": "#555", "fontSize": "1rem"}),
+        # Title
+        html.Span(name, style={
+            "fontWeight": "bold",
+            "color": "#555",
+            "fontSize": "1rem"
+        }),
 
-        # Main value with optional delta % next to it
+        # Main value + delta percent
         html.Div([
-            html.Span(f"{value:,.0f} tonnes CO2-eq",
-                      style={"fontSize": "1.5rem",
-                             "fontWeight": "bold",
-                             "color": "#222"}),
-            html.Span(f" ↑ {delta_percent:.2%}" if delta_percent is not None else "", style={
-                "color": "#02ACA3", "fontSize": "1rem", "marginLeft": "1rem", "fontWeight": "bold"
-            })
+            html.Span([
+                html.Span(f"{value:,.0f}", style={
+                    "fontSize": "1.5rem",
+                    "fontWeight": "bold",
+                    "color": "#222"
+                }),
+                html.Span(" tonnes CO2-eq", style={
+                    "fontSize": "1.0rem",
+                    "fontWeight": "bold",
+                    "color": "#666",
+                    "marginLeft": "0.25rem"
+                }),
+            ]),
+            html.Span(
+                f" ↑ {delta_percent:.2%}" if delta_percent is not None else "",
+                style={
+                    "color": "#02ACA3",
+                    "fontSize": "0.9rem",
+                    "marginLeft": "0.75rem",
+                    "fontWeight": "normal"
+                }
+            )
         ], style={"marginTop": "0.25rem", "marginBottom": "0.25rem"}),
 
-        # Comparison below (e.g. Last Year: $82,655 (+$13,261))
-        html.Div(f"{comparison_label}: {comparison_value:,.0f} tonnes CO2-eq"
-                + (f" (+${delta:,.0f})" if delta is not None else ""),
-            style={"color": "#999", "fontSize": "0.8rem"})
-    ], className="")
+        # Date range
+        html.Div(f"From {format_date(start_date)} to {format_date(end_date)}", style={
+            "color": "#666",
+            "fontSize": "0.8rem",
+            "marginBottom": "0.2rem"
+        }),
+
+        # Comparison value (optional delta)
+
+        # html.Div(
+        #     f"{comparison_label}: {comparison_value:,.0f} tonnes CO2-eq"
+        #     + (f" (+{delta:,.0f})" if delta is not None else ""),
+        #     style={"color": "#999", "fontSize": "0.8rem"}
+        # )
+    ])
 
 def plot_line_chart_emissions_by_year_month(df):
     """
