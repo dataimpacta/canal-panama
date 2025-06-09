@@ -87,7 +87,7 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
 
             comparison_label = "Last Month"
             kpi_component = charts_emissions.plot_kpi(
-                name="Total Emissions",
+                name="Total Emissions in the Panama Canal",
                 value=latest_total,
                 start_date=f"{str(start_ym)}",
                 end_date=f"{str(latest_ym)}",
