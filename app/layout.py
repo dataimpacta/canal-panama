@@ -15,10 +15,10 @@ def build_header():
         # Logo only visible on small screens (above the title)
         html.Div([
             html.Img(
-                src="/assets/logo_senacyt.jpg",
+                src="/assets/Financing_Logo.png",
                 alt="SENACYT Logo",
                 style={
-                    "height": "40px",
+                    "height": "60px",
                     "margin": "0 auto",
                     "display": "block",
                     "alignItems": "left",
@@ -39,10 +39,10 @@ def build_header():
             dbc.Col([
                 html.Div([
                     html.Img(
-                        src="/assets/logo_senacyt.jpg",
+                        src="/assets/Financing_Logo.png",
                         alt="SENACYT Logo",
                         style={
-                            "height": "60px",
+                            "height": "70px",
                             "marginLeft": "auto"
                         }
                     )
@@ -284,7 +284,7 @@ def build_main_container_emissions():
         build_kpi_grid([
             {
                 "id": "emissions--kpi--1",
-                "title": "Total Emissions",
+                "title": "Total Emissions in the Panama Canal",
                 "subtitle": "TONNES"
             },
         ]),
