@@ -31,6 +31,24 @@ def setup_waiting_times_callbacks(app, df, controls):
         elif triggered_id == "time--btn--vessel-clear":
             return []
 
+    @app.callback(
+        Output("time--checklist--vessel", "options"),
+        Output("time--checklist--vessel", "value"),
+        Input("time--input--vessel-search", "value"),
+        State("time--checklist--vessel", "value"),
+    )
+    def filter_vessel_options(search_value, selected_values):
+        """Filter vessel checklist options based on search string."""
+        vessel_types = controls["vessel_types"]
+        if search_value:
+            search_value = search_value.lower()
+            filtered = [v for v in vessel_types if search_value in v.lower()]
+        else:
+            filtered = vessel_types
+        options = [{"label": v, "value": v} for v in filtered]
+        new_selected = [v for v in selected_values if v in filtered]
+        return options, new_selected
+
 
     @app.callback(
         Output("time--checklist--stop-area", "value"),
