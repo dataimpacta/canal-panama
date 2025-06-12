@@ -29,14 +29,18 @@ def build_date_range_slider(date_range):
     Returns:
         dcc.RangeSlider: A Dash RangeSlider component for selecting a date range.
     """
+    def _fmt(ym):
+        ym = str(ym)
+        return f"{ym[:4]}-{ym[4:]}"
+
     return dcc.RangeSlider(
         id="time--range--date",
         min=date_range["min_index"],
         max=date_range["max_index"],
         value=[date_range["min_index"], date_range["max_index"]],
         marks={
-            date_range["min_index"]: str(date_range["unique_year_months"][0]),
-            date_range["max_index"]: str(date_range["unique_year_months"][-1])
+            date_range["min_index"]: _fmt(date_range["unique_year_months"][0]),
+            date_range["max_index"]: _fmt(date_range["unique_year_months"][-1])
         },
         step=1,
         allowCross=False
