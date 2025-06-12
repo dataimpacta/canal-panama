@@ -33,18 +33,24 @@ def build_date_range_slider(date_range):
         ym = str(ym)
         return f"{ym[:4]}-{ym[4:]}"
 
-    return dcc.RangeSlider(
+    marks = {i: "" for i in range(date_range["min_index"], date_range["max_index"] + 1)}
+    marks[date_range["min_index"]] = _fmt(date_range["unique_year_months"][0])
+    marks[date_range["max_index"]] = _fmt(date_range["unique_year_months"][-1])
+
+    slider = dcc.RangeSlider(
         id="time--range--date",
         min=date_range["min_index"],
         max=date_range["max_index"],
         value=[date_range["min_index"], date_range["max_index"]],
-        marks={
-            date_range["min_index"]: _fmt(date_range["unique_year_months"][0]),
-            date_range["max_index"]: _fmt(date_range["unique_year_months"][-1])
-        },
+        marks=marks,
         step=1,
-        allowCross=False
+        allowCross=False,
     )
+
+    return html.Div([
+        slider,
+        html.Div(id="time--range-label", className="text-center mt-2"),
+    ])
 
 
 def build_vessel_type_checklist(vessel_types):
