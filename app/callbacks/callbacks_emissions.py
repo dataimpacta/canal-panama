@@ -32,22 +32,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             return []
 
     @app.callback(
-        Output("emissions--range--date", "marks"),
+        Output("emissions--range-label", "children"),
         Input("emissions--range--date", "value"),
     )
-    def update_date_marks(selected_range):
-        """Display the currently selected year-month range on the slider."""
+    def update_date_label(selected_range):
+        """Show the selected year-month range below the slider."""
         start_ym = controls_emissions["date_range"]["index_to_year_month"][selected_range[0]]
         end_ym = controls_emissions["date_range"]["index_to_year_month"][selected_range[1]]
 
-        def _fmt(ym):
+        def _fmt(ym: int) -> str:
             ym = str(ym)
             return f"{ym[:4]}-{ym[4:]}"
 
-        return {
-            selected_range[0]: _fmt(start_ym),
-            selected_range[1]: _fmt(end_ym)
-        }
+        return f"{_fmt(start_ym)} to {_fmt(end_ym)}"
 
 
     @app.callback(
