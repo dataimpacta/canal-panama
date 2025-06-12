@@ -62,13 +62,10 @@ def build_footer():
     return dbc.Row([
         dbc.Col([
             html.Hr(),
-            html.Small([
-                "Created in collaboration with ",
-                html.A("Data Impacta", href="https://dataimpacta.com", target="_blank", style={"fontWeight": "bold"}),
-                ". "
-                "This dashboard is a collaborative effort aimed at enhancing transparency and promoting sustainable practices in maritime operations. "
-                "The insights and data presented are intended for informational purposes and should not be the sole basis for decision-making.",
-            ], className="text-muted")
+            html.Small(
+                "This dashboard was developed as part of the project \"Green Shipping Corridors in the Panama Canal under Climate Risk risk\", partly sponsored by SENACYT under project number 060/2024.",
+                className="text-muted",
+            ),
         ])
     ], className="dashboard-footer mt-4 mb-2")
 
