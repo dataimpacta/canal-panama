@@ -32,13 +32,34 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             return []
 
     @app.callback(
-        Output("emissions--range-label", "children"),
-        Input("emissions--range--date", "value"),
+        Output("emissions--start-date", "value"),
+        Output("emissions--end-date", "value"),
+        Input("emissions--start-date", "value"),
+        Input("emissions--end-date", "value"),
+        prevent_initial_call=True,
     )
-    def update_date_label(selected_range):
-        """Show the selected year-month range below the slider."""
-        start_ym = controls_emissions["date_range"]["index_to_year_month"][selected_range[0]]
-        end_ym = controls_emissions["date_range"]["index_to_year_month"][selected_range[1]]
+    def validate_date_range(start_idx, end_idx):
+        """Ensure the start date is not after the end date."""
+        if start_idx is None:
+            start_idx = controls_emissions["date_range"]["min_index"]
+        if end_idx is None:
+            end_idx = controls_emissions["date_range"]["max_index"]
+        if start_idx > end_idx:
+            if ctx.triggered_id == "emissions--start-date":
+                start_idx = end_idx
+            else:
+                end_idx = start_idx
+        return start_idx, end_idx
+
+    @app.callback(
+        Output("emissions--range-label", "children"),
+        Input("emissions--start-date", "value"),
+        Input("emissions--end-date", "value"),
+    )
+    def update_date_label(start_idx, end_idx):
+        """Show the selected year-month range below the dropdowns."""
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
 
         def _fmt(ym: int) -> str:
             ym = str(ym)
@@ -59,18 +80,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         Input("emissions--btn--refresh", "n_clicks"),
         [
             State("emissions--checklist--vessel", "value"),
-            State("emissions--range--date", "value"),
+            State("emissions--start-date", "value"),
+            State("emissions--end-date", "value"),
         ]
     )
-    def update_charts(_n_clicks, selected_vessel_types, selected_date_range):
+    def update_charts(_n_clicks, selected_vessel_types, start_idx, end_idx):
         """
         Updates the charts and KPI based on user-selected filters.
         """
         #logger.info("🟢 Callback started")
         #t = time.time()
 
-        start_ym = controls_emissions["date_range"]["index_to_year_month"][selected_date_range[0]]
-        end_ym = controls_emissions["date_range"]["index_to_year_month"][selected_date_range[1]]
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
 
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
