@@ -31,6 +31,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         elif triggered_id == "emissions--btn--vessel-clear":
             return []
 
+    @app.callback(
+        Output("emissions--checklist--vessel", "options"),
+        Input("emissions--search--vessel", "value"),
+    )
+    def filter_vessel_options(search_value):
+        """Filter vessel type options based on search value."""
+        vessels = controls_emissions["vessel_types"]
+        if not search_value:
+            filtered = vessels
+        else:
+            filtered = [v for v in vessels if search_value.lower() in v.lower()]
+        return [{"label": v, "value": v} for v in filtered]
+
 
     @app.callback(
         [

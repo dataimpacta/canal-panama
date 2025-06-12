@@ -59,6 +59,15 @@ def build_vessel_type_checklist(vessel_types):
             )
         ], style={"marginBottom": "0.5rem"}),
 
+        dbc.Input(
+            id="emissions--search--vessel",
+            type="text",
+            placeholder="Search vessel type",
+            debounce=True,
+            size="sm",
+            style={"marginBottom": "0.5rem"},
+        ),
+
         html.Div(
             dbc.Checklist(
                 id="emissions--checklist--vessel",
