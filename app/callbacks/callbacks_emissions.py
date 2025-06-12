@@ -31,6 +31,24 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         elif triggered_id == "emissions--btn--vessel-clear":
             return []
 
+    @app.callback(
+        Output("emissions--range--date", "marks"),
+        Input("emissions--range--date", "value"),
+    )
+    def update_date_marks(selected_range):
+        """Display the currently selected year-month range on the slider."""
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][selected_range[0]]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][selected_range[1]]
+
+        def _fmt(ym):
+            ym = str(ym)
+            return f"{ym[:4]}-{ym[4:]}"
+
+        return {
+            selected_range[0]: _fmt(start_ym),
+            selected_range[1]: _fmt(end_ym)
+        }
+
 
     @app.callback(
         [
