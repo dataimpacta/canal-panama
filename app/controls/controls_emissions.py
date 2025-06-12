@@ -18,28 +18,37 @@ def build_message_box():
         )
 
 def build_date_range_slider(date_range):
-    """
-    Build a date range slider for the emissions dashboard.
-    Args:
-        date_range (dict): A dictionary containing the min and max indices
-                           for the date range slider, and a list of unique
-                           year-month strings.
+    """Build dropdowns to select a start and end date."""
 
-    Returns:
-        dcc.RangeSlider: A Dash RangeSlider component for selecting a date range.
-    """
-    return dcc.RangeSlider(
-        id="emissions--range--date",
-        min=date_range["min_index"],
-        max=date_range["max_index"],
-        value=[date_range["min_index"], date_range["max_index"]],
-        marks={
-            date_range["min_index"]: str(date_range["unique_year_months"][0]),
-            date_range["max_index"]: str(date_range["unique_year_months"][-1])
-        },
-        step=1,
-        allowCross=False
+    def _fmt(ym):
+        ym = str(ym)
+        return f"{ym[:4]}-{ym[4:]}"
+
+    options = [
+        {"label": _fmt(ym), "value": idx}
+        for idx, ym in enumerate(date_range["unique_year_months"])
+    ]
+
+    start_dropdown = dcc.Dropdown(
+        id="emissions--start-date",
+        options=options,
+        value=date_range["min_index"],
+        clearable=False,
+        className="mb-2",
     )
+
+    end_dropdown = dcc.Dropdown(
+        id="emissions--end-date",
+        options=options,
+        value=date_range["max_index"],
+        clearable=False,
+    )
+
+    return html.Div([
+        start_dropdown,
+        end_dropdown,
+        html.Div(id="emissions--range-label", className="text-center mt-2"),
+    ])
 
 def build_vessel_type_checklist(vessel_types):
     return html.Div([

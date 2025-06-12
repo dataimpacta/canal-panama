@@ -49,6 +49,42 @@ def setup_waiting_times_callbacks(app, df, controls):
         elif triggered_id == "time--btn--stop-area-clear":
             return []
 
+    @app.callback(
+        Output("time--start-date", "value"),
+        Output("time--end-date", "value"),
+        Input("time--start-date", "value"),
+        Input("time--end-date", "value"),
+        prevent_initial_call=True,
+    )
+    def validate_date_range(start_idx, end_idx):
+        """Ensure the start date is not after the end date."""
+        if start_idx is None:
+            start_idx = controls["date_range"]["min_index"]
+        if end_idx is None:
+            end_idx = controls["date_range"]["max_index"]
+        if start_idx > end_idx:
+            if ctx.triggered_id == "time--start-date":
+                start_idx = end_idx
+            else:
+                end_idx = start_idx
+        return start_idx, end_idx
+
+    @app.callback(
+        Output("time--range-label", "children"),
+        Input("time--start-date", "value"),
+        Input("time--end-date", "value"),
+    )
+    def update_date_label(start_idx, end_idx):
+        """Show the selected year-month range below the dropdowns."""
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        def _fmt(ym: int) -> str:
+            ym = str(ym)
+            return f"{ym[:4]}-{ym[4:]}"
+
+        return f"{_fmt(start_ym)} to {_fmt(end_ym)}"
+
 
     @app.callback(
         [
@@ -61,15 +97,16 @@ def setup_waiting_times_callbacks(app, df, controls):
         Input("emissions--btn--refresh", "n_clicks"),
         [
             State("chart-tabs-store", "value"),
-            State("time--range--date", "value"),
+            State("time--start-date", "value"),
+            State("time--end-date", "value"),
             State("time--checklist--vessel", "value"),
             State("time--checklist--stop-area", "value")
         ]
     )
-    def update_charts(_n_clicks, current_tab, selected_date_range, selected_vessels, selected_areas):
+    def update_charts(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
         time_col = "waiting_time" if current_tab == "waiting" else "service_time"
-        start_ym = controls["date_range"]["index_to_year_month"][selected_date_range[0]]
-        end_ym = controls["date_range"]["index_to_year_month"][selected_date_range[1]]
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
 
         filtered_df = df[
             (df["year_month"] >= start_ym) &
