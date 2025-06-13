@@ -49,21 +49,36 @@ def setup_waiting_times_callbacks(app, df, controls):
 
 
     @app.callback(
+        Output("time--checklist--stop-area", "options"),
         Output("time--checklist--stop-area", "value"),
         Input("time--btn--stop-area-select", "n_clicks"),
         Input("time--btn--stop-area-clear", "n_clicks"),
-        prevent_initial_call=True
+        Input("time--input--stop-area-search", "value"),
+        State("time--checklist--stop-area", "value"),
+        prevent_initial_call=True,
     )
-    def update_checklist_stop_area(_select_all_clicks, _clear_all_clicks):
-        """
-        Updates the checklist based on button clicks.
-        """
-        triggered_id = ctx.triggered_id
+    def update_checklist_stop_area(_select_all_clicks, _clear_all_clicks,
+                                   search_value, selected_values):
+        """Update stop area checklist options and values."""
+        stop_areas = controls["stop_area"]
 
+        if search_value:
+            search_value = search_value.lower()
+            filtered = [a for a in stop_areas if search_value in a.lower()]
+        else:
+            filtered = stop_areas
+
+        options = [{"label": a, "value": a} for a in filtered]
+
+        triggered_id = ctx.triggered_id
         if triggered_id == "time--btn--stop-area-select":
-            return list(controls["stop_area"])
+            new_selected = list(filtered)
         elif triggered_id == "time--btn--stop-area-clear":
-            return []
+            new_selected = []
+        else:
+            new_selected = selected_values
+
+        return options, new_selected
 
     @app.callback(
         Output("time--start-date", "value"),
