@@ -42,7 +42,8 @@ def setup_waiting_times_callbacks(app, df, controls):
         elif triggered_id == "time--btn--vessel-clear":
             new_selected = []
         else:
-            new_selected = [v for v in selected_values if v in filtered]
+            # Preserve existing selections even if not currently visible
+            new_selected = selected_values
 
         return options, new_selected
 
