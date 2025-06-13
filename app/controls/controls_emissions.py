@@ -72,7 +72,7 @@ def build_vessel_type_checklist(vessel_types):
             id="emissions--input--vessel-search",
             type="text",
             placeholder="Search vessel type",
-            debounce=True,
+            debounce=False,
             className="form-control mb-2"
         ),
 

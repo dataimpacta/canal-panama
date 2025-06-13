@@ -74,7 +74,7 @@ def build_vessel_type_checklist(vessel_types):
             id="time--input--vessel-search",
             type="text",
             placeholder="Search vessel type",
-            debounce=True,
+            debounce=False,
             className="form-control mb-2"
         ),
 
@@ -116,6 +116,14 @@ def build_stop_area_checklist(vessel_types):
                 style={"color": "#007bff", "cursor": "pointer"}
             )
         ], style={"marginBottom": "0.5rem"}),
+
+        dcc.Input(
+            id="time--input--stop-area-search",
+            type="text",
+            placeholder="Search stop area",
+            debounce=False,
+            className="form-control mb-2",
+        ),
 
         html.Div(
             dbc.Checklist(
