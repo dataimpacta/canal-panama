@@ -84,3 +84,9 @@ h1 {
 .chart-title-tooltip:hover {
     text-decoration: underline;
 }
+
+.info-icon {
+    margin-left: 4px;
+    cursor: pointer;
+    color: #0d6efd;
+}
