@@ -190,7 +190,7 @@ def create_standard_chart_container(chart):
             dbc.Row([
                 dbc.Col([
                     html.Span(
-                        chart["title"],
+                        chart["title"] + " ",
                         style={
                             "fontWeight": "bold",
                             "color": "#333",
