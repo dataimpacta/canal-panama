@@ -191,15 +191,15 @@ def create_standard_chart_container(chart):
                 dbc.Col([
                     html.Span(
                         chart["title"],
-                        id=f"title-tooltip-{chart['id']}",
                         style={
                             "fontWeight": "bold",
                             "color": "#333",
-                            "fontSize": "1.1rem",
-                            "cursor": "help",
-                            "textDecoration": "none"
+                            "fontSize": "1.1rem"
                         },
-                        className="chart-title-tooltip"  # style in CSS
+                    ),
+                    html.I(
+                        className="bi bi-info-circle-fill info-icon",
+                        id=f"title-tooltip-{chart['id']}"
                     ),
                     dbc.Tooltip(
                         chart.get("description", "No description available."),
