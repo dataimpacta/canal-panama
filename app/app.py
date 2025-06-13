@@ -9,6 +9,29 @@ import time
 import logging
 from io import StringIO
 
+PRIORITY_VESSEL_TYPES = [
+    "Bulk Carrier",
+    "Container",
+    "Oil tanker",
+    "Chemical tanker",
+    "Liquified gas tanker",
+]
+
+PRIORITY_STOP_AREAS = [
+    "PPC Balboa",
+    "MIT",
+    "Panama Canal South Transit",
+    "Panama Canal North Transit",
+]
+
+
+def reorder_with_priority(options, priority):
+    """Return ``options`` with ``priority`` values at the front."""
+    options = list(options)
+    priority_items = [p for p in priority if p in options]
+    remaining = [o for o in options if o not in priority_items]
+    return priority_items + remaining
+
 # ========== Third-Party Libraries ==========
 import dash
 import dash_bootstrap_components as dbc
@@ -91,7 +114,9 @@ def prepare_emissions_controls(df):
     """
 
     # Vessel types
-    vessel_types = df['StandardVesselType'].unique()
+    vessel_types = reorder_with_priority(
+        df['StandardVesselType'].unique(), PRIORITY_VESSEL_TYPES
+    )
 
     # Date slider values
     unique_year_months = sorted(df["year_month"].unique())
@@ -117,8 +142,12 @@ def prepare_waiting_time_controls(df):
     """
 
     # Vessel types
-    vessel_types = df['StandardVesselType'].unique()
-    stop_area = df['stop_area'].unique()
+    vessel_types = reorder_with_priority(
+        df['StandardVesselType'].unique(), PRIORITY_VESSEL_TYPES
+    )
+    stop_area = reorder_with_priority(
+        df['stop_area'].unique(), PRIORITY_STOP_AREAS
+    )
 
     # Date slider values
     unique_year_months = sorted(df["year_month"].unique())
