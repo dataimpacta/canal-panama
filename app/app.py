@@ -213,9 +213,11 @@ geojson_template = create_geojson_template(unique_polygons_gdf)
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
-app = dash.Dash(__name__,
-                external_stylesheets=[dbc.themes.BOOTSTRAP],
-                suppress_callback_exceptions=True)
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
+    suppress_callback_exceptions=True
+)
 server = app.server
 
 app.layout = layout.build_main_layout()
