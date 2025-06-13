@@ -15,38 +15,35 @@ def setup_waiting_times_callbacks(app, df, controls):
     These are the callbacks for the emissions dashboard.
     """
     @app.callback(
+        Output("time--checklist--vessel", "options"),
         Output("time--checklist--vessel", "value"),
         Input("time--btn--vessel-select", "n_clicks"),
         Input("time--btn--vessel-clear", "n_clicks"),
-        prevent_initial_call=True
-    )
-    def update_checklist_vessel(_select_all_clicks, _clear_all_clicks):
-        """
-        Updates the checklist based on button clicks.
-        """
-        triggered_id = ctx.triggered_id
-
-        if triggered_id == "time--btn--vessel-select":
-            return list(controls["vessel_types"])
-        elif triggered_id == "time--btn--vessel-clear":
-            return []
-
-    @app.callback(
-        Output("time--checklist--vessel", "options"),
-        Output("time--checklist--vessel", "value"),
         Input("time--input--vessel-search", "value"),
         State("time--checklist--vessel", "value"),
+        prevent_initial_call=True,
     )
-    def filter_vessel_options(search_value, selected_values):
-        """Filter vessel checklist options based on search string."""
+    def update_vessel_checklist(_select_all_clicks, _clear_all_clicks,
+                                search_value, selected_values):
+        """Update vessel checklist options and selected values."""
         vessel_types = controls["vessel_types"]
+
         if search_value:
             search_value = search_value.lower()
             filtered = [v for v in vessel_types if search_value in v.lower()]
         else:
             filtered = vessel_types
+
         options = [{"label": v, "value": v} for v in filtered]
-        new_selected = [v for v in selected_values if v in filtered]
+
+        triggered_id = ctx.triggered_id
+        if triggered_id == "time--btn--vessel-select":
+            new_selected = list(filtered)
+        elif triggered_id == "time--btn--vessel-clear":
+            new_selected = []
+        else:
+            new_selected = [v for v in selected_values if v in filtered]
+
         return options, new_selected
 
 
