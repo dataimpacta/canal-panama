@@ -42,7 +42,8 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         elif triggered_id == "emissions--btn--vessel-clear":
             new_selected = []
         else:
-            new_selected = [v for v in selected_values if v in filtered]
+            # Preserve existing selections even if not currently visible
+            new_selected = selected_values
 
         return options, new_selected
 
