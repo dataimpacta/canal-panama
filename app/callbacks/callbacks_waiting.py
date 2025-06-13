@@ -15,39 +15,70 @@ def setup_waiting_times_callbacks(app, df, controls):
     These are the callbacks for the emissions dashboard.
     """
     @app.callback(
+        Output("time--checklist--vessel", "options"),
         Output("time--checklist--vessel", "value"),
         Input("time--btn--vessel-select", "n_clicks"),
         Input("time--btn--vessel-clear", "n_clicks"),
-        prevent_initial_call=True
+        Input("time--input--vessel-search", "value"),
+        State("time--checklist--vessel", "value"),
+        prevent_initial_call=True,
     )
-    def update_checklist_vessel(_select_all_clicks, _clear_all_clicks):
-        """
-        Updates the checklist based on button clicks.
-        """
-        triggered_id = ctx.triggered_id
+    def update_vessel_checklist(_select_all_clicks, _clear_all_clicks,
+                                search_value, selected_values):
+        """Update vessel checklist options and selected values."""
+        vessel_types = controls["vessel_types"]
 
+        if search_value:
+            search_value = search_value.lower()
+            filtered = [v for v in vessel_types if search_value in v.lower()]
+        else:
+            filtered = vessel_types
+
+        options = [{"label": v, "value": v} for v in filtered]
+
+        triggered_id = ctx.triggered_id
         if triggered_id == "time--btn--vessel-select":
-            return list(controls["vessel_types"])
+            new_selected = list(filtered)
         elif triggered_id == "time--btn--vessel-clear":
-            return []
+            new_selected = []
+        else:
+            # Preserve existing selections even if not currently visible
+            new_selected = selected_values
+
+        return options, new_selected
 
 
     @app.callback(
+        Output("time--checklist--stop-area", "options"),
         Output("time--checklist--stop-area", "value"),
         Input("time--btn--stop-area-select", "n_clicks"),
         Input("time--btn--stop-area-clear", "n_clicks"),
-        prevent_initial_call=True
+        Input("time--input--stop-area-search", "value"),
+        State("time--checklist--stop-area", "value"),
+        prevent_initial_call=True,
     )
-    def update_checklist_stop_area(_select_all_clicks, _clear_all_clicks):
-        """
-        Updates the checklist based on button clicks.
-        """
-        triggered_id = ctx.triggered_id
+    def update_checklist_stop_area(_select_all_clicks, _clear_all_clicks,
+                                   search_value, selected_values):
+        """Update stop area checklist options and values."""
+        stop_areas = controls["stop_area"]
 
+        if search_value:
+            search_value = search_value.lower()
+            filtered = [a for a in stop_areas if search_value in a.lower()]
+        else:
+            filtered = stop_areas
+
+        options = [{"label": a, "value": a} for a in filtered]
+
+        triggered_id = ctx.triggered_id
         if triggered_id == "time--btn--stop-area-select":
-            return list(controls["stop_area"])
+            new_selected = list(filtered)
         elif triggered_id == "time--btn--stop-area-clear":
-            return []
+            new_selected = []
+        else:
+            new_selected = selected_values
+
+        return options, new_selected
 
     @app.callback(
         Output("time--start-date", "value"),
