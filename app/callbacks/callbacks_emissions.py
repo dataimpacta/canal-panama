@@ -15,21 +15,37 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
     These are the callbacks for the emissions dashboard.
     """
     @app.callback(
+        Output("emissions--checklist--vessel", "options"),
         Output("emissions--checklist--vessel", "value"),
         Input("emissions--btn--vessel-select", "n_clicks"),
         Input("emissions--btn--vessel-clear", "n_clicks"),
-        prevent_initial_call=True
+        Input("emissions--input--vessel-search", "value"),
+        State("emissions--checklist--vessel", "value"),
+        prevent_initial_call=True,
     )
-    def update_checklist(_select_all_clicks, _clear_all_clicks):
-        """
-        Updates the checklist based on button clicks.
-        """
-        triggered_id = ctx.triggered_id
+    def update_vessel_checklist(_select_all_clicks, _clear_all_clicks,
+                                search_value, selected_values):
+        """Update vessel checklist options and selected values."""
+        vessel_types = controls_emissions["vessel_types"]
 
+        if search_value:
+            search_value = search_value.lower()
+            filtered = [v for v in vessel_types if search_value in v.lower()]
+        else:
+            filtered = vessel_types
+
+        options = [{"label": v, "value": v} for v in filtered]
+
+        triggered_id = ctx.triggered_id
         if triggered_id == "emissions--btn--vessel-select":
-            return list(controls_emissions["vessel_types"])
+            new_selected = list(filtered)
         elif triggered_id == "emissions--btn--vessel-clear":
-            return []
+            new_selected = []
+        else:
+            # Preserve existing selections even if not currently visible
+            new_selected = selected_values
+
+        return options, new_selected
 
     @app.callback(
         Output("emissions--start-date", "value"),
