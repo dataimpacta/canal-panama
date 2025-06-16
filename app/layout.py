@@ -232,13 +232,12 @@ def build_chart_grid(chart_items):
                 dbc.Col(
                     create_standard_chart_container(item),
                     xs=12, sm=12, md=6, lg=6, xl=6)
-            for item in chart_items[i:i+2]
-        ],
-        class_name="g-2 mt-0 me-2 ms-2"))
-
+                for item in chart_items[i:i+2]
+            ],
+            class_name="g-2 mt-0 me-2 ms-2"))
         rows.append(row)
 
-    return html.Div(rows)
+    return html.Div(rows, id="tutorial-charts-target")
 
 
 # ===========================
@@ -254,20 +253,21 @@ def build_sidebar_emissions(controls):
         - Vessel type checklist
     - Refresh button
     """
+    accordion = dbc.Accordion([
+        dbc.AccordionItem(
+            [controls_emissions.build_date_range_slider(controls["date_range"])],
+            title="Date Range",
+        ),
+        dbc.AccordionItem(
+            [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
+            title="Vessel Type",
+        ),
+    ], id="tutorial-filters-target")
     return dbc.Col([
         controls_emissions.build_message_box(),
-        dbc.Accordion([
-            dbc.AccordionItem(
-                [controls_emissions.build_date_range_slider(controls["date_range"])],
-                title="Date Range"
-            ),
-            dbc.AccordionItem(
-                [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
-                title="Vessel Type"
-            )
-        ]),
+        accordion,
         html.Br(),
-        controls_emissions.build_button_refresh_charts()
+        controls_emissions.build_button_refresh_charts(),
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
@@ -288,7 +288,7 @@ def build_main_container_emissions():
         build_chart_grid([
             {
                 "id": "emissions--chart--1",
-                "title": "Total Emissions", 
+                "title": "Total Emissions",
                 "subtitle": "TONNES CO2-eq",
                 "description": "This is the description for total emissions."
             },
@@ -410,10 +410,47 @@ def build_main_container_service_times():
 
 
 
+def build_tutorial_components():
+    return html.Div([
+        dcc.Store(id="tutorial-store", storage_type="local"),
+        dbc.Modal([
+            dbc.ModalHeader("Welcome to the Dashboard"),
+            dbc.ModalBody(
+                "Use the filters and charts to explore the data.",
+                style={"backgroundColor": "#f8f9fa"},
+            ),
+            dbc.ModalFooter(
+                dbc.Button("Start", id="btn-tutorial-start", color="primary")
+            ),
+        ], id="modal-welcome", backdrop="static", is_open=False),
+        dbc.Popover([
+            dbc.PopoverHeader("Filters"),
+            dbc.PopoverBody(
+                [
+                    html.P("You can move the filters to change the data."),
+                    dbc.Button("Next", id="btn-tutorial-next-filters", size="sm", color="primary", className="mt-2"),
+                ],
+                style={"backgroundColor": "#f8f9fa"},
+            ),
+        ], id="popover-filters", target="tutorial-filters-target", placement="right", is_open=False),
+        dbc.Popover([
+            dbc.PopoverHeader("Charts"),
+            dbc.PopoverBody(
+                [
+                    html.P("Look at the charts to see the information."),
+                    dbc.Button("Done", id="btn-tutorial-done", size="sm", color="primary", className="mt-2"),
+                ],
+                style={"backgroundColor": "#f8f9fa"},
+            ),
+        ], id="popover-charts", target="tutorial-charts-target", placement="left", is_open=False),
+    ])
+
+
 
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        build_tutorial_components(),
         build_header(),
         #build_navigation_bar(),  # This has id="chart-tabs"
         html.Div(id="tab-content"),  # ✅ Dynamic container for tab-specific layout
