@@ -1,7 +1,6 @@
 """Callbacks for the explorer tab."""
 
 from dash import Input, Output, State, dcc, ctx
-
 from charts import charts_explorer
 
 
@@ -67,7 +66,7 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
         summary = filtered.groupby("year_month")[value_col].sum().reset_index()
         summary["date"] = summary["year_month"].astype(str).str.slice(0, 4) + "-" + summary["year_month"].astype(str).str.slice(4, 6)
         fig = charts_explorer.plot_line_chart(summary, value_col)
-        table = filtered.head(5)
+        table = filtered.head(6)
         columns = [{"name": c.replace("_", " ").title(), "id": c} for c in table.columns]
         return fig, table.to_dict("records"), columns
 
