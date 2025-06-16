@@ -200,7 +200,8 @@ def create_standard_chart_container(chart):
                     ),
                     html.I(
                         className="bi bi-info-circle-fill info-icon",
-                        id=f"title-tooltip-{chart['id']}"
+                        id=f"title-tooltip-{chart['id']}",
+                        style={"cursor": "pointer", "color": "#666"}
                     ),
                     dbc.Tooltip(
                         chart.get("description", "No description available."),
@@ -223,8 +224,9 @@ def create_standard_chart_container(chart):
 
 
 def create_standard_table_container(table):
-    """Container for data tables with title and subtitle."""
+    """Container for data tables with title, subtitle, and clean styling."""
     return html.Div([
+        # Title + Tooltip
         html.Div([
             dbc.Row([
                 dbc.Col([
@@ -234,11 +236,13 @@ def create_standard_table_container(table):
                             "fontWeight": "bold",
                             "color": "#333",
                             "fontSize": "1.1rem",
+                            "fontFamily": "system-ui, sans-serif",
                         },
                     ),
                     html.I(
                         className="bi bi-info-circle-fill info-icon",
                         id=f"title-tooltip-{table['id']}",
+                        style={"cursor": "pointer", "color": "#666"}
                     ),
                     dbc.Tooltip(
                         table.get("description", "No description available."),
@@ -249,15 +253,43 @@ def create_standard_table_container(table):
                 ], width="auto")
             ], className="align-items-center g-1"),
 
-            html.P(table["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"}),
+            html.P(table["subtitle"], className="mb-2", style={
+                "fontSize": "0.85rem",
+                "color": "#666",
+                "marginTop": "0.25rem",
+                "fontFamily": "system-ui, sans-serif"
+            }),
         ]),
 
+        # Table with custom styling
         dcc.Loading(
             id=f"loading-{table['id']}",
             type="circle",
-            children=dash_table.DataTable(id=table["id"]),
-        ),
-    ], className="border rounded p-4 m-0 g-0")
+            children=html.Div(
+                dash_table.DataTable(
+                    id=table["id"],
+                    style_cell={
+                        "fontFamily": "system-ui, sans-serif",
+                        "fontSize": "0.9rem",
+                        "padding": "8px 12px",
+                        "whiteSpace": "nowrap",
+                        "textAlign": "left"
+                    },
+                    style_header={
+                        "backgroundColor": "#f8f9fa",
+                        "fontWeight": "bold",
+                        "borderBottom": "1px solid #dee2e6"
+                    },
+                    style_table={
+                        "overflowX": "auto"
+                    },
+                    style_data={
+                        "borderBottom": "1px solid #eee"
+                    }
+                )
+            )
+        )
+    ], className="border rounded p-4 m-0 g-0")  
 
 def build_chart_grid(chart_items):
     """

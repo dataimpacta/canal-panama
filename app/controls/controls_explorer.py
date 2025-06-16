@@ -54,7 +54,7 @@ def build_download_modal():
             dbc.ModalHeader("Download Data"),
             dbc.ModalBody(
                 [
-                    dbc.Input(id="explorer--field-name", placeholder="Name and LastName", type="text", className="mb-2"),
+                    dbc.Input(id="explorer--field-name", placeholder="Name and Last Name", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
