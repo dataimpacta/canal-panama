@@ -1,4 +1,5 @@
-from dash import Input, Output, State, callback, ctx, no_update
+from dash import Input, Output, State, callback, ctx, no_update, ALL
+import json
 from dash.exceptions import PreventUpdate
 
 
@@ -8,46 +9,25 @@ def setup_fullscreen_callbacks(app):
     @app.callback(
         Output("fullscreen-modal", "is_open"),
         Output("fullscreen-modal-graph", "figure"),
-        Input("emissions--chart--1-expand", "n_clicks"),
-        Input("emissions--chart--2-expand", "n_clicks"),
-        Input("emissions--chart--3-expand", "n_clicks"),
-        Input("emissions--chart--4-expand", "n_clicks"),
-        Input("time--chart--1-expand", "n_clicks"),
-        Input("time--chart--2-expand", "n_clicks"),
-        Input("time--chart--3-expand", "n_clicks"),
-        Input("time--chart--4-expand", "n_clicks"),
+        Input({"type": "expand-btn", "id": ALL}, "n_clicks"),
         Input("close-fullscreen", "n_clicks"),
-        State("emissions--chart--1", "figure"),
-        State("emissions--chart--2", "figure"),
-        State("emissions--chart--3", "figure"),
-        State("emissions--chart--4", "figure"),
-        State("time--chart--1", "figure"),
-        State("time--chart--2", "figure"),
-        State("time--chart--3", "figure"),
-        State("time--chart--4", "figure"),
+        State({"type": "chart", "id": ALL}, "figure"),
         prevent_initial_call=True,
     )
-    def toggle_fullscreen(*args):
+    def toggle_fullscreen(expand_clicks, close_click, figures):
         triggered = ctx.triggered_id
-        if not triggered:
-            raise PreventUpdate
-
-        figures = args[9:]
-
-        if triggered == "close-fullscreen":
+        if triggered == "close-fullscreen" or triggered is None:
             return False, no_update
 
-        btn_to_fig = {
-            "emissions--chart--1-expand": figures[0],
-            "emissions--chart--2-expand": figures[1],
-            "emissions--chart--3-expand": figures[2],
-            "emissions--chart--4-expand": figures[3],
-            "time--chart--1-expand": figures[4],
-            "time--chart--2-expand": figures[5],
-            "time--chart--3-expand": figures[6],
-            "time--chart--4-expand": figures[7],
-        }
-        if triggered in btn_to_fig:
-            return True, btn_to_fig[triggered]
+        if isinstance(triggered, dict) and triggered.get("type") == "expand-btn":
+            chart_id = triggered["id"]
 
-        return no_update, no_update
+            state_map = {
+                json.loads(k.split(".")[0])["id"]: v
+                for k, v in ctx.states.items()
+            }
+
+            if chart_id in state_map:
+                return True, state_map[chart_id]
+
+        raise PreventUpdate

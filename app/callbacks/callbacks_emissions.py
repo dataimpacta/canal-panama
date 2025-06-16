@@ -86,10 +86,10 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
 
     @app.callback(
         [
-            Output("emissions--chart--1", "figure"),
-            Output("emissions--chart--2", "figure"),
-            Output("emissions--chart--3", "figure"),
-            Output("emissions--chart--4", "figure"),
+            Output({"type": "chart", "id": "emissions--chart--1"}, "figure"),
+            Output({"type": "chart", "id": "emissions--chart--2"}, "figure"),
+            Output({"type": "chart", "id": "emissions--chart--3"}, "figure"),
+            Output({"type": "chart", "id": "emissions--chart--4"}, "figure"),
             Output("emissions--kpi--1", "children"),
             Output("modal-no-data", "is_open"),
         ],

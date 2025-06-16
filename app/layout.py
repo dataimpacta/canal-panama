@@ -211,7 +211,7 @@ def create_standard_chart_container(chart):
                 dbc.Col(
                     dbc.Button(
                         html.I(className="bi bi-arrows-fullscreen"),
-                        id=f"{chart['id']}-expand",
+                        id={"type": "expand-btn", "id": chart["id"]},
                         color="link",
                         className="p-0 ms-auto"
                     ),
@@ -226,7 +226,7 @@ def create_standard_chart_container(chart):
         dcc.Loading(
             id=f"loading-{chart['id']}",
             type="circle",
-            children=dcc.Graph(id=chart["id"])
+            children=dcc.Graph(id={"type": "chart", "id": chart["id"]})
         )
     ], className="border rounded p-4 m-0 g-0")
 

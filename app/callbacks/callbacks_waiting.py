@@ -119,10 +119,10 @@ def setup_waiting_times_callbacks(app, df, controls):
 
     @app.callback(
         [
-            Output("time--chart--1", "figure"),
-            Output("time--chart--2", "figure"),
-            Output("time--chart--3", "figure"),
-            Output("time--chart--4", "figure"),
+            Output({"type": "chart", "id": "time--chart--1"}, "figure"),
+            Output({"type": "chart", "id": "time--chart--2"}, "figure"),
+            Output({"type": "chart", "id": "time--chart--3"}, "figure"),
+            Output({"type": "chart", "id": "time--chart--4"}, "figure"),
             Output("time--modal--no-data", "is_open")
         ],
         Input("emissions--btn--refresh", "n_clicks"),
