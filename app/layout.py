@@ -181,7 +181,7 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
 
 
 
-def create_standard_chart_container(chart):
+def create_standard_chart_container(chart, container_id=None):
     """
     Create the standard HTML DIV for the charts with a title, subtitle, and tooltip on the title.
     """
@@ -218,7 +218,7 @@ def create_standard_chart_container(chart):
             type="circle",
             children=dcc.Graph(id=chart["id"])
         )
-    ], className="border rounded p-4 m-0 g-0")
+    ], id=container_id, className="border rounded p-4 m-0 g-0")
 
 def build_chart_grid(chart_items):
     """
@@ -226,16 +226,23 @@ def build_chart_grid(chart_items):
     - Separation between columns
     """
     rows = []
+    tutorial_assigned = False
     for i in range(0, len(chart_items), 2):
-        row = html.Div(
-            dbc.Row([
+        cols = []
+        for item in chart_items[i:i+2]:
+            container_id = None
+            if not tutorial_assigned:
+                container_id = "tutorial-charts-target"
+                tutorial_assigned = True
+            cols.append(
                 dbc.Col(
-                    create_standard_chart_container(item),
-                    xs=12, sm=12, md=6, lg=6, xl=6)
-            for item in chart_items[i:i+2]
-        ],
-        class_name="g-2 mt-0 me-2 ms-2"))
-
+                    create_standard_chart_container(item, container_id=container_id),
+                    xs=12, sm=12, md=6, lg=6, xl=6,
+                )
+            )
+        row = html.Div(
+            dbc.Row(cols, class_name="g-2 mt-0 me-2 ms-2")
+        )
         rows.append(row)
 
     return html.Div(rows)
@@ -254,21 +261,22 @@ def build_sidebar_emissions(controls):
         - Vessel type checklist
     - Refresh button
     """
+    accordion = dbc.Accordion([
+        dbc.AccordionItem(
+            [controls_emissions.build_date_range_slider(controls["date_range"])],
+            title="Date Range",
+        ),
+        dbc.AccordionItem(
+            [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
+            title="Vessel Type",
+        ),
+    ], id="tutorial-filters-target")
     return dbc.Col([
         controls_emissions.build_message_box(),
-        dbc.Accordion([
-            dbc.AccordionItem(
-                [controls_emissions.build_date_range_slider(controls["date_range"])],
-                title="Date Range"
-            ),
-            dbc.AccordionItem(
-                [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
-                title="Vessel Type"
-            )
-        ]),
+        accordion,
         html.Br(),
-        controls_emissions.build_button_refresh_charts()
-    ], id="tutorial-filters-target", className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+        controls_emissions.build_button_refresh_charts(),
+    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
 def build_main_container_emissions():
@@ -305,7 +313,7 @@ def build_main_container_emissions():
                 "title": "Emissions by Type of Vessel", 
                 "subtitle": "TONNES CO2-eq"},
         ])
-        ], id="tutorial-charts-target", className="p-0", xs=12, md=12, lg=10, width=10)
+        ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
 def build_sidebar_waiting_times(controls):
@@ -415,24 +423,33 @@ def build_tutorial_components():
         dcc.Store(id="tutorial-store", storage_type="local"),
         dbc.Modal([
             dbc.ModalHeader("Welcome to the Dashboard"),
-            dbc.ModalBody("Use the filters and charts to explore the data."),
+            dbc.ModalBody(
+                "Use the filters and charts to explore the data.",
+                style={"backgroundColor": "#f8f9fa"},
+            ),
             dbc.ModalFooter(
                 dbc.Button("Start", id="btn-tutorial-start", color="primary")
             ),
         ], id="modal-welcome", backdrop="static", is_open=False),
         dbc.Popover([
             dbc.PopoverHeader("Filters"),
-            dbc.PopoverBody([
-                html.P("You can move the filters to change the data."),
-                dbc.Button("Next", id="btn-tutorial-next-filters", size="sm", color="primary", className="mt-2"),
-            ]),
+            dbc.PopoverBody(
+                [
+                    html.P("You can move the filters to change the data."),
+                    dbc.Button("Next", id="btn-tutorial-next-filters", size="sm", color="primary", className="mt-2"),
+                ],
+                style={"backgroundColor": "#f8f9fa"},
+            ),
         ], id="popover-filters", target="tutorial-filters-target", placement="right", is_open=False),
         dbc.Popover([
             dbc.PopoverHeader("Charts"),
-            dbc.PopoverBody([
-                html.P("Look at the charts to see the information."),
-                dbc.Button("Done", id="btn-tutorial-done", size="sm", color="primary", className="mt-2"),
-            ]),
+            dbc.PopoverBody(
+                [
+                    html.P("Look at the charts to see the information."),
+                    dbc.Button("Done", id="btn-tutorial-done", size="sm", color="primary", className="mt-2"),
+                ],
+                style={"backgroundColor": "#f8f9fa"},
+            ),
         ], id="popover-charts", target="tutorial-charts-target", placement="left", is_open=False),
     ])
 
