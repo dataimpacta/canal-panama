@@ -1,7 +1,7 @@
 # pylint: disable=import-error
 
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import html, dcc, dash_table
 
 from charts import charts_emissions
 from controls import controls_explorer
@@ -221,6 +221,44 @@ def create_standard_chart_container(chart):
         )
     ], className="border rounded p-4 m-0 g-0")
 
+
+def create_standard_table_container(table):
+    """Container for data tables with title and subtitle."""
+    return html.Div([
+        html.Div([
+            dbc.Row([
+                dbc.Col([
+                    html.Span(
+                        table["title"] + " ",
+                        style={
+                            "fontWeight": "bold",
+                            "color": "#333",
+                            "fontSize": "1.1rem",
+                        },
+                    ),
+                    html.I(
+                        className="bi bi-info-circle-fill info-icon",
+                        id=f"title-tooltip-{table['id']}",
+                    ),
+                    dbc.Tooltip(
+                        table.get("description", "No description available."),
+                        target=f"title-tooltip-{table['id']}",
+                        placement="right",
+                        style={"maxWidth": "300px"},
+                    ),
+                ], width="auto")
+            ], className="align-items-center g-1"),
+
+            html.P(table["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"}),
+        ]),
+
+        dcc.Loading(
+            id=f"loading-{table['id']}",
+            type="circle",
+            children=dash_table.DataTable(id=table["id"]),
+        ),
+    ], className="border rounded p-4 m-0 g-0")
+
 def build_chart_grid(chart_items):
     """
     Build the chart grid with a list of chart items.
@@ -421,6 +459,7 @@ def build_sidebar_explorer(controls):
         ]),
         html.Br(),
         controls_explorer.build_download_button(),
+        controls_explorer.build_download_modal(),
         dcc.Download(id="explorer--download")
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
@@ -428,13 +467,24 @@ def build_sidebar_explorer(controls):
 def build_main_container_explorer():
     """Main container for the explorer tab."""
     return dbc.Col([
-        build_chart_grid([
-            {
-                "id": "explorer--chart",
-                "title": "Value Over Time",
-                "subtitle": ""
-            }
-        ])
+        dbc.Row([
+            dbc.Col(
+                create_standard_chart_container({
+                    "id": "explorer--chart",
+                    "title": "Value Over Time",
+                    "subtitle": "",
+                }),
+                xs=12, sm=12, md=6, lg=6, xl=6,
+            ),
+            dbc.Col(
+                create_standard_table_container({
+                    "id": "explorer--table",
+                    "title": "Sample Data",
+                    "subtitle": "First five rows",
+                }),
+                xs=12, sm=12, md=6, lg=6, xl=6,
+            ),
+        ], class_name="g-2 mt-0 me-2 ms-2"),
     ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
