@@ -107,7 +107,7 @@ def plot_line_chart_emissions_by_year_month(df):
     fig.update_layout(
         height=300,
 
-        dragmode=False,
+        dragmode="zoom",
 
         hovermode="x unified",
 
@@ -243,7 +243,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
 
     fig.update_layout(
         height=300,
-        dragmode=False,
+        dragmode="zoom",
         xaxis=dict(
             showgrid=False,
             type="category",

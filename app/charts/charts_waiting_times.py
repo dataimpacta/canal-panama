@@ -40,7 +40,7 @@ def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time"):
 
     fig.update_layout(
         height=300,
-        dragmode=False,
+        dragmode="zoom",
         hovermode="x unified",
         xaxis=dict(
             tickmode="array",
@@ -191,7 +191,7 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
 
         fig.update_layout(
             height=300,
-            dragmode=False,
+            dragmode="zoom",
             xaxis=dict(
                 type="category",
                 categoryorder="array",
