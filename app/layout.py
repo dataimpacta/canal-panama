@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc
 
 from charts import charts_emissions
+from controls import controls_explorer
 from controls import controls_emissions
 from controls import controls_time
 
@@ -403,6 +404,38 @@ def build_main_container_service_times():
                 "subtitle": "HOURS"},
         ])
         ], xs=12, md=12, lg=10, width=10)
+
+
+def build_sidebar_explorer(controls):
+    """Sidebar for the explorer tab."""
+    return dbc.Col([
+        dbc.Accordion([
+            dbc.AccordionItem(
+                [controls_explorer.build_source_dropdown(controls["sources"])],
+                title="Source"
+            ),
+            dbc.AccordionItem(
+                [controls_explorer.build_date_range_slider(controls["date_range"])],
+                title="Date Range"
+            )
+        ]),
+        html.Br(),
+        controls_explorer.build_download_button(),
+        dcc.Download(id="explorer--download")
+    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+
+
+def build_main_container_explorer():
+    """Main container for the explorer tab."""
+    return dbc.Col([
+        build_chart_grid([
+            {
+                "id": "explorer--chart",
+                "title": "Value Over Time",
+                "subtitle": ""
+            }
+        ])
+    ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
 
