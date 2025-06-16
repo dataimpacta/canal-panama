@@ -51,6 +51,7 @@ from h3.api.basic_int import cell_to_boundary
 
 from callbacks import callbacks_emissions
 from callbacks import callbacks_waiting
+from callbacks import callbacks_explorer
 
 import layout
 
@@ -167,6 +168,23 @@ def prepare_waiting_time_controls(df):
         }
     }
 
+
+def prepare_explorer_controls(df_emissions, df_waiting):
+    """Prepare controls for the explorer tab."""
+    all_months = sorted(set(df_emissions["year_month"]).union(df_waiting["year_month"]))
+    year_month_map = {ym: i for i, ym in enumerate(all_months)}
+    index_to_year_month = {i: ym for ym, i in year_month_map.items()}
+
+    return {
+        "sources": ["emissions", "waiting_time", "service_time"],
+        "date_range": {
+            "min_index": min(year_month_map.values()),
+            "max_index": max(year_month_map.values()),
+            "unique_year_months": all_months,
+            "index_to_year_month": index_to_year_month,
+        }
+    }
+
 # ========================== 3️⃣ READ & PREPROCESS DATA ==========================
 
 # ✅ Read the data
@@ -185,6 +203,7 @@ df_waiting_times["year_month"] = (
 ).astype(int)
 
 controls_waiting_times = prepare_waiting_time_controls(df_waiting_times)
+controls_explorer = prepare_explorer_controls(df_emissions, df_waiting_times)
 
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
@@ -235,6 +254,13 @@ callbacks_waiting.setup_waiting_times_callbacks(
     app,
     df_waiting_times,
     controls_waiting_times
+)
+
+callbacks_explorer.setup_explorer_callbacks(
+    app,
+    df_emissions,
+    df_waiting_times,
+    controls_explorer
 )
 
 @app.callback(
@@ -300,6 +326,10 @@ def update_tab_content(selected_tab):
     elif selected_tab == "explorer":
         return html.Div([
             nav_bar,
+            dbc.Row([
+                layout.build_sidebar_explorer(controls_explorer),
+                layout.build_main_container_explorer()
+            ], className="g-0")
         ])
     elif selected_tab == "about":
         return html.Div([
