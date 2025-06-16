@@ -152,7 +152,7 @@ def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time
     return fig
 
 
-def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_padding_pct=0.1, bottom_padding_pct=0.1):
+def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_padding_pct=0.2, bottom_padding_pct=0.1):
     fig = go.Figure()
 
     if df.empty or "StandardVesselType" not in df.columns:
