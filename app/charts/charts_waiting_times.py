@@ -4,14 +4,15 @@ This module contains functions to create the charts related to emissions data.
 
 import plotly.graph_objects as go
 
-def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time"):
+def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time", top_padding_pct=0.1, bottom_padding_pct=0.1):
     """
     Function to create a line chart of waiting times by year and month.
     """
     fig = go.Figure()
 
     last_year = df['year'].max()
-    #y_max = df['waiting_time'].max()
+    y_max = df[value_column].max()
+    y_min = df[value_column].min()
 
     line_general_color = "#757575"
     line_general_width = 2
@@ -52,6 +53,7 @@ def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time"):
             showgrid=True
         ),
         yaxis=dict(
+            range=[y_min * (1 - bottom_padding_pct), y_max * (1 + top_padding_pct)],
             showgrid=True,
             gridcolor="lightgray",
             gridwidth=1,
@@ -150,7 +152,7 @@ def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time
     return fig
 
 
-def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
+def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_padding_pct=0.2, bottom_padding_pct=0.1):
     fig = go.Figure()
 
     if df.empty or "StandardVesselType" not in df.columns:
@@ -165,6 +167,9 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
     # Assign highlight colors only for available top types
     base_colors = ["#F78671", "#02ACA3", "#4273EE"]
     highlight_colors = {vt: color for vt, color in zip(top_3_types, base_colors)}
+
+    y_max = df[value_column].max()
+    y_min = df[value_column].min()
 
     for vessel_type in df["StandardVesselType"].unique():
         vessel_data = df[df["StandardVesselType"] == vessel_type]
@@ -201,6 +206,7 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time"):
                 showgrid=False
             ),
             yaxis=dict(
+                range=[y_min * (1 - bottom_padding_pct), y_max * (1 + top_padding_pct)],
                 showgrid=True,
                 gridcolor="lightgray",
                 gridwidth=1,
