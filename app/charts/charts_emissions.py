@@ -64,7 +64,7 @@ def plot_kpi(name, value, start_date, end_date, comparison_label, comparison_val
         # )
     ])
 
-def plot_line_chart_emissions_by_year_month(df):
+def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1):
     """
     Function to create a line chart of emissions by year and month.
     """
@@ -75,7 +75,7 @@ def plot_line_chart_emissions_by_year_month(df):
 
     # === Styling Setup ===
     last_year = df['year'].max()
-    #y_max = df['co2_equivalent_t'].max()
+    y_max = df['co2_equivalent_t'].max()
 
     line_general_color = "#757575"
     line_general_width = 2
@@ -124,7 +124,7 @@ def plot_line_chart_emissions_by_year_month(df):
             showgrid=True
         ),
         yaxis=dict(
-            #range=[0, y_max * 1.05],  # Add small padding
+            range=[0, y_max * (1 + top_padding_pct)],
             showgrid=True,
             gridcolor="lightgray",
             gridwidth=1,
@@ -201,7 +201,7 @@ def plot_bar_chart_emissions_by_type(df):
 
     return fig
 
-def plot_line_chart_emissions_by_type_year_month(df):
+def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1):
     """
     Function to create a line chart of emissions by vessel type and year/month.
     """
@@ -241,6 +241,8 @@ def plot_line_chart_emissions_by_type_year_month(df):
         ))
 
 
+    y_max = df["co2_equivalent_t"].max()
+
     fig.update_layout(
         height=300,
         dragmode=False,
@@ -253,6 +255,7 @@ def plot_line_chart_emissions_by_type_year_month(df):
             ticklabelstep=5
         ),
         yaxis=dict(
+            range=[0, y_max * (1 + top_padding_pct)],
             showgrid=True,
             gridcolor="lightgray",
             gridwidth=1,
