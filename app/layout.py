@@ -181,7 +181,7 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
 
 
 
-def create_standard_chart_container(chart, container_id=None):
+def create_standard_chart_container(chart):
     """
     Create the standard HTML DIV for the charts with a title, subtitle, and tooltip on the title.
     """
@@ -218,7 +218,7 @@ def create_standard_chart_container(chart, container_id=None):
             type="circle",
             children=dcc.Graph(id=chart["id"])
         )
-    ], id=container_id, className="border rounded p-4 m-0 g-0")
+    ], className="border rounded p-4 m-0 g-0")
 
 def build_chart_grid(chart_items):
     """
@@ -226,26 +226,18 @@ def build_chart_grid(chart_items):
     - Separation between columns
     """
     rows = []
-    tutorial_assigned = False
     for i in range(0, len(chart_items), 2):
-        cols = []
-        for item in chart_items[i:i+2]:
-            container_id = None
-            if not tutorial_assigned:
-                container_id = "tutorial-charts-target"
-                tutorial_assigned = True
-            cols.append(
-                dbc.Col(
-                    create_standard_chart_container(item, container_id=container_id),
-                    xs=12, sm=12, md=6, lg=6, xl=6,
-                )
-            )
         row = html.Div(
-            dbc.Row(cols, class_name="g-2 mt-0 me-2 ms-2")
-        )
+            dbc.Row([
+                dbc.Col(
+                    create_standard_chart_container(item),
+                    xs=12, sm=12, md=6, lg=6, xl=6)
+                for item in chart_items[i:i+2]
+            ],
+            class_name="g-2 mt-0 me-2 ms-2"))
         rows.append(row)
 
-    return html.Div(rows)
+    return html.Div(rows, id="tutorial-charts-target")
 
 
 # ===========================
