@@ -268,7 +268,7 @@ def build_sidebar_emissions(controls):
         ]),
         html.Br(),
         controls_emissions.build_button_refresh_charts()
-    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+    ], id="tutorial-filters-target", className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
 def build_main_container_emissions():
@@ -288,7 +288,7 @@ def build_main_container_emissions():
         build_chart_grid([
             {
                 "id": "emissions--chart--1",
-                "title": "Total Emissions", 
+                "title": "Total Emissions",
                 "subtitle": "TONNES CO2-eq",
                 "description": "This is the description for total emissions."
             },
@@ -305,7 +305,7 @@ def build_main_container_emissions():
                 "title": "Emissions by Type of Vessel", 
                 "subtitle": "TONNES CO2-eq"},
         ])
-        ], className="p-0", xs=12, md=12, lg=10, width=10)
+        ], id="tutorial-charts-target", className="p-0", xs=12, md=12, lg=10, width=10)
 
 
 def build_sidebar_waiting_times(controls):
@@ -410,10 +410,38 @@ def build_main_container_service_times():
 
 
 
+def build_tutorial_components():
+    return html.Div([
+        dcc.Store(id="tutorial-store", storage_type="local"),
+        dbc.Modal([
+            dbc.ModalHeader("Welcome to the Dashboard"),
+            dbc.ModalBody("Use the filters and charts to explore the data."),
+            dbc.ModalFooter(
+                dbc.Button("Start", id="btn-tutorial-start", color="primary")
+            ),
+        ], id="modal-welcome", backdrop="static", is_open=False),
+        dbc.Popover([
+            dbc.PopoverHeader("Filters"),
+            dbc.PopoverBody([
+                html.P("You can move the filters to change the data."),
+                dbc.Button("Next", id="btn-tutorial-next-filters", size="sm", color="primary", className="mt-2"),
+            ]),
+        ], id="popover-filters", target="tutorial-filters-target", placement="right", is_open=False),
+        dbc.Popover([
+            dbc.PopoverHeader("Charts"),
+            dbc.PopoverBody([
+                html.P("Look at the charts to see the information."),
+                dbc.Button("Done", id="btn-tutorial-done", size="sm", color="primary", className="mt-2"),
+            ]),
+        ], id="popover-charts", target="tutorial-charts-target", placement="left", is_open=False),
+    ])
+
+
 
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        build_tutorial_components(),
         build_header(),
         #build_navigation_bar(),  # This has id="chart-tabs"
         html.Div(id="tab-content"),  # ✅ Dynamic container for tab-specific layout

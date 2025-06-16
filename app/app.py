@@ -310,6 +310,37 @@ def update_tab_content(selected_tab):
         ])
 
 
+@app.callback(
+    Output("modal-welcome", "is_open"),
+    Output("popover-filters", "is_open"),
+    Output("popover-charts", "is_open"),
+    Input("tutorial-store", "data")
+)
+def display_tutorial(step):
+    if step is None:
+        return True, False, False
+    return False, step == "filters", step == "charts"
+
+
+@app.callback(
+    Output("tutorial-store", "data"),
+    Input("btn-tutorial-start", "n_clicks"),
+    Input("btn-tutorial-next-filters", "n_clicks"),
+    Input("btn-tutorial-done", "n_clicks"),
+    State("tutorial-store", "data"),
+    prevent_initial_call=True
+)
+def update_tutorial(start_click, next_click, done_click, current):
+    triggered = ctx.triggered_id
+    if triggered == "btn-tutorial-start":
+        return "filters"
+    if triggered == "btn-tutorial-next-filters":
+        return "charts"
+    if triggered == "btn-tutorial-done":
+        return "done"
+    return current
+
+
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=False, host='0.0.0.0', port=8050)
