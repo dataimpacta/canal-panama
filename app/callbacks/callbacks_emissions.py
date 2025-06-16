@@ -90,10 +90,6 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             Output("emissions--chart--2", "figure"),
             Output("emissions--chart--3", "figure"),
             Output("emissions--chart--4", "figure"),
-            Output("emissions--chart--1--modal", "figure"),
-            Output("emissions--chart--2--modal", "figure"),
-            Output("emissions--chart--3--modal", "figure"),
-            Output("emissions--chart--4--modal", "figure"),
             Output("emissions--kpi--1", "children"),
             Output("modal-no-data", "is_open"),
         ],
@@ -124,9 +120,8 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             empty_fig = go.Figure()
             return (
                 empty_fig, empty_fig, empty_fig, empty_fig,
-                empty_fig, empty_fig, empty_fig, empty_fig,
                 html.Div("No data available", style={"color": "#999"}),
-                True  # modal open
+                True
             )
 
         # KPI Calculation
@@ -167,27 +162,6 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
 
         return (
             fig1, fig2, fig3, fig4,
-            fig1, fig2, fig3, fig4,
             kpi_component,
             False
         )
-
-    # Callbacks to toggle fullscreen modals for each chart
-    chart_ids = ["emissions--chart--1", "emissions--chart--2",
-                 "emissions--chart--3", "emissions--chart--4"]
-    for cid in chart_ids:
-        @app.callback(
-            Output(f"{cid}--modal-container", "is_open"),
-            Input(f"{cid}--btn-open", "n_clicks"),
-            Input(f"{cid}--btn-close", "n_clicks"),
-            State(f"{cid}--modal-container", "is_open"),
-            prevent_initial_call=True,
-        )
-        def toggle_modal(open_click, close_click, is_open, cid=cid):  # noqa: D401
-            """Open or close the fullscreen modal."""
-            triggered = ctx.triggered_id
-            if triggered == f"{cid}--btn-open":
-                return True
-            if triggered == f"{cid}--btn-close":
-                return False
-            return is_open

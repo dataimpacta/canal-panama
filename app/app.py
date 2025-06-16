@@ -239,6 +239,7 @@ callbacks_waiting.setup_waiting_times_callbacks(
 
 @app.callback(
     Output("chart-tabs-store", "data"),
+    Output("fullscreen-chart", "data"),
     [
         Input("tab-emissions", "n_clicks"),
         Input("tab-waiting", "n_clicks"),
@@ -253,44 +254,83 @@ callbacks_waiting.setup_waiting_times_callbacks(
 def update_tab(*args):
     """Update name of the tab"""
     triggered_id = ctx.triggered_id
-    return triggered_id.replace("tab-", "") if triggered_id else "emissions"
+    tab = triggered_id.replace("tab-", "") if triggered_id else "emissions"
+    return tab, None
+
+
+@app.callback(
+    Output("fullscreen-chart", "data"),
+    [
+        Input("emissions--chart--1--btn-open", "n_clicks"),
+        Input("emissions--chart--2--btn-open", "n_clicks"),
+        Input("emissions--chart--3--btn-open", "n_clicks"),
+        Input("emissions--chart--4--btn-open", "n_clicks"),
+        Input("time--chart--1--btn-open", "n_clicks"),
+        Input("time--chart--2--btn-open", "n_clicks"),
+        Input("time--chart--3--btn-open", "n_clicks"),
+        Input("time--chart--4--btn-open", "n_clicks"),
+        Input("emissions--chart--1--btn-exit", "n_clicks"),
+        Input("emissions--chart--2--btn-exit", "n_clicks"),
+        Input("emissions--chart--3--btn-exit", "n_clicks"),
+        Input("emissions--chart--4--btn-exit", "n_clicks"),
+        Input("time--chart--1--btn-exit", "n_clicks"),
+        Input("time--chart--2--btn-exit", "n_clicks"),
+        Input("time--chart--3--btn-exit", "n_clicks"),
+        Input("time--chart--4--btn-exit", "n_clicks"),
+    ],
+    prevent_initial_call=True
+)
+def toggle_fullscreen(*_args):
+    """Toggle which chart is shown fullscreen."""
+    triggered = ctx.triggered_id
+    if not triggered:
+        raise dash.exceptions.PreventUpdate
+    if triggered.endswith("--btn-open"):
+        return triggered.replace("--btn-open", "")
+    if triggered.endswith("--btn-exit"):
+        return None
+    raise dash.exceptions.PreventUpdate
 
 
 
 @app.callback(
     Output("tab-content", "children"),
-    Input("chart-tabs-store", "data")
+    Input("chart-tabs-store", "data"),
+    Input("fullscreen-chart", "data")
 )
 
-def update_tab_content(selected_tab):
+def update_tab_content(selected_tab, fullscreen_chart):
     """
     Update the dashboard depending on the differnt tabs. 
     """
     nav_bar = layout.build_navigation_bar(active_tab=selected_tab)
 
     if selected_tab == "emissions":
+        main = layout.build_main_container_emissions(fullscreen_chart_id=fullscreen_chart if fullscreen_chart and fullscreen_chart.startswith("emissions") else None)
         return html.Div([
             nav_bar,
             dbc.Row([
                 layout.build_sidebar_emissions(controls_emissions),
-                layout.build_main_container_emissions()
+                main
             ], className="g-0")
         ])
-    
+
     elif selected_tab == "waiting":
+        main = layout.build_main_container_waiting_times(fullscreen_chart_id=fullscreen_chart if fullscreen_chart and fullscreen_chart.startswith("time-") else None)
         return html.Div([
             nav_bar,
             dbc.Row([
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
-            layout.build_main_container_waiting_times()
+            main
         ], className="g-0")
         ])
     elif selected_tab == "service":
+        main = layout.build_main_container_service_times(fullscreen_chart_id=fullscreen_chart if fullscreen_chart and fullscreen_chart.startswith("time-") else None)
         return html.Div([
             nav_bar,
             dbc.Row([
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
-            layout.build_main_container_service_times()
+            main
         ], className="g-0")
         ])
     elif selected_tab == "energy":

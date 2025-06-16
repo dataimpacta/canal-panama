@@ -181,7 +181,7 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
 
 
 
-def create_standard_chart_container(chart):
+def create_standard_chart_container(chart, fullscreen=False):
     """
     Create the standard HTML DIV for the charts with a title, subtitle, and tooltip on the title.
     """
@@ -219,44 +219,27 @@ def create_standard_chart_container(chart):
             children=dcc.Graph(id=chart["id"])
         ),
         dbc.Button(
-            html.I(className="bi bi-arrows-fullscreen"),
-            id=f"{chart['id']}--btn-open",
+            html.I(className="bi bi-x-lg" if fullscreen else "bi bi-arrows-fullscreen"),
+            id=f"{chart['id']}--btn-exit" if fullscreen else f"{chart['id']}--btn-open",
             color="light",
             className="fullscreen-btn",
             n_clicks=0,
-        ),
-        dbc.Modal(
-            [
-                dbc.ModalBody(dcc.Graph(id=f"{chart['id']}--modal")),
-                dbc.ModalFooter(
-                    dbc.Button(
-                        "Close",
-                        id=f"{chart['id']}--btn-close",
-                        className="ms-auto",
-                        n_clicks=0
-                    )
-                ),
-            ],
-            id=f"{chart['id']}--modal-container",
-            is_open=False,
-            size="xl",
-            backdrop=False,
         )
     ], className="border rounded p-4 m-0 g-0 position-relative")
 
-def build_chart_grid(chart_items):
+def build_chart_grid(chart_items, items_per_row=2):
     """
     Build the chart grid with a list of chart items.
     - Separation between columns
     """
     rows = []
-    for i in range(0, len(chart_items), 2):
+    for i in range(0, len(chart_items), items_per_row):
         row = html.Div(
             dbc.Row([
                 dbc.Col(
-                    create_standard_chart_container(item),
-                    xs=12, sm=12, md=6, lg=6, xl=6)
-                for item in chart_items[i:i+2]
+                    create_standard_chart_container(item, fullscreen=(items_per_row == 1)),
+                    xs=12, sm=12, md=int(12/items_per_row), lg=int(12/items_per_row), xl=int(12/items_per_row))
+                for item in chart_items[i:i+items_per_row]
             ],
             class_name="g-2 mt-0 me-2 ms-2"))
         rows.append(row)
@@ -295,12 +278,39 @@ def build_sidebar_emissions(controls):
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
-def build_main_container_emissions():
+def build_main_container_emissions(fullscreen_chart_id=None):
     """
     Here we only have statick content, with the tags
     - KPI grid
     - Chart grid
     """
+    charts = [
+        {
+            "id": "emissions--chart--1",
+            "title": "Total Emissions",
+            "subtitle": "TONNES CO2-eq",
+            "description": "This is the description for total emissions."
+        },
+        {
+            "id": "emissions--chart--2",
+            "title": "Emissions by Type of Vessel",
+            "subtitle": "TONNES CO2-eq"},
+        {
+            "id": "emissions--chart--3",
+            "title": "Emissions by Region",
+            "subtitle": "TONNES CO2-eq"},
+        {
+            "id": "emissions--chart--4",
+            "title": "Emissions by Type of Vessel",
+            "subtitle": "TONNES CO2-eq"},
+    ]
+
+    grid_items = charts
+    items_per_row = 2
+    if fullscreen_chart_id:
+        grid_items = [c for c in charts if c["id"] == fullscreen_chart_id]
+        items_per_row = 1
+
     return dbc.Col([
         build_kpi_grid([
             {
@@ -309,26 +319,7 @@ def build_main_container_emissions():
                 "subtitle": "TONNES"
             },
         ]),
-        build_chart_grid([
-            {
-                "id": "emissions--chart--1",
-                "title": "Total Emissions",
-                "subtitle": "TONNES CO2-eq",
-                "description": "This is the description for total emissions."
-            },
-            {
-                "id": "emissions--chart--2",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2-eq"},
-            {
-                "id": "emissions--chart--3",
-                "title": "Emissions by Region", 
-                "subtitle": "TONNES CO2-eq"},
-            {
-                "id": "emissions--chart--4",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2-eq"},
-        ])
+        build_chart_grid(grid_items, items_per_row=items_per_row)
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
@@ -363,69 +354,77 @@ def build_sidebar_waiting_times(controls):
     ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
 
 
-def build_main_container_waiting_times():
+def build_main_container_waiting_times(fullscreen_chart_id=None):
     """
     Here we only have statick content, with the tags
     - KPI grid
     - Chart grid
     """
-    return dbc.Col([
+    charts = [
+        {
+            "id": "time--chart--1",
+            "title": "Overall Waiting Time",
+            "subtitle": "HOURS"
+        },
+        {
+            "id": "time--chart--2",
+            "title": "AVG Waiting Time by Stop Area",
+            "subtitle": "HOURS"},
+        {
+            "id": "time--chart--3",
+            "title": "Waiting Time by Vessel  ",
+            "subtitle": "HOURS"},
+        {
+            "id": "time--chart--4",
+            "title": "AVG Waiting Time by Vessel Type",
+            "subtitle": "HOURS"},
+    ]
 
-        build_chart_grid([
-            {
-                "id": "time--chart--1",
-                "title": "Overall Waiting Time", 
-                "subtitle": "HOURS"
-            },
-            {
-                "id": "time--chart--2",
-                "title": "AVG Waiting Time by Stop Area", 
-                "subtitle": "HOURS"},
-            {
-                "id": "time--chart--3",
-                "title": "Waiting Time by Vessel  ", 
-                "subtitle": "HOURS"},
-            {
-                "id": "time--chart--4",
-                "title": "AVG Waiting Time by Vessel Type", 
-                "subtitle": "HOURS"},
-        ])
+    grid_items = charts
+    items_per_row = 2
+    if fullscreen_chart_id:
+        grid_items = [c for c in charts if c["id"] == fullscreen_chart_id]
+        items_per_row = 1
+
+    return dbc.Col([
+        build_chart_grid(grid_items, items_per_row=items_per_row)
         ], xs=12, md=12, lg=10, width=10)
 
 
-def build_main_container_service_times():
+def build_main_container_service_times(fullscreen_chart_id=None):
     """
     Here we only have statick content, with the tags
     - KPI grid
     - Chart grid
     """
+    charts = [
+        {
+            "id": "time--chart--1",
+            "title": "Overall Service Time",
+            "subtitle": "HOURS"
+        },
+        {
+            "id": "time--chart--2",
+            "title": "AVG Service Time by Stop Area",
+            "subtitle": "HOURS"},
+        {
+            "id": "time--chart--3",
+            "title": "Service Time by Vessel  ",
+            "subtitle": "HOURS"},
+        {
+            "id": "time--chart--4",
+            "title": "AVG Service Time by Vessel Type",
+            "subtitle": "HOURS"},
+    ]
+
+    grid_items = charts
+    items_per_row = 2
+    if fullscreen_chart_id:
+        grid_items = [c for c in charts if c["id"] == fullscreen_chart_id]
+        items_per_row = 1
+
     return dbc.Col([
-        # build_kpi_grid([
-        #     {
-        #         "id": "kpi-11",
-        #         "title": "Total Emissions",
-        #         "subtitle": "TONNES"
-        #     },
-        # ]),
-        build_chart_grid([
-            {
-                "id": "time--chart--1",
-                "title": "Overall Service Time", 
-                "subtitle": "HOURS"
-            },
-            {
-                "id": "time--chart--2",
-                "title": "AVG Service Time by Stop Area", 
-                "subtitle": "HOURS"},
-            {
-                "id": "time--chart--3",
-                "title": "Service Time by Vessel  ", 
-                "subtitle": "HOURS"},
-            {
-                "id": "time--chart--4",
-                "title": "AVG Service Time by Vessel Type", 
-                "subtitle": "HOURS"},
-        ])
+        build_chart_grid(grid_items, items_per_row=items_per_row)
         ], xs=12, md=12, lg=10, width=10)
 
 
@@ -474,6 +473,7 @@ def build_tutorial_components():
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        dcc.Store(id="fullscreen-chart"),
         build_tutorial_components(),
         build_header(),
         #build_navigation_bar(),  # This has id="chart-tabs"
