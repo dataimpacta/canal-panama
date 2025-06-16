@@ -45,3 +45,28 @@ def build_date_range_slider(date_range):
 
 def build_download_button():
     return dbc.Button("Download Data", id="explorer--download-btn", color="primary")
+
+
+def build_download_modal():
+    """Form modal shown before downloading data."""
+    return dbc.Modal(
+        [
+            dbc.ModalHeader("Download Data"),
+            dbc.ModalBody(
+                [
+                    dbc.Input(id="explorer--field-name", placeholder="Name and LastName", type="text", className="mb-2"),
+                    dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
+                    dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
+                    dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
+                ]
+            ),
+            dbc.ModalFooter(
+                [
+                    dbc.Button("Cancel", id="explorer--download-cancel", className="me-2"),
+                    dbc.Button("Download", id="explorer--download-submit", color="primary"),
+                ]
+            ),
+        ],
+        id="explorer--download-modal",
+        is_open=False,
+    )
