@@ -207,7 +207,17 @@ def create_standard_chart_container(chart):
                         placement="right",
                         style={"maxWidth": "300px"}
                     )
-                ], width="auto")
+                ], width="auto"),
+                dbc.Col(
+                    dbc.Button(
+                        html.I(className="bi bi-arrows-fullscreen"),
+                        id=f"{chart['id']}-expand",
+                        color="link",
+                        className="p-0 ms-auto"
+                    ),
+                    width="auto",
+                    class_name="d-flex justify-content-end"
+                )
             ], className="align-items-center g-1"),
 
             html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
@@ -239,6 +249,22 @@ def build_chart_grid(chart_items):
         rows.append(row)
 
     return html.Div(rows)
+
+
+def build_fullscreen_modal():
+    """Modal for displaying charts in fullscreen."""
+    return dbc.Modal(
+        [
+            dbc.ModalBody(dcc.Graph(id="fullscreen-modal-graph")),
+            dbc.ModalFooter(
+                dbc.Button("Close", id="close-fullscreen", n_clicks=0, color="secondary")
+            ),
+        ],
+        id="fullscreen-modal",
+        is_open=False,
+        fullscreen=True,
+        size="xl",
+    )
 
 
 # ===========================
@@ -417,5 +443,6 @@ def build_main_layout():
         build_header(),
         #build_navigation_bar(),  # This has id="chart-tabs"
         html.Div(id="tab-content"),  # ✅ Dynamic container for tab-specific layout
+        build_fullscreen_modal(),
         build_footer()
     ], className="g-0 p-4", fluid=True)

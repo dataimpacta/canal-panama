@@ -51,6 +51,7 @@ from h3.api.basic_int import cell_to_boundary
 
 from callbacks import callbacks_emissions
 from callbacks import callbacks_waiting
+from callbacks import callbacks_fullscreen
 
 import layout
 
@@ -236,6 +237,8 @@ callbacks_waiting.setup_waiting_times_callbacks(
     df_waiting_times,
     controls_waiting_times
 )
+
+callbacks_fullscreen.setup_fullscreen_callbacks(app)
 
 @app.callback(
     Output("chart-tabs-store", "data"),
