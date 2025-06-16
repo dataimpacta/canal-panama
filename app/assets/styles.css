@@ -90,3 +90,10 @@ h1 {
     cursor: pointer;
     color: #0d6efd;
 }
+
+.fullscreen-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+}

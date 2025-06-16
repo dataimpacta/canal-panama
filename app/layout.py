@@ -217,8 +217,32 @@ def create_standard_chart_container(chart):
             id=f"loading-{chart['id']}",
             type="circle",
             children=dcc.Graph(id=chart["id"])
+        ),
+        dbc.Button(
+            html.I(className="bi bi-arrows-fullscreen"),
+            id=f"{chart['id']}--btn-open",
+            color="light",
+            className="fullscreen-btn",
+            n_clicks=0,
+        ),
+        dbc.Modal(
+            [
+                dbc.ModalBody(dcc.Graph(id=f"{chart['id']}--modal")),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Close",
+                        id=f"{chart['id']}--btn-close",
+                        className="ms-auto",
+                        n_clicks=0
+                    )
+                ),
+            ],
+            id=f"{chart['id']}--modal-container",
+            is_open=False,
+            size="xl",
+            backdrop=False,
         )
-    ], className="border rounded p-4 m-0 g-0")
+    ], className="border rounded p-4 m-0 g-0 position-relative")
 
 def build_chart_grid(chart_items):
     """

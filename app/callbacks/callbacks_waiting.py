@@ -123,6 +123,10 @@ def setup_waiting_times_callbacks(app, df, controls):
             Output("time--chart--2", "figure"),
             Output("time--chart--3", "figure"),
             Output("time--chart--4", "figure"),
+            Output("time--chart--1--modal", "figure"),
+            Output("time--chart--2--modal", "figure"),
+            Output("time--chart--3--modal", "figure"),
+            Output("time--chart--4--modal", "figure"),
             Output("time--modal--no-data", "is_open")
         ],
         Input("emissions--btn--refresh", "n_clicks"),
@@ -153,6 +157,7 @@ def setup_waiting_times_callbacks(app, df, controls):
             empty_fig = go.Figure()
             return (
                 empty_fig, empty_fig, empty_fig, empty_fig,
+                empty_fig, empty_fig, empty_fig, empty_fig,
                 True
             )
         
@@ -172,5 +177,26 @@ def setup_waiting_times_callbacks(app, df, controls):
         fig4 = charts_waiting_times.plot_line_chart_waiting_by_type_week(df_type_week, value_column=time_col)
 
         return (
-            fig1, fig2, fig3, fig4, False
+            fig1, fig2, fig3, fig4,
+            fig1, fig2, fig3, fig4,
+            False
         )
+
+    # Callbacks to toggle fullscreen modals for each chart
+    chart_ids = ["time--chart--1", "time--chart--2", "time--chart--3", "time--chart--4"]
+    for cid in chart_ids:
+        @app.callback(
+            Output(f"{cid}--modal-container", "is_open"),
+            Input(f"{cid}--btn-open", "n_clicks"),
+            Input(f"{cid}--btn-close", "n_clicks"),
+            State(f"{cid}--modal-container", "is_open"),
+            prevent_initial_call=True,
+        )
+        def toggle_modal(open_click, close_click, is_open, cid=cid):  # noqa: D401
+            """Open or close the fullscreen modal."""
+            triggered = ctx.triggered_id
+            if triggered == f"{cid}--btn-open":
+                return True
+            if triggered == f"{cid}--btn-close":
+                return False
+            return is_open
