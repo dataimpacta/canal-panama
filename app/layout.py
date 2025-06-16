@@ -1,9 +1,10 @@
 # pylint: disable=import-error
 
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import html, dcc, dash_table
 
 from charts import charts_emissions
+from controls import controls_explorer
 from controls import controls_emissions
 from controls import controls_time
 
@@ -199,7 +200,8 @@ def create_standard_chart_container(chart):
                     ),
                     html.I(
                         className="bi bi-info-circle-fill info-icon",
-                        id=f"title-tooltip-{chart['id']}"
+                        id=f"title-tooltip-{chart['id']}",
+                        style={"cursor": "pointer", "color": "#666"}
                     ),
                     dbc.Tooltip(
                         chart.get("description", "No description available."),
@@ -219,6 +221,75 @@ def create_standard_chart_container(chart):
             children=dcc.Graph(id=chart["id"])
         )
     ], className="border rounded p-4 m-0 g-0")
+
+
+def create_standard_table_container(table):
+    """Container for data tables with title, subtitle, and clean styling."""
+    return html.Div([
+        # Title + Tooltip
+        html.Div([
+            dbc.Row([
+                dbc.Col([
+                    html.Span(
+                        table["title"] + " ",
+                        style={
+                            "fontWeight": "bold",
+                            "color": "#333",
+                            "fontSize": "1.1rem",
+                            "fontFamily": "system-ui, sans-serif",
+                        },
+                    ),
+                    html.I(
+                        className="bi bi-info-circle-fill info-icon",
+                        id=f"title-tooltip-{table['id']}",
+                        style={"cursor": "pointer", "color": "#666"}
+                    ),
+                    dbc.Tooltip(
+                        table.get("description", "No description available."),
+                        target=f"title-tooltip-{table['id']}",
+                        placement="right",
+                        style={"maxWidth": "300px"},
+                    ),
+                ], width="auto")
+            ], className="align-items-center g-1"),
+
+            html.P(table["subtitle"], className="mb-2", style={
+                "fontSize": "0.85rem",
+                "color": "#666",
+                "marginTop": "0.25rem",
+                "fontFamily": "system-ui, sans-serif"
+            }),
+        ]),
+
+        # Table with custom styling
+        dcc.Loading(
+            id=f"loading-{table['id']}",
+            type="circle",
+            children=html.Div(
+                dash_table.DataTable(
+                    id=table["id"],
+                    style_cell={
+                        "fontFamily": "system-ui, sans-serif",
+                        "fontSize": "0.9rem",
+                        "padding": "8px 12px",
+                        "whiteSpace": "nowrap",
+                        "textAlign": "left"
+                    },
+                    style_header={
+                        "backgroundColor": "#f8f9fa",
+                        "fontWeight": "bold",
+                        "borderBottom": "1px solid #dee2e6"
+                    },
+                    style_table={
+                        "overflowX": "auto"
+                    },
+                    style_data={
+                        "borderBottom": "1px solid #eee"
+                    }
+                )
+            )
+        )
+    ], className="border rounded p-4 m-0 g-0")  
 
 def build_chart_grid(chart_items):
     """
@@ -403,6 +474,50 @@ def build_main_container_service_times():
                 "subtitle": "HOURS"},
         ])
         ], xs=12, md=12, lg=10, width=10)
+
+
+def build_sidebar_explorer(controls):
+    """Sidebar for the explorer tab."""
+    return dbc.Col([
+        dbc.Accordion([
+            dbc.AccordionItem(
+                [controls_explorer.build_source_dropdown(controls["sources"])],
+                title="Source"
+            ),
+            dbc.AccordionItem(
+                [controls_explorer.build_date_range_slider(controls["date_range"])],
+                title="Date Range"
+            )
+        ]),
+        html.Br(),
+        controls_explorer.build_download_button(),
+        controls_explorer.build_download_modal(),
+        dcc.Download(id="explorer--download")
+    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+
+
+def build_main_container_explorer():
+    """Main container for the explorer tab."""
+    return dbc.Col([
+        dbc.Row([
+            dbc.Col(
+                create_standard_chart_container({
+                    "id": "explorer--chart",
+                    "title": "Value Over Time",
+                    "subtitle": "",
+                }),
+                xs=12, sm=12, md=6, lg=6, xl=6,
+            ),
+            dbc.Col(
+                create_standard_table_container({
+                    "id": "explorer--table",
+                    "title": "Sample Data",
+                    "subtitle": "First five rows",
+                }),
+                xs=12, sm=12, md=6, lg=6, xl=6,
+            ),
+        ], class_name="g-2 mt-0 me-2 ms-2"),
+    ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
 
