@@ -36,7 +36,7 @@ def reorder_with_priority(options, priority):
 import dash
 import dash_bootstrap_components as dbc
 
-from dash import Input, Output, State, ctx, html
+from dash import Input, Output, State, ctx, html, MATCH, ALL
 
 import pandas as pd
 import geopandas as gpd
@@ -338,6 +338,36 @@ def update_tab_content(selected_tab):
             layout.build_about_us()
         ], fluid=True)
         ])
+
+
+@app.callback(
+    Output("fullscreen-chart", "data"),
+    Input({"type": "fullscreen-btn", "index": ALL}, "n_clicks"),
+    Input({"type": "close-btn", "index": ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def set_fullscreen(open_clicks, close_clicks):
+    triggered = ctx.triggered_id
+    if isinstance(triggered, dict) and triggered.get("type") == "fullscreen-btn":
+        return triggered.get("index")
+    if isinstance(triggered, dict) and triggered.get("type") == "close-btn":
+        return None
+    raise dash.exceptions.PreventUpdate
+
+
+@app.callback(
+    Output({"type": "chart-col", "index": MATCH}, "width"),
+    Output({"type": "chart-container", "index": MATCH}, "className"),
+    Output({"type": "fullscreen-btn", "index": MATCH}, "style"),
+    Output({"type": "close-btn", "index": MATCH}, "style"),
+    Input("fullscreen-chart", "data"),
+    State({"type": "chart-col", "index": MATCH}, "id"),
+)
+def toggle_chart_view(active_id, this_id):
+    base_class = "border rounded p-4 m-0 g-0"
+    if active_id == this_id["index"]:
+        return 12, base_class, {"display": "none"}, {"display": "inline-block"}
+    return 6, base_class, {"display": "inline-block"}, {"display": "none"}
 
 
 @app.callback(

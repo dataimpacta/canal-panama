@@ -209,6 +209,23 @@ def create_standard_chart_container(chart):
                         placement="right",
                         style={"maxWidth": "300px"}
                     )
+                ], width="auto"),
+                dbc.Col([
+                    dbc.Button(
+                        "Full Screen",
+                        id={"type": "fullscreen-btn", "index": chart["id"]},
+                        size="sm",
+                        color="secondary",
+                        className="ms-2",
+                    ),
+                    dbc.Button(
+                        "Close",
+                        id={"type": "close-btn", "index": chart["id"]},
+                        size="sm",
+                        color="secondary",
+                        className="ms-2",
+                        style={"display": "none"},
+                    ),
                 ], width="auto")
             ], className="align-items-center g-1"),
 
@@ -220,7 +237,7 @@ def create_standard_chart_container(chart):
             type="circle",
             children=dcc.Graph(id=chart["id"])
         )
-    ], className="border rounded p-4 m-0 g-0")
+    ], id={"type": "chart-container", "index": chart["id"]}, className="border rounded p-4 m-0 g-0")
 
 
 def create_standard_table_container(table):
@@ -302,7 +319,9 @@ def build_chart_grid(chart_items):
             dbc.Row([
                 dbc.Col(
                     create_standard_chart_container(item),
-                    xs=12, sm=12, md=6, lg=6, xl=6)
+                    width=6,
+                    id={"type": "chart-col", "index": item["id"]},
+                )
                 for item in chart_items[i:i+2]
             ],
             class_name="g-2 mt-0 me-2 ms-2"))
@@ -565,6 +584,7 @@ def build_tutorial_components():
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        dcc.Store(id="fullscreen-chart", data=None),
         build_tutorial_components(),
         build_header(),
         #build_navigation_bar(),  # This has id="chart-tabs"
