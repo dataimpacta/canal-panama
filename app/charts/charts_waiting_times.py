@@ -184,7 +184,7 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_pa
             mode="lines",
             name=vessel_type,
             line=dict(
-                color=highlight_colors.get(vessel_type, "#757575"),
+                color=highlight_colors.get(vessel_type, "#B4B4B4"),
                 width=3 if is_top else 2
             ),
             opacity=1 if is_top else 0.5,
@@ -208,7 +208,7 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_pa
             yaxis=dict(
                 range=[y_min * (1 - bottom_padding_pct), y_max * (1 + top_padding_pct)],
                 showgrid=True,
-                gridcolor="lightgray",
+                gridcolor="#D4D4D4",
                 gridwidth=1,
                 zeroline=True,
                 zerolinecolor="#000000",
