@@ -234,31 +234,39 @@ def create_standard_chart_container(chart):
         dbc.Modal(
             [
                 dbc.ModalHeader(
-                    dbc.Button(
-                        html.I(className="bi bi-x-lg"),
-                        id={"type": "close-fullscreen", "id": chart["id"]},
-                        color="link",
-                        className="ms-auto"
-                    ),
+                    html.Div([
+                        html.Div([
+                            html.Span(
+                                chart["title"],
+                                style={
+                                    "fontWeight": "bold",
+                                    "color": "#333",
+                                    "fontSize": "1.1rem",
+                                    "marginRight": "0.75rem"
+                                },
+                            ),
+                            html.Span(
+                                chart["subtitle"],
+                                style={
+                                    "fontSize": "0.85rem",
+                                    "color": "#666"
+                                },
+                            ),
+                        ], style={"display": "flex", "alignItems": "center"}),
+
+                        dbc.Button(
+                            html.I(className="bi bi-x-lg"),
+                            id={"type": "close-fullscreen", "id": chart["id"]},
+                            color="link",
+                            className="ms-auto",
+                            style={"fontSize": "1.2rem"}
+                        )
+                    ],
+                    style={"display": "flex", "justifyContent": "space-between", "alignItems": "center", "width": "100%"}),
                     close_button=False
                 ),
                 dbc.ModalBody([
-                    html.Div([
-                        html.Span(
-                            chart["title"],
-                            style={
-                                "fontWeight": "bold",
-                                "color": "#333",
-                                "fontSize": "1.1rem",
-                            },
-                        ),
-                        html.P(
-                            chart["subtitle"],
-                            className="mb-2",
-                            style={"fontSize": "0.85rem", "color": "#666"},
-                        ),
-                    ]),
-                    dcc.Graph(id=f"{chart['id']}-fullscreen", style={"height": "80vh"})
+                    dcc.Graph(id=f"{chart['id']}-fullscreen", style={"height": "70vh"})
                 ])
             ],
             id={"type": "chart-modal", "id": chart["id"]},
