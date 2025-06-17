@@ -150,7 +150,7 @@ def build_navigation_bar(active_tab="emissions"):
         ],
         pills=True,
         vertical=False,
-        className="mb-2"
+        className="mb-3"
     )
 
 # ============================
@@ -166,7 +166,7 @@ def create_standard_kpi_container(kpi_id):
             )
         )
     ],
-    className="border rounded p-3 m-0 g-0")
+    className="border p-4 m-0 g-0")
 
 def build_kpi_grid(kpi_cards, items_per_row=2):
     rows = []
@@ -176,7 +176,7 @@ def build_kpi_grid(kpi_cards, items_per_row=2):
                 create_standard_kpi_container(kpi_id=card["id"]),
                 xs=12, sm=12, md=6, lg=int(12/items_per_row))
             for card in kpi_cards[i:i+items_per_row]
-        ], class_name="g-2 mt-0 me-2 ms-2")
+        ], class_name="g-0 mt-0 me-0 ms-0")
         rows.append(row)
     return html.Div(rows)
 
@@ -210,7 +210,7 @@ def create_standard_chart_container(chart):
                         style={"maxWidth": "300px"}
                     )
                 ], width="auto")
-            ], className="align-items-center g-1"),
+            ], className="align-items-center g-0"),
 
             html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
         ]),
@@ -220,7 +220,7 @@ def create_standard_chart_container(chart):
             type="circle",
             children=dcc.Graph(id=chart["id"])
         )
-    ], className="border rounded p-4 m-0 g-0")
+    ], className="border p-4 m-0 g-0")
 
 
 def create_standard_table_container(table):
@@ -289,7 +289,7 @@ def create_standard_table_container(table):
                 )
             )
         )
-    ], className="border rounded p-4 m-0 g-0")  
+    ], className="border p-4 m-0 g-0")  
 
 def build_chart_grid(chart_items):
     """
@@ -305,7 +305,7 @@ def build_chart_grid(chart_items):
                     xs=12, sm=12, md=6, lg=6, xl=6)
                 for item in chart_items[i:i+2]
             ],
-            class_name="g-2 mt-0 me-2 ms-2"))
+            class_name="g-0 mt-0 me-0 ms-0"))
         rows.append(row)
 
     return html.Div(rows, id="tutorial-charts-target")
@@ -339,7 +339,7 @@ def build_sidebar_emissions(controls):
         accordion,
         html.Br(),
         controls_emissions.build_button_refresh_charts(),
-    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+    ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
 
 def build_main_container_emissions():
@@ -407,7 +407,7 @@ def build_sidebar_waiting_times(controls):
         html.Br(),
         controls_emissions.build_button_refresh_charts()
 
-    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+    ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
 
 def build_main_container_waiting_times():
@@ -493,7 +493,7 @@ def build_sidebar_explorer(controls):
         controls_explorer.build_download_button(),
         controls_explorer.build_download_modal(),
         dcc.Download(id="explorer--download")
-    ], className="border rounded p-3", xs=12, md=12, lg=2, width=2)
+    ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
 
 def build_main_container_explorer():
@@ -516,7 +516,7 @@ def build_main_container_explorer():
                 }),
                 xs=12, sm=12, md=6, lg=6, xl=6,
             ),
-        ], class_name="g-2 mt-0 me-2 ms-2"),
+        ], class_name="g-0 mt-0 me-0 ms-0"),
     ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
