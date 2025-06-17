@@ -209,7 +209,17 @@ def create_standard_chart_container(chart):
                         placement="right",
                         style={"maxWidth": "300px"}
                     )
-                ], width="auto")
+                ], width="auto"),
+                dbc.Col(
+                    dbc.Button(
+                        html.I(className="bi bi-arrows-fullscreen"),
+                        id={"type": "open-fullscreen", "id": chart["id"]},
+                        color="link",
+                        className="p-0",
+                    ),
+                    width="auto",
+                    className="ms-auto"
+                ),
             ], className="align-items-center g-0"),
 
             html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
@@ -219,6 +229,28 @@ def create_standard_chart_container(chart):
             id=f"loading-{chart['id']}",
             type="circle",
             children=dcc.Graph(id=chart["id"])
+        ),
+
+        dbc.Modal(
+            [
+                dbc.ModalHeader(
+                    dbc.Button(
+                        html.I(className="bi bi-x-lg"),
+                        id={"type": "close-fullscreen", "id": chart["id"]},
+                        color="link",
+                        className="ms-auto"
+                    ),
+                    close_button=False
+                ),
+                dbc.ModalBody(
+                    dcc.Graph(id=f"{chart['id']}-fullscreen", style={"height": "80vh"})
+                )
+            ],
+            id={"type": "chart-modal", "id": chart["id"]},
+            is_open=False,
+            size="xl",
+            backdrop=False,
+            scrollable=True,
         )
     ], className="border p-4 m-0 g-0")
 
