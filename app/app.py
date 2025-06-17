@@ -271,11 +271,17 @@ callbacks_fullscreen.setup_fullscreen_callbacks(
         "emissions--chart--2",
         "emissions--chart--3",
         "emissions--chart--4",
+        "explorer--chart",
+    ]
+)
+
+callbacks_fullscreen.setup_waiting_times_fullscreen(
+    app,
+    [
         "time--chart--1",
         "time--chart--2",
         "time--chart--3",
         "time--chart--4",
-        "explorer--chart",
     ]
 )
 

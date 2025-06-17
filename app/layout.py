@@ -213,7 +213,7 @@ def create_standard_chart_container(chart):
                         html.I(className="bi bi-arrows-fullscreen"),
                         id=f"{chart['id']}-open-fullscreen",
                         color="link",
-                        className="p-0 ms-2"
+                        className="p-0 ms-2 d-none d-lg-inline-block"
                     )
                 ], width="auto")
             ], className="align-items-center g-1"),
@@ -446,11 +446,25 @@ def build_main_container_waiting_times():
     - Chart grid
     """
     return dbc.Col([
+        html.Div(
+            [
+                dbc.Button(
+                    "Back",
+                    id="waiting-fullscreen-close",
+                    color="secondary",
+                    size="sm",
+                    className="mb-2"
+                ),
+                dcc.Graph(id="waiting-fullscreen-graph", style={"height": "80vh"})
+            ],
+            id="waiting-fullscreen-container",
+            className="mb-4 d-none"
+        ),
 
         build_chart_grid([
             {
                 "id": "time--chart--1",
-                "title": "Overall Waiting Time", 
+                "title": "Overall Waiting Time",
                 "subtitle": "HOURS"
             },
             {

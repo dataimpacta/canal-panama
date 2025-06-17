@@ -1,6 +1,7 @@
 """Callbacks to manage fullscreen chart modals."""
 
 from dash import Input, Output, State, callback, ctx
+import dash
 
 
 def setup_fullscreen_callbacks(app, chart_ids):
@@ -28,4 +29,32 @@ def setup_fullscreen_callbacks(app, chart_ids):
             if triggered == _close_id:
                 return False, fig
             return is_open, fig
+
+
+def setup_waiting_times_fullscreen(app, chart_ids):
+    """Display waiting time charts in a dedicated fullscreen container."""
+    open_ids = [f"{cid}-open-fullscreen" for cid in chart_ids]
+
+    @app.callback(
+        Output("waiting-fullscreen-container", "className"),
+        Output("waiting-fullscreen-graph", "figure"),
+        [Input(oid, "n_clicks") for oid in open_ids]
+        + [Input("waiting-fullscreen-close", "n_clicks")],
+        [State(cid, "figure") for cid in chart_ids]
+        + [State("waiting-fullscreen-container", "className")],
+        prevent_initial_call=True,
+    )
+    def toggle_container(*args):  # pylint: disable=unused-variable
+        triggered = ctx.triggered_id
+        current_class = args[-1]
+        figs = args[len(open_ids) + 1 : len(open_ids) + 1 + len(open_ids)]
+
+        if triggered == "waiting-fullscreen-close":
+            return "mb-4 d-none", dash.no_update
+
+        for i, oid in enumerate(open_ids):
+            if triggered == oid:
+                return "mb-4", figs[i]
+
+        return current_class, dash.no_update
 
