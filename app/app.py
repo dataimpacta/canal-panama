@@ -36,7 +36,7 @@ def reorder_with_priority(options, priority):
 import dash
 import dash_bootstrap_components as dbc
 
-from dash import Input, Output, State, ctx, html
+from dash import Input, Output, State, ctx, html, MATCH
 
 import pandas as pd
 import geopandas as gpd
@@ -371,6 +371,22 @@ def update_tutorial(start_click, next_click, done_click, current):
     return current
 
 
+@app.callback(
+    Output({"type": "chart-modal", "id": MATCH}, "is_open"),
+    Input({"type": "open-fullscreen", "id": MATCH}, "n_clicks"),
+    Input({"type": "close-fullscreen", "id": MATCH}, "n_clicks"),
+    State({"type": "chart-modal", "id": MATCH}, "is_open"),
+    prevent_initial_call=True
+)
+def toggle_chart_modal(open_clicks, close_clicks, is_open):
+    trigger = ctx.triggered_id
+    if trigger and trigger.get("type") == "open-fullscreen":
+        return True
+    if trigger and trigger.get("type") == "close-fullscreen":
+        return False
+    return is_open
+
+
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=True, host='0.0.0.0', port=8050)
+    app.run_server(debug=False, host='0.0.0.0', port=8050)

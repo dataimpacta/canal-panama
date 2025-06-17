@@ -120,9 +120,13 @@ def setup_waiting_times_callbacks(app, df, controls):
     @app.callback(
         [
             Output("time--chart--1", "figure"),
+            Output("time--chart--1-fullscreen", "figure"),
             Output("time--chart--2", "figure"),
+            Output("time--chart--2-fullscreen", "figure"),
             Output("time--chart--3", "figure"),
+            Output("time--chart--3-fullscreen", "figure"),
             Output("time--chart--4", "figure"),
+            Output("time--chart--4-fullscreen", "figure"),
             Output("time--modal--no-data", "is_open")
         ],
         Input("emissions--btn--refresh", "n_clicks"),
@@ -152,7 +156,10 @@ def setup_waiting_times_callbacks(app, df, controls):
         if filtered_df.empty:
             empty_fig = go.Figure()
             return (
-                empty_fig, empty_fig, empty_fig, empty_fig,
+                empty_fig, empty_fig,
+                empty_fig, empty_fig,
+                empty_fig, empty_fig,
+                empty_fig, empty_fig,
                 True
             )
         
@@ -172,5 +179,9 @@ def setup_waiting_times_callbacks(app, df, controls):
         fig4 = charts_waiting_times.plot_line_chart_waiting_by_type_week(df_type_week, value_column=time_col)
 
         return (
-            fig1, fig2, fig3, fig4, False
+            fig1, fig1,
+            fig2, fig2,
+            fig3, fig3,
+            fig4, fig4,
+            False
         )
