@@ -242,9 +242,24 @@ def create_standard_chart_container(chart):
                     ),
                     close_button=False
                 ),
-                dbc.ModalBody(
+                dbc.ModalBody([
+                    html.Div([
+                        html.Span(
+                            chart["title"],
+                            style={
+                                "fontWeight": "bold",
+                                "color": "#333",
+                                "fontSize": "1.1rem",
+                            },
+                        ),
+                        html.P(
+                            chart["subtitle"],
+                            className="mb-2",
+                            style={"fontSize": "0.85rem", "color": "#666"},
+                        ),
+                    ]),
                     dcc.Graph(id=f"{chart['id']}-fullscreen", style={"height": "80vh"})
-                )
+                ])
             ],
             id={"type": "chart-modal", "id": chart["id"]},
             is_open=False,
