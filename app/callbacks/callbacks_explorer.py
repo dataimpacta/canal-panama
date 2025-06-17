@@ -42,6 +42,7 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
 
     @app.callback(
         Output("explorer--chart", "figure"),
+        Output("explorer--chart-fullscreen", "figure"),
         Output("explorer--table", "data"),
         Output("explorer--table", "columns"),
         Input("explorer--source", "value"),
@@ -68,7 +69,7 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
         fig = charts_explorer.plot_line_chart(summary, value_col)
         table = filtered.head(6)
         columns = [{"name": c.replace("_", " ").title(), "id": c} for c in table.columns]
-        return fig, table.to_dict("records"), columns
+        return fig, fig, table.to_dict("records"), columns
 
     @app.callback(
         Output("explorer--download-modal", "is_open"),
