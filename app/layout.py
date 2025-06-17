@@ -208,6 +208,12 @@ def create_standard_chart_container(chart):
                         target=f"title-tooltip-{chart['id']}",
                         placement="right",
                         style={"maxWidth": "300px"}
+                    ),
+                    dbc.Button(
+                        html.I(className="bi bi-arrows-fullscreen"),
+                        id=f"{chart['id']}-open-fullscreen",
+                        color="link",
+                        className="p-0 ms-2"
                     )
                 ], width="auto")
             ], className="align-items-center g-1"),
@@ -219,6 +225,29 @@ def create_standard_chart_container(chart):
             id=f"loading-{chart['id']}",
             type="circle",
             children=dcc.Graph(id=chart["id"])
+        ),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(
+                    dbc.ModalTitle(chart["title"]),
+                ),
+                dbc.ModalBody(
+                    dcc.Graph(id=f"{chart['id']}-fullscreen", style={"height": "80vh"})
+                ),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Back",
+                        id=f"{chart['id']}-close-fullscreen",
+                        className="ms-auto",
+                        color="secondary",
+                        size="sm"
+                    )
+                )
+            ],
+            id=f"{chart['id']}-fullscreen-modal",
+            fullscreen=True,
+            size="xl",
+            is_open=False
         )
     ], className="border rounded p-4 m-0 g-0")
 

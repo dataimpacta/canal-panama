@@ -52,6 +52,7 @@ from h3.api.basic_int import cell_to_boundary
 from callbacks import callbacks_emissions
 from callbacks import callbacks_waiting
 from callbacks import callbacks_explorer
+from callbacks import callbacks_fullscreen
 
 import layout
 
@@ -261,6 +262,21 @@ callbacks_explorer.setup_explorer_callbacks(
     df_emissions,
     df_waiting_times,
     controls_explorer
+)
+
+callbacks_fullscreen.setup_fullscreen_callbacks(
+    app,
+    [
+        "emissions--chart--1",
+        "emissions--chart--2",
+        "emissions--chart--3",
+        "emissions--chart--4",
+        "time--chart--1",
+        "time--chart--2",
+        "time--chart--3",
+        "time--chart--4",
+        "explorer--chart",
+    ]
 )
 
 @app.callback(
