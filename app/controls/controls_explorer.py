@@ -54,10 +54,24 @@ def build_download_modal():
             dbc.ModalHeader("Download Data"),
             dbc.ModalBody(
                 [
+                    html.P(
+                        "Please provide the following details so we understand how the data will be used and can inform you of updates.",
+                        className="small",
+                    ),
                     dbc.Input(id="explorer--field-name", placeholder="Name and Last Name", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
+                    html.Div(
+                        [
+                            html.Hr(),
+                            html.Small(
+                                "Example citation: Fuentes, G. (2024). Panama Maritime Statistics Dashboard dataset. Norwegian School of Economics & SENACYT.",
+                                className="text-muted",
+                            ),
+                        ],
+                        className="mt-3",
+                    ),
                 ]
             ),
             dbc.ModalFooter(
