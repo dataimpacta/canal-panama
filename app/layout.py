@@ -598,21 +598,11 @@ def build_tutorial_components():
             dbc.PopoverBody(
                 [
                     html.P("You can move the filters to change the data."),
-                    dbc.Button("Next", id="btn-tutorial-next-filters", size="sm", color="primary", className="mt-2"),
+                    dbc.Button("Done", id="btn-tutorial-next-filters", size="sm", color="primary", className="mt-2"),
                 ],
                 style={"backgroundColor": "#f8f9fa"},
             ),
         ], id="popover-filters", target="tutorial-filters-target", placement="right", is_open=False),
-        dbc.Popover([
-            dbc.PopoverHeader("Charts"),
-            dbc.PopoverBody(
-                [
-                    html.P("Look at the charts to see the information."),
-                    dbc.Button("Done", id="btn-tutorial-done", size="sm", color="primary", className="mt-2"),
-                ],
-                style={"backgroundColor": "#f8f9fa"},
-            ),
-        ], id="popover-charts", target="tutorial-charts-target", placement="left", is_open=False),
     ])
 
 
