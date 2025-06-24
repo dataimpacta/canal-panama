@@ -64,13 +64,24 @@ def build_download_modal():
                     dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
                     html.Div(
                         [
-                            html.Hr(),
-                            html.Small(
-                                "Example citation: Fuentes, G. (2024). Panama Maritime Statistics Dashboard dataset. Norwegian School of Economics & SENACYT.",
-                                className="text-muted",
-                            ),
+                            html.Hr(className="my-4"),
+                            html.Div([
+                                html.Span("Attribution", style={"fontWeight": "bold", "fontSize": "1rem"}),
+                                html.Br(),
+                                html.Small(
+                                    [
+                                        "Please cite NHH when using this data in research, reports, or publications. ",
+                                        html.Br(),
+                                        "Fuentes, G. (2024). ",
+                                        html.I("Panama Maritime Statistics Dashboard dataset. "),
+                                        "Norwegian School of Economics & SENACYT."
+                                    ],
+                                    className="text-muted",
+                                    style={"lineHeight": "1.5"}
+                                ),
+                            ])
                         ],
-                        className="mt-3",
+                        className="mt-4"
                     ),
                 ]
             ),
