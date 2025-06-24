@@ -1,6 +1,8 @@
 """Callbacks for the explorer tab."""
 
 from dash import Input, Output, State, dcc, ctx
+
+from app.data_utils.form_logging import append_submission
 from charts import charts_explorer
 
 
@@ -114,4 +116,8 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
             value_col = "service_time"
 
         filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+
+        # Log form submission to S3
+        append_submission(_name, _country, _purpose, _email)
+
         return dcc.send_data_frame(filtered.to_csv, "explorer_data.csv", index=False)
