@@ -2,6 +2,7 @@
 
 from dash import Input, Output, State, dcc, ctx
 from charts import charts_explorer
+from data_utils.form_saver import append_form_row
 
 
 def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
@@ -114,4 +115,8 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
             value_col = "service_time"
 
         filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+
+        # Save form information to S3 before returning the file
+        append_form_row(_name, _country, _purpose, _email)
+
         return dcc.send_data_frame(filtered.to_csv, "explorer_data.csv", index=False)
