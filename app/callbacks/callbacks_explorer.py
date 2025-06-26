@@ -129,4 +129,4 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
             fmt_date(end_ym),
         )
 
-        return dcc.send_data_frame(filtered.to_csv, "explorer_data.csv"
+        return dcc.send_data_frame(filtered.to_csv, "explorer_data.csv", index=False)
