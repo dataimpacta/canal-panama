@@ -1,9 +1,10 @@
+# pylint: disable=import-error
+
 """Callbacks for the explorer tab."""
 
 from dash import Input, Output, State, dcc, ctx
 from charts import charts_explorer
 from data_utils.form_saver import append_form_row
-
 
 def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
     """Register callbacks for the explorer tab."""
@@ -20,7 +21,7 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
         if end_idx is None:
             end_idx = controls["date_range"]["max_index"]
         if start_idx > end_idx:
-            if dcc.callback_context.triggered_id == "explorer--start-date":
+            if ctx.triggered_id  == "explorer--start-date":
                 start_idx = end_idx
             else:
                 end_idx = start_idx
