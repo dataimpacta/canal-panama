@@ -8,12 +8,21 @@ load_dotenv()
 FORM_BUCKET = os.getenv("FORM_BUCKET_NAME")
 FORM_FILE = os.getenv("FORM_FILE_NAME")
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID_DATA_IMPACTA")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY_DATA_IMPACTA")
+def append_form_row(
+    name: str,
+    country: str,
+    purpose: str,
+    email: str,
+    source: str,
+    start_date: str,
+    end_date: str,
+    bucket: str = FORM_BUCKET,
+    file: str = FORM_FILE,
+) -> None:
 
-s3_client = boto3.client(
-    "s3",
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    if not all([bucket, file, name, country, purpose, email, source, start_date, end_date]):
+    row = ",".join([name, country, purpose, email, source, start_date, end_date])
+            data = "Name,Country,Purpose,Email,Source,Start Date,End Date\n"
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
 )
 
