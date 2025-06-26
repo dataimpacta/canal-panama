@@ -379,4 +379,4 @@ def toggle_chart_modal(open_clicks, close_clicks, is_open):
 # Run the app
 if __name__ == '__main__':
     callbacks_explorer.setup_explorer_callbacks(app, df_emissions, df_waiting_times, controls_explorer)
-    app.run_server(debug=True, host='0.0.0.0', port=8050)
+    app.run_server(debug=False, host='0.0.0.0', port=8050)
