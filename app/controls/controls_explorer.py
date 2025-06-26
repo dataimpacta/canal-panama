@@ -54,35 +54,10 @@ def build_download_modal():
             dbc.ModalHeader("Download Data"),
             dbc.ModalBody(
                 [
-                    html.P(
-                        "Please provide the following details so we understand how the data will be used and can inform you of updates.",
-                        className="small",
-                    ),
                     dbc.Input(id="explorer--field-name", placeholder="Name and Last Name", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
-                    html.Div(
-                        [
-                            html.Hr(className="my-4"),
-                            html.Div([
-                                html.Span("Attribution", style={"fontWeight": "bold", "fontSize": "1rem"}),
-                                html.Br(),
-                                html.Small(
-                                    [
-                                        "Please cite NHH when using this data in research, reports, or publications. ",
-                                        html.Br(),
-                                        "Fuentes, G. (2024). ",
-                                        html.I("Panama Maritime Statistics Dashboard dataset. "),
-                                        "Norwegian School of Economics & SENACYT."
-                                    ],
-                                    className="text-muted",
-                                    style={"lineHeight": "1.5"}
-                                ),
-                            ])
-                        ],
-                        className="mt-4"
-                    ),
                 ]
             ),
             dbc.ModalFooter(
