@@ -8,8 +8,8 @@ load_dotenv()
 FORM_BUCKET = os.getenv("FORM_BUCKET_NAME")
 FORM_FILE = os.getenv("FORM_FILE_NAME")
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID_DATA_IMPACTA")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY_DATA_IMPACTA")
 
 s3_client = boto3.client(
     "s3",
