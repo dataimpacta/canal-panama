@@ -18,6 +18,7 @@ def build_header():
             html.Img(
                 src="/assets/Financing_Logo.png",
                 alt="SENACYT Logo",
+                loading="lazy",
                 style={
                     "height": "60px",
                     "margin": "0 auto",
@@ -42,6 +43,7 @@ def build_header():
                     html.Img(
                         src="/assets/Financing_Logo.png",
                         alt="SENACYT Logo",
+                        loading="lazy",
                         style={
                             "height": "70px",
                             "marginLeft": "auto"
