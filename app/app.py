@@ -239,6 +239,26 @@ app = dash.Dash(
 )
 server = app.server
 
+# Custom index string to preload the financing logo image
+app.index_string = """<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        <link rel=\"preload\" as=\"image\" href=\"/assets/Financing_Logo.png\">
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>"""
+
 app.layout = layout.build_main_layout()
 
 # ========================== 8️⃣ CALLBACKS ==========================
