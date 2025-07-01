@@ -20,6 +20,7 @@ def build_header():
                 alt="SENACYT Logo",
                 style={
                     "height": "60px",
+                    "width": "274px",
                     "margin": "0 auto",
                     "display": "block",
                     "alignItems": "left",
@@ -44,6 +45,7 @@ def build_header():
                         alt="SENACYT Logo",
                         style={
                             "height": "70px",
+                            "width": "320px",
                             "marginLeft": "auto"
                         }
                     )
