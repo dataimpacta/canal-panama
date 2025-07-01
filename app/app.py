@@ -260,6 +260,7 @@ app.index_string = f"""
         {{%favicon%}}
         <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"{bootstrap_css}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
+        <link rel=\"preload\" href=\"/assets/Financing_Logo.png\" as=\"image\">
         <noscript>
             <link rel=\"stylesheet\" href=\"{bootstrap_icons}\">
             <link rel=\"stylesheet\" href=\"{bootstrap_css}\">
