@@ -8,6 +8,7 @@ import json
 import time
 import logging
 from io import StringIO
+from pathlib import Path
 
 PRIORITY_VESSEL_TYPES = [
     "Bulk Carrier",
@@ -238,6 +239,44 @@ app = dash.Dash(
     suppress_callback_exceptions=True
 )
 server = app.server
+
+# Inline the local stylesheet and preload external CSS to minimise
+# render-blocking resources.
+local_css_path = Path(__file__).resolve().parent / "assets" / "styles.css"
+try:
+    local_css = local_css_path.read_text()
+except FileNotFoundError:
+    local_css = ""
+
+bootstrap_css = dbc.themes.BOOTSTRAP
+bootstrap_icons = dbc.icons.BOOTSTRAP
+
+app.index_string = f"""
+<!DOCTYPE html>
+<html>
+    <head>
+        {{%metas%}}
+        <title>{{%title%}}</title>
+        {{%favicon%}}
+        <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
+        <link rel=\"preload\" href=\"{bootstrap_css}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
+        <noscript>
+            <link rel=\"stylesheet\" href=\"{bootstrap_icons}\">
+            <link rel=\"stylesheet\" href=\"{bootstrap_css}\">
+        </noscript>
+        <style>{local_css}</style>
+        {{%css%}}
+    </head>
+    <body>
+        {{%app_entry%}}
+        <footer>
+            {{%config%}}
+            {{%scripts%}}
+            {{%renderer%}}
+        </footer>
+    </body>
+</html>
+"""
 
 app.layout = layout.build_main_layout()
 
