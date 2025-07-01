@@ -240,6 +240,11 @@ app = dash.Dash(
 )
 server = app.server
 
+# Respect headers set by a reverse proxy like nginx
+# This ensures correct URLs when the app is served behind a proxy
+from werkzeug.middleware.proxy_fix import ProxyFix
+server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1, x_host=1)
+
 # Inline the local stylesheet and preload external CSS to minimise
 # render-blocking resources.
 local_css_path = Path(__file__).resolve().parent / "assets" / "styles.css"
