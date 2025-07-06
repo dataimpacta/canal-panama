@@ -377,15 +377,13 @@ def build_chart_grid(chart_items):
     """
     rows = []
     for i in range(0, len(chart_items), 2):
-        row = html.Div(
-            dbc.Row([
-                dbc.Col(
-                    create_standard_chart_container(item),
-                    xs=12, sm=12, md=6, lg=6, xl=6, 
-                    style={"minHeight": "420px"})
-                for item in chart_items[i:i+2]
-            ],
-            class_name="g-0 mt-0 me-0 ms-0"))
+        row = dbc.Row([
+            dbc.Col(
+                create_standard_chart_container(item),
+                xs=12, sm=12, md=6, lg=6, xl=6,
+                style={"minHeight": "420px"})
+            for item in chart_items[i:i+2]
+        ], class_name="g-0 mt-0 me-0 ms-0")
         rows.append(row)
 
     return html.Div(rows, id="tutorial-charts-target")
