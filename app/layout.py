@@ -635,7 +635,7 @@ def build_main_layout():
         dcc.Store(id="chart-tabs-store", data="emissions"),
         dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
         build_tutorial_components(),
-        build_header(), 
+        build_header(),
         html.Div(id="tab-content"),
-        html.Div(id="delayed-footer")  # Placeholder
+        build_footer(),
     ], className="g-0 p-4", fluid=True)
