@@ -53,6 +53,7 @@ from h3.api.basic_int import cell_to_boundary
 from callbacks import callbacks_emissions
 from callbacks import callbacks_waiting
 from callbacks import callbacks_explorer
+from layout import build_footer
 
 import layout
 
@@ -287,6 +288,15 @@ app.index_string = f"""
 app.layout = layout.build_main_layout()
 
 # ========================== 8️⃣ CALLBACKS ==========================
+
+@app.callback(
+    Output("delayed-footer", "children"),
+    Input("footer-delay", "n_intervals")
+)
+def load_footer(n):
+    if n > 0:
+        return build_footer()
+    return ""
 
 callbacks_emissions.setup_emissions_callbacks(
     app,
