@@ -230,7 +230,7 @@ def create_standard_chart_container(chart):
         dcc.Loading(
             id=f"loading-{chart['id']}",
             type="circle",
-            children=dcc.Graph(id=chart["id"])
+            children=dcc.Graph(id=chart["id"], style={"height": "300px"})
         ),
 
         dbc.Modal(
