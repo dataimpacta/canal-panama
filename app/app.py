@@ -290,15 +290,6 @@ app.layout = layout.build_main_layout()
 
 # ========================== 8️⃣ CALLBACKS ==========================
 
-@app.callback(
-    Output("delayed-footer", "children"),
-    Input("footer-delay", "n_intervals")
-)
-def load_footer(n):
-    if n > 0:
-        return build_footer()
-    return ""
-
 callbacks_emissions.setup_emissions_callbacks(
     app,
     df_emissions,
