@@ -18,13 +18,9 @@ def build_header():
             html.Img(
                 src="/assets/Financing_Logo.png",
                 alt="SENACYT Logo",
-                style={
-                    "height": "60px",
-                    "width": "274px",
-                    "margin": "0 auto",
-                    "display": "block",
-                    "alignItems": "left",
-                }
+                width = "320px",
+                height = "60px",
+                style="margin-left: auto;"
             )
         ], className="d-flex d-md-none mb-3"),  # Show on xs-md only
 
@@ -32,8 +28,24 @@ def build_header():
             # Title column
             dbc.Col([
                 html.Div([
-                    html.H1("Panama Maritime Statistics", style={"margin": 0}),
-                    html.H4("Efficiency and Sustainability Indicators", style={"margin": 0, "fontWeight": "normal"})
+                    html.H1(
+                        "Panama Maritime Statistics",
+                        style={
+                            "margin": 0,
+                            "fontSize": "2rem",  # or 1.75rem
+                            "fontWeight": 600,
+                            "fontFamily": "Arial, Helvetica, sans-serif"  # system fonts = fast
+                        }
+                    ),
+                    html.H4(
+                        "Efficiency and Sustainability Indicators",
+                        style={
+                            "margin": 0,
+                            "fontWeight": "normal",
+                            "fontSize": "1.2rem",
+                            "fontFamily": "Arial, Helvetica, sans-serif"
+                        }
+                    )
                 ])
             ], xs=12, md=10, lg=10),
 
@@ -43,11 +55,9 @@ def build_header():
                     html.Img(
                         src="/assets/Financing_Logo.png",
                         alt="SENACYT Logo",
-                        style={
-                            "height": "70px",
-                            "width": "320px",
-                            "marginLeft": "auto"
-                        }
+                        width="320px",
+                        height="70px",
+                        style="margin-left: auto;"
                     )
                 ],
                 className="d-none d-md-flex",
@@ -65,11 +75,23 @@ def build_footer():
     return dbc.Row([
         dbc.Col([
             html.Hr(),
-            html.Small(
-                "This dashboard was developed as part of the project \"Green Shipping Corridors in the Panama Canal under Climate Risk risk\", partly sponsored by SENACYT under project number 060/2024.",
-                className="text-muted",
-            ),
-        ])
+            html.Small([
+                "This dashboard was developed as part of the project ",
+                html.Span(
+                    "\"Green Shipping Corridors in the Panama Canal under Climate Risk\"",
+                    style={"fontWeight": "bold"}
+                ),
+                ", partly sponsored by SENACYT under project number 060/2024."
+            ],
+            className="text-muted",
+            style={
+                "fontSize": "0.9rem",
+                "fontFamily": "Arial, Helvetica, sans-serif",
+                "lineHeight": "1.4",
+                "display": "block",
+                "textAlign": "left"
+            })
+        ], style={"minHeight": "40px"})
     ], className="dashboard-footer mt-4 mb-2")
 
 
@@ -613,9 +635,9 @@ def build_tutorial_components():
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
         build_tutorial_components(),
-        build_header(),
-        #build_navigation_bar(),  # This has id="chart-tabs"
-        html.Div(id="tab-content"),  # ✅ Dynamic container for tab-specific layout
-        build_footer()
+        build_header(), 
+        html.Div(id="tab-content"),
+        html.Div(id="delayed-footer")  # Placeholder
     ], className="g-0 p-4", fluid=True)
