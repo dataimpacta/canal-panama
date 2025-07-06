@@ -277,7 +277,7 @@ def create_standard_chart_container(chart):
             backdrop=False,
             scrollable=True,
         )
-    ], className="border p-4 m-0 g-0")
+    ], className="border p-4 m-0 g-0", style={"minHeight": "420px"})
 
 
 def create_standard_table_container(table):
@@ -359,7 +359,8 @@ def build_chart_grid(chart_items):
             dbc.Row([
                 dbc.Col(
                     create_standard_chart_container(item),
-                    xs=12, sm=12, md=6, lg=6, xl=6)
+                    xs=12, sm=12, md=6, lg=6, xl=6, 
+                    style={"minHeight": "460px"})
                 for item in chart_items[i:i+2]
             ],
             class_name="g-0 mt-0 me-0 ms-0"))
