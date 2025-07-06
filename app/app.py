@@ -279,6 +279,7 @@ app.index_string = f"""
         <footer>
             {{%config%}}
             {{%scripts%}}
+            <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
             {{%renderer%}}
         </footer>
     </body>
