@@ -36,11 +36,51 @@ def build_date_range_slider(date_range):
         clearable=False,
     )
 
-    return html.Div([
-        start_dropdown,
-        end_dropdown,
-        html.Div(id="explorer--range-label", className="text-center mt-2"),
-    ])
+    return html.Div(
+        [
+            start_dropdown,
+            end_dropdown,
+            html.Div(id="explorer--range-label", className="text-center mt-2"),
+        ],
+        id="explorer--month-range",
+    )
+
+
+def build_week_range_slider(week_range):
+    """Dropdowns to select a start and end week."""
+    def _fmt(yw):
+        yw = str(yw)
+        return f"{yw[:4]}-W{yw[4:]}"
+
+    options = [
+        {"label": _fmt(yw), "value": idx}
+        for idx, yw in enumerate(week_range["unique_year_week"])
+    ]
+
+    start_dd = dcc.Dropdown(
+        id="explorer--start-week",
+        options=options,
+        value=week_range["min_index"],
+        clearable=False,
+        className="mb-2",
+    )
+
+    end_dd = dcc.Dropdown(
+        id="explorer--end-week",
+        options=options,
+        value=week_range["max_index"],
+        clearable=False,
+    )
+
+    return html.Div(
+        [
+            start_dd,
+            end_dd,
+            html.Div(id="explorer--week-range-label", className="text-center mt-2"),
+        ],
+        id="explorer--week-range",
+        style={"display": "none"},
+    )
 
 
 def build_download_button():
