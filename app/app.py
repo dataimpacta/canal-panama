@@ -55,6 +55,7 @@ from callbacks import callbacks_waiting
 from callbacks import callbacks_energy
 from callbacks import callbacks_explorer
 from layout import build_footer
+from charts.charts_energy import get_country_name
 
 import layout
 
@@ -178,9 +179,17 @@ def prepare_energy_controls(df):
     with control values for origin (country_before), destination (country_after), and date ranges.
     """
     
-    # Unique origin and destination countries
-    country_before = sorted(df['country_before'].unique())
-    country_after = sorted(df['country_after'].unique())
+    # Unique origin and destination countries (use full names for controls)
+    country_before = sorted(df['country_before_name'].unique())
+    country_after = sorted(df['country_after_name'].unique())
+
+    # Maps from country name to ISO-2 code for filtering
+    country_before_map = dict(
+        df[['country_before_name', 'country_before']].drop_duplicates().values
+    )
+    country_after_map = dict(
+        df[['country_after_name', 'country_after']].drop_duplicates().values
+    )
 
     # Date slider values for year_week
     unique_year_weeks = sorted(df["year_week"].unique())
@@ -192,6 +201,8 @@ def prepare_energy_controls(df):
     return {
         "country_before": country_before,
         "country_after": country_after,
+        "country_before_map": country_before_map,
+        "country_after_map": country_after_map,
         "date_range": {
             "min_index": min_index,
             "max_index": max_index,
@@ -241,6 +252,9 @@ df_energy_demand = read_parquet_from_s3(bucket_name, file_name_energy)
 df_energy_demand["year_week"] = (
     df_energy_demand["year"].astype(str) + df_energy_demand["week"].astype(str).str.zfill(2)
 ).astype(int)
+
+df_energy_demand["country_before_name"] = df_energy_demand["country_before"].apply(get_country_name)
+df_energy_demand["country_after_name"] = df_energy_demand["country_after"].apply(get_country_name)
 
 controls_energy = prepare_energy_controls(df_energy_demand)
 

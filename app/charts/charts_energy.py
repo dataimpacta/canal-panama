@@ -129,7 +129,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
     return fig
 
 
-def plot_sankey_before_after(df, top_n=10,):
+def plot_sankey_before_after(df, origin_col="country_before", dest_col="country_after", top_n=10,):
     """
     Generate a Sankey diagram showing the top N energy flows between countries.
 
@@ -143,7 +143,7 @@ def plot_sankey_before_after(df, top_n=10,):
     """
     # Step 1: Group by origin and destination
     sankey_data = (
-        df.groupby(['country_before', 'country_after'])['sum_energy']
+        df.groupby([origin_col, dest_col])['sum_energy']
         .sum()
         .reset_index()
     )
@@ -152,8 +152,8 @@ def plot_sankey_before_after(df, top_n=10,):
     sankey_data = sankey_data.sort_values(by='sum_energy', ascending=False).head(top_n)
 
     # Step 3: Distinguish labels
-    sankey_data['origin_label'] = sankey_data['country_before']
-    sankey_data['dest_label'] = sankey_data['country_after'] + " (dest)"
+    sankey_data['origin_label'] = sankey_data[origin_col]
+    sankey_data['dest_label'] = sankey_data[dest_col] + " (dest)"
 
     # Step 4: Unique labels
     all_labels = pd.concat([sankey_data['origin_label'], sankey_data['dest_label']]).unique()
@@ -183,6 +183,14 @@ def get_iso3(code2):
         return pycountry.countries.get(alpha_2=code2).alpha_3
     except:
         return None
+
+
+def get_country_name(code2):
+    """Return full country name from ISO-2 code."""
+    try:
+        return pycountry.countries.get(alpha_2=code2).name
+    except:
+        return code2
 
 def generate_energy_bubble_map(df, country_role='country_before', title="Energy by Country"):
     """
