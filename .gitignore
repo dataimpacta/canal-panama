@@ -8,4 +8,3 @@ venv/
 secrets/
 sample_data/
 *.log
-locusfile.py
