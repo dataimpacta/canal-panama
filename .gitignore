@@ -8,3 +8,4 @@ venv/
 secrets/
 sample_data/
 *.log
+locustfile.py
