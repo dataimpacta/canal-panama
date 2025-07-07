@@ -211,6 +211,8 @@ def create_standard_chart_container(chart):
     """
     Create the standard HTML DIV for the charts with a title, subtitle, and tooltip on the title.
     """
+
+    
     return html.Div([
         html.Div([
             dbc.Row([
@@ -228,10 +230,7 @@ def create_standard_chart_container(chart):
                         id=f"title-tooltip-{chart['id']}",
                         style={"cursor": "pointer", "color": "#666"}
                     ),
-                    *(
-                        [chart["controls"]]
-                        if chart.get("controls") else []
-                    ),
+                    chart.get("controls"),
                     dbc.Tooltip(
                         chart.get("description", "No description available."),
                         target=f"title-tooltip-{chart['id']}",
@@ -554,11 +553,6 @@ def build_sidebar_energy(controls):
 
 
 def build_main_container_energy():
-    """
-    Here we only have statick content, with the tags
-    - KPI grid
-    - Chart grid
-    """
     return dbc.Col([
         build_chart_grid([
             {
