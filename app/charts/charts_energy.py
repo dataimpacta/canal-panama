@@ -235,7 +235,28 @@ def generate_energy_bubble_map(df, country_role='country_before', title="Energy 
         locations="iso3",
         size="sum_energy",
         projection="natural earth",
+        hover_data={'iso3': True, 'sum_energy': True},  # Hide iso3, show sum_energy
+        custom_data=['iso2', 'sum_energy']  # Add custom data for tooltip
     )
 
-    fig.update_layout(geo=dict(showland=True, landcolor="LightGrey"))
+    # Update tooltip with custom formatting
+    fig.update_traces(
+        hovertemplate="<b>%{customdata[0]}</b>: %{customdata[1]:,.0f} kWh<extra></extra>"
+    )
+    
+    fig.update_layout(
+        height=300,  # Increased height for bigger chart
+        #width=500,   # Set width for better proportions
+        geo=dict(
+            showland=True,
+            #landcolor="LightGrey",
+            showframe=True,
+            framecolor="LightGrey",
+            showcoastlines=True,
+            coastlinecolor="White",
+            #showocean=True,
+            #oceancolor="lightblue"
+        ),
+        margin=dict(l=0, r=0, t=0, b=0)  # Remove margins to use full container space
+    )
     return fig
