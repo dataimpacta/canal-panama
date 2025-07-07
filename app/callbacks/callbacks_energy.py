@@ -138,7 +138,20 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
                 empty_fig, empty_fig,
                 True
             )
+
+
         # For now, use the same chart for all outputs
         df_year_week = filtered_df.groupby(['year','week'])['sum_energy'].sum().reset_index()
         fig = charts_energy.plot_line_chart_energy_demand_by_year_week(df_year_week)
-        return fig, fig, fig, fig, fig, fig, fig, fig, False
+        
+        country_col = "country_before"
+
+        df_country = filtered_df.groupby(country_col)["sum_energy"].sum().reset_index()
+        top_countries = df_country.sort_values(country_col, ascending=False).head(6)
+        fig2 = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)
+        
+        fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role=country_col)
+
+        fig4 = charts_energy.plot_sankey_before_after(filtered_df)
+
+        return fig, fig, fig2, fig2, fig3, fig3, fig4, fig4, False
