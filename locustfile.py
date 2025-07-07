@@ -24,16 +24,12 @@ class DashboardUser(HttpUser):
 
         # Step 2: Simulate Refresh Charts on the "Waiting Time" tab
         payload = {
-            "output": "..time--chart--1.figure...time--chart--1-fullscreen.figure...time--chart--2.figure...time--chart--2-fullscreen.figure...time--chart--3.figure...time--chart--3-fullscreen.figure...time--chart--4.figure...time--chart--4-fullscreen.figure...time--modal--no-data.is_open..",
+            "output": "..time--chart--1.figure...time--chart--2.figure...time--chart--3.figure...time--chart--4.figure...time--modal--no-data.is_open..",
             "outputs": [
                 {"id": "time--chart--1", "property": "figure"},
-                {"id": "time--chart--1-fullscreen", "property": "figure"},
                 {"id": "time--chart--2", "property": "figure"},
-                {"id": "time--chart--2-fullscreen", "property": "figure"},
                 {"id": "time--chart--3", "property": "figure"},
-                {"id": "time--chart--3-fullscreen", "property": "figure"},
                 {"id": "time--chart--4", "property": "figure"},
-                {"id": "time--chart--4-fullscreen", "property": "figure"},
                 {"id": "time--modal--no-data", "property": "is_open"}
             ],
             "inputs": [

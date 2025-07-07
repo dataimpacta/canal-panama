@@ -455,19 +455,20 @@ def update_tutorial(start_click, next_click, current):
 
 
 @app.callback(
-    Output({"type": "chart-modal", "id": MATCH}, "is_open"),
+    Output({"type": "chart-container", "id": MATCH}, "className"),
     Input({"type": "open-fullscreen", "id": MATCH}, "n_clicks"),
     Input({"type": "close-fullscreen", "id": MATCH}, "n_clicks"),
-    State({"type": "chart-modal", "id": MATCH}, "is_open"),
+    State({"type": "chart-container", "id": MATCH}, "className"),
     prevent_initial_call=True
 )
-def toggle_chart_modal(open_clicks, close_clicks, is_open):
+def toggle_chart_fullscreen(open_clicks, close_clicks, current_class):
+    base = "border p-4 m-0 g-0 position-relative"
     trigger = ctx.triggered_id
     if trigger and trigger.get("type") == "open-fullscreen":
-        return True
+        return f"{base} fullscreen-chart"
     if trigger and trigger.get("type") == "close-fullscreen":
-        return False
-    return is_open
+        return base
+    return current_class or base
 
 
 callbacks_explorer.setup_explorer_callbacks(app, df_emissions, df_waiting_times, controls_explorer)

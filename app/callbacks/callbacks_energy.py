@@ -102,13 +102,9 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
     @app.callback(
         [
             Output("energy--chart--1", "figure"),
-            Output("energy--chart--1-fullscreen", "figure"),
             Output("energy--chart--2", "figure"),
-            Output("energy--chart--2-fullscreen", "figure"),
             Output("energy--chart--3", "figure"),
-            Output("energy--chart--3-fullscreen", "figure"),
             Output("energy--chart--4", "figure"),
-            Output("energy--chart--4-fullscreen", "figure"),
             Output("energy--modal--no-data", "is_open"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
@@ -132,13 +128,13 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         if filtered_df.empty:
             empty_fig = go.Figure()
             return (
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
+                empty_fig,
+                empty_fig,
+                empty_fig,
+                empty_fig,
                 True
             )
         # For now, use the same chart for all outputs
         df_year_week = filtered_df.groupby(['year','week'])['sum_energy'].sum().reset_index()
         fig = charts_energy.plot_line_chart_energy_demand_by_year_week(df_year_week)
-        return fig, fig, fig, fig, fig, fig, fig, fig, False
+        return fig, fig, fig, fig, False
