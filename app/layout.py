@@ -560,21 +560,21 @@ def build_main_container_energy():
             {
                 "id": "energy--chart--1",
                 "title": "Total Energy",
-                "subtitle": "JOULES",
+                "subtitle": "kWh",
                 "description": "This is the description for total emissions."
             },
             {
                 "id": "energy--chart--2",
                 "title": "Energy by Country", 
-                "subtitle": "JOULES"},
+                "subtitle": "kWh"},
             {
                 "id": "energy--chart--3",
                 "title": "Energy Demand", 
-                "subtitle": "JOULES"},
+                "subtitle": "kWh"},
             {
                 "id": "energy--chart--4",
                 "title": "Interchange of Energy", 
-                "subtitle": "JOULES"},
+                "subtitle": "kWh"},
         ])
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
