@@ -235,6 +235,10 @@ def create_standard_chart_container(chart):
                         style={"maxWidth": "300px"}
                     )
                 ], width="auto"),
+                *(
+                    [dbc.Col(chart["controls"], width="auto")]
+                    if chart.get("controls") else []
+                ),
                 dbc.Col(
                     dbc.Button(
                         html.I(className="bi bi-arrows-fullscreen"),
@@ -565,12 +569,16 @@ def build_main_container_energy():
             },
             {
                 "id": "energy--chart--2",
-                "title": "Energy by Country", 
-                "subtitle": "kWh"},
+                "title": "Energy by Country",
+                "subtitle": "kWh",
+                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart2")
+            },
             {
                 "id": "energy--chart--3",
-                "title": "Energy Demand", 
-                "subtitle": "kWh"},
+                "title": "Energy Demand",
+                "subtitle": "kWh",
+                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart3")
+            },
             {
                 "id": "energy--chart--4",
                 "title": "Interchange of Energy", 
