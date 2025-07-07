@@ -52,6 +52,7 @@ from h3.api.basic_int import cell_to_boundary
 
 from callbacks import callbacks_emissions
 from callbacks import callbacks_waiting
+from callbacks import callbacks_energy
 from callbacks import callbacks_explorer
 from layout import build_footer
 
@@ -87,6 +88,7 @@ secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 bucket_name = os.getenv("bucket_name")
 file_name_emissions = os.getenv("file_name_emissions")
 file_name_waiting = os.getenv("file_name_waiting")
+file_name_energy = os.getenv("file_name_energy")
 
 # ========================== 2️⃣ DATABASE CONNECTION ==========================
 
@@ -170,6 +172,33 @@ def prepare_waiting_time_controls(df):
         }
     }
 
+def prepare_energy_controls(df):
+    """
+    Given a DataFrame with energy demand data, returns a dictionary
+    with control values for origin (country_before), destination (country_after), and date ranges.
+    """
+    
+    # Unique origin and destination countries
+    country_before = sorted(df['country_before'].unique())
+    country_after = sorted(df['country_after'].unique())
+
+    # Date slider values for year_week
+    unique_year_weeks = sorted(df["year_week"].unique())
+    year_week_map = {yw: i for i, yw in enumerate(unique_year_weeks)}
+    index_to_year_week = {i: yw for yw, i in year_week_map.items()}
+    min_index = min(year_week_map.values())
+    max_index = max(year_week_map.values())
+
+    return {
+        "country_before": country_before,
+        "country_after": country_after,
+        "date_range": {
+            "min_index": min_index,
+            "max_index": max_index,
+            "unique_year_week": unique_year_weeks,
+            "index_to_year_week": index_to_year_week,
+        }
+    }
 
 def prepare_explorer_controls(df_emissions, df_waiting):
     """Prepare controls for the explorer tab."""
@@ -206,6 +235,14 @@ df_waiting_times["year_month"] = (
 
 controls_waiting_times = prepare_waiting_time_controls(df_waiting_times)
 controls_explorer = prepare_explorer_controls(df_emissions, df_waiting_times)
+
+# Read Energy Demand Data
+df_energy_demand = read_parquet_from_s3(bucket_name, file_name_energy)
+df_energy_demand["year_week"] = (
+    df_energy_demand["year"].astype(str) + df_energy_demand["week"].astype(str).str.zfill(2)
+).astype(int)
+
+controls_energy = prepare_energy_controls(df_energy_demand)
 
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
@@ -303,6 +340,12 @@ callbacks_waiting.setup_waiting_times_callbacks(
     controls_waiting_times
 )
 
+callbacks_energy.setup_energy_callbacks(
+    app,
+    df_energy_demand,
+    controls_energy
+)
+
 @app.callback(
     Output("chart-tabs-store", "data"),
     [
@@ -362,6 +405,10 @@ def update_tab_content(selected_tab):
     elif selected_tab == "energy":
         return html.Div([
             nav_bar,
+            dbc.Row([
+            layout.build_sidebar_energy(controls_energy), 
+            layout.build_main_container_energy()
+        ], className="g-0")
         ])
     elif selected_tab == "explorer":
         return html.Div([

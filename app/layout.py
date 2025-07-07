@@ -7,6 +7,7 @@ from charts import charts_emissions
 from controls import controls_explorer
 from controls import controls_emissions
 from controls import controls_time
+from controls import controls_energy
 
 
 # FIXED VALUES
@@ -516,6 +517,66 @@ def build_main_container_waiting_times():
                 "subtitle": "HOURS"},
         ])
         ], xs=12, md=12, lg=10, width=10)
+
+
+def build_sidebar_energy(controls):
+    """
+    Build the sidebar for the energy dashboard.
+    - Accordion with:
+        - Date range slider
+        - Country before checklist
+        - Country after checklist
+    - Refresh button (reuse emissions refresh for now)
+    """
+    return dbc.Col([
+        controls_energy.build_message_box(),
+        dbc.Accordion([
+            dbc.AccordionItem(
+                [controls_energy.build_date_range_slider(controls["date_range"])],
+                title="Date Range"
+            ),
+            dbc.AccordionItem(
+                [controls_energy.build_country_before_checklist(controls["country_before"])],
+                title="Country Before"
+            ),
+            dbc.AccordionItem(
+                [controls_energy.build_country_after_checklist(controls["country_after"])],
+                title="Country After"
+            )
+        ]),
+        html.Br(),
+        controls_emissions.build_button_refresh_charts()
+    ], className="border p-3", xs=12, md=12, lg=2, width=2)
+
+
+def build_main_container_energy():
+    """
+    Here we only have statick content, with the tags
+    - KPI grid
+    - Chart grid
+    """
+    return dbc.Col([
+        build_chart_grid([
+            {
+                "id": "energy--chart--1",
+                "title": "Total Energy",
+                "subtitle": "JOULES",
+                "description": "This is the description for total emissions."
+            },
+            {
+                "id": "energy--chart--2",
+                "title": "Energy by Country", 
+                "subtitle": "JOULES"},
+            {
+                "id": "energy--chart--3",
+                "title": "Energy Demand", 
+                "subtitle": "JOULES"},
+            {
+                "id": "energy--chart--4",
+                "title": "Interchange of Energy", 
+                "subtitle": "JOULES"},
+        ])
+        ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
 def build_main_container_service_times():
