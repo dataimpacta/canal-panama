@@ -19,9 +19,9 @@ def build_header():
             html.Img(
                 src="/assets/Financing_Logo.png",
                 alt="SENACYT Logo",
-                width = "320px",
+                width = "275px",
                 height = "60px",
-                style="margin-left: auto;"
+                #style="margin-left: auto;"
             )
         ], className="d-flex d-md-none mb-3"),  # Show on xs-md only
 
@@ -58,7 +58,7 @@ def build_header():
                         alt="SENACYT Logo",
                         width="320px",
                         height="70px",
-                        style="margin-left: auto;"
+                        #style="margin-left: auto;"
                     )
                 ],
                 className="d-none d-md-flex",
