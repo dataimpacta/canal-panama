@@ -624,7 +624,10 @@ def build_sidebar_explorer(controls):
                 title="Source"
             ),
             dbc.AccordionItem(
-                [controls_explorer.build_date_range_slider(controls["date_range"])],
+                [
+                    controls_explorer.build_date_range_slider(controls["date_range"]),
+                    controls_explorer.build_week_range_slider(controls["week_range"]),
+                ],
                 title="Date Range"
             )
         ]),

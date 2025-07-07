@@ -9,6 +9,7 @@ import time
 import logging
 from io import StringIO
 from pathlib import Path
+import datetime
 
 PRIORITY_VESSEL_TYPES = [
     "Bulk Carrier",
@@ -200,20 +201,41 @@ def prepare_energy_controls(df):
         }
     }
 
-def prepare_explorer_controls(df_emissions, df_waiting):
+def _yw_to_month(yw: int) -> int:
+    """Convert YYYYWW to YYYYMM for month based sliders."""
+    year = int(str(yw)[:4])
+    week = int(str(yw)[4:])
+    date_val = datetime.date.fromisocalendar(year, week, 1)
+    return int(date_val.strftime("%Y%m"))
+
+
+def prepare_explorer_controls(df_emissions, df_waiting, df_energy):
     """Prepare controls for the explorer tab."""
-    all_months = sorted(set(df_emissions["year_month"]).union(df_waiting["year_month"]))
+    energy_months = [_yw_to_month(yw) for yw in df_energy["year_week"]]
+    all_months = sorted(
+        set(df_emissions["year_month"]).union(df_waiting["year_month"]).union(energy_months)
+    )
     year_month_map = {ym: i for i, ym in enumerate(all_months)}
     index_to_year_month = {i: ym for ym, i in year_month_map.items()}
 
+    unique_year_weeks = sorted(df_energy["year_week"].unique())
+    year_week_map = {yw: i for i, yw in enumerate(unique_year_weeks)}
+    index_to_year_week = {i: yw for yw, i in year_week_map.items()}
+
     return {
-        "sources": ["emissions", "waiting_time", "service_time"],
+        "sources": ["emissions", "waiting_time", "service_time", "energy"],
         "date_range": {
             "min_index": min(year_month_map.values()),
             "max_index": max(year_month_map.values()),
             "unique_year_months": all_months,
             "index_to_year_month": index_to_year_month,
-        }
+        },
+        "week_range": {
+            "min_index": min(year_week_map.values()) if year_week_map else 0,
+            "max_index": max(year_week_map.values()) if year_week_map else 0,
+            "unique_year_week": unique_year_weeks,
+            "index_to_year_week": index_to_year_week,
+        },
     }
 
 # ========================== 3️⃣ READ & PREPROCESS DATA ==========================
@@ -234,15 +256,25 @@ df_waiting_times["year_month"] = (
 ).astype(int)
 
 controls_waiting_times = prepare_waiting_time_controls(df_waiting_times)
-controls_explorer = prepare_explorer_controls(df_emissions, df_waiting_times)
 
 # Read Energy Demand Data
 df_energy_demand = read_parquet_from_s3(bucket_name, file_name_energy)
 df_energy_demand["year_week"] = (
     df_energy_demand["year"].astype(str) + df_energy_demand["week"].astype(str).str.zfill(2)
 ).astype(int)
+df_energy_demand["year_month"] = df_energy_demand.apply(
+    lambda row: int(
+        datetime.date.fromisocalendar(int(row["year"]), int(row["week"]), 1).strftime("%Y%m")
+    ),
+    axis=1,
+)
 
 controls_energy = prepare_energy_controls(df_energy_demand)
+controls_explorer = prepare_explorer_controls(
+    df_emissions,
+    df_waiting_times,
+    df_energy_demand,
+)
 
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
@@ -470,7 +502,13 @@ def toggle_chart_modal(open_clicks, close_clicks, is_open):
     return is_open
 
 
-callbacks_explorer.setup_explorer_callbacks(app, df_emissions, df_waiting_times, controls_explorer)
+callbacks_explorer.setup_explorer_callbacks(
+    app,
+    df_emissions,
+    df_waiting_times,
+    df_energy_demand,
+    controls_explorer,
+)
 
 # Run the app
 if __name__ == '__main__':
