@@ -159,6 +159,12 @@ def plot_sankey_before_after(df, origin_col="country_before", dest_col="country_
     all_labels = pd.concat([sankey_data['origin_label'], sankey_data['dest_label']]).unique()
     label_to_index = {label: i for i, label in enumerate(all_labels)}
 
+    # Simple color palette
+    node_color = "#4273EE"  # blue
+    link_color = "#D9D9D9"  # gray
+    node_colors = [node_color] * len(all_labels)
+    link_colors = [link_color] * len(sankey_data)
+
     # Step 5: Create Sankey
     fig = go.Figure(data=[go.Sankey(
         node=dict(
@@ -166,13 +172,19 @@ def plot_sankey_before_after(df, origin_col="country_before", dest_col="country_
             pad=15,
             thickness=20,
             line=dict(color="black", width=0.5),
+            color=node_colors,
         ),
         link=dict(
             source=sankey_data['origin_label'].map(label_to_index),
             target=sankey_data['dest_label'].map(label_to_index),
             value=sankey_data['sum_energy'],
+            color=link_colors,
         )
     )])
+    fig.update_layout(
+        height=300,  # Increased height for better visibility
+        margin=dict(l=5, r=5, t=5, b=5)
+    )
     return fig
 
 
