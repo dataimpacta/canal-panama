@@ -228,17 +228,17 @@ def create_standard_chart_container(chart):
                         id=f"title-tooltip-{chart['id']}",
                         style={"cursor": "pointer", "color": "#666"}
                     ),
+                    *(
+                        [chart["controls"]]
+                        if chart.get("controls") else []
+                    ),
                     dbc.Tooltip(
                         chart.get("description", "No description available."),
                         target=f"title-tooltip-{chart['id']}",
                         placement="right",
                         style={"maxWidth": "300px"}
                     )
-                ], width="auto"),
-                *(
-                    [dbc.Col(chart["controls"], width="auto")]
-                    if chart.get("controls") else []
-                ),
+                ], width="auto", class_name="d-flex align-items-center gap-2"),
                 dbc.Col(
                     dbc.Button(
                         html.I(className="bi bi-arrows-fullscreen"),
