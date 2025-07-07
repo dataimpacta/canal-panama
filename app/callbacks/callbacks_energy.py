@@ -117,9 +117,10 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             State("energy--checklist--country-after", "value"),
             State("energy--start-date", "value"),
             State("energy--end-date", "value"),
+            State("energy--country-toggle", "value"),
         ]
     )
-    def update_charts(_n_clicks, selected_country_before, selected_country_after, start_idx, end_idx):
+    def update_charts(_n_clicks, selected_country_before, selected_country_after, start_idx, end_idx, country_col):
         index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
         start_yw = index_to_year_week[start_idx]
         end_yw = index_to_year_week[end_idx]
@@ -144,8 +145,6 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         df_year_week = filtered_df.groupby(['year','week'])['sum_energy'].sum().reset_index()
         fig = charts_energy.plot_line_chart_energy_demand_by_year_week(df_year_week)
         
-        country_col = "country_before"
-
         df_country = filtered_df.groupby(country_col)["sum_energy"].sum().reset_index()
         top_countries = df_country.sort_values(country_col, ascending=False).head(6)
         fig2 = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)

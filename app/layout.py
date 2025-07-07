@@ -247,7 +247,8 @@ def create_standard_chart_container(chart):
                 ),
             ], className="align-items-center g-0"),
 
-            html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
+            html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"}),
+            chart.get("control"),
         ]),
 
         dcc.Loading(
@@ -565,8 +566,10 @@ def build_main_container_energy():
             },
             {
                 "id": "energy--chart--2",
-                "title": "Energy by Country", 
-                "subtitle": "JOULES"},
+                "title": "Energy by Country",
+                "subtitle": "JOULES",
+                "control": controls_energy.build_country_role_toggle(),
+            },
             {
                 "id": "energy--chart--3",
                 "title": "Energy Demand", 

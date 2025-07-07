@@ -138,3 +138,17 @@ def build_country_after_checklist(country_after):
             }
         )
     ])
+
+
+def build_country_role_toggle():
+    """Toggle to switch between origin and destination countries."""
+    return dbc.RadioItems(
+        id="energy--country-toggle",
+        options=[
+            {"label": "Origin", "value": "country_before"},
+            {"label": "Destination", "value": "country_after"},
+        ],
+        value="country_before",
+        inline=True,
+        className="mb-2",
+    )
