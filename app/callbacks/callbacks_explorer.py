@@ -6,7 +6,8 @@ from dash import Input, Output, State, dcc, ctx
 from charts import charts_explorer
 from data_utils.form_saver import append_form_row
 
-def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
+
+def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls):
     """Register callbacks for the explorer tab."""
 
     @app.callback(
@@ -43,6 +44,50 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
         return f"{_fmt(start_ym)} to {_fmt(end_ym)}"
 
     @app.callback(
+        Output("explorer--start-week", "value"),
+        Output("explorer--end-week", "value"),
+        Input("explorer--start-week", "value"),
+        Input("explorer--end-week", "value"),
+    )
+    def validate_weeks(start_idx, end_idx):
+        if start_idx is None:
+            start_idx = controls["week_range"]["min_index"]
+        if end_idx is None:
+            end_idx = controls["week_range"]["max_index"]
+        if start_idx > end_idx:
+            if ctx.triggered_id == "explorer--start-week":
+                start_idx = end_idx
+            else:
+                end_idx = start_idx
+        return start_idx, end_idx
+
+    @app.callback(
+        Output("explorer--week-range-label", "children"),
+        Input("explorer--start-week", "value"),
+        Input("explorer--end-week", "value"),
+    )
+    def update_week_label(start_idx, end_idx):
+        index_map = controls["week_range"]["index_to_year_week"]
+        start_yw = index_map[start_idx]
+        end_yw = index_map[end_idx]
+
+        def _fmt(yw):
+            yw = str(yw)
+            return f"{yw[:4]}-W{yw[4:]}"
+
+        return f"{_fmt(start_yw)} to {_fmt(end_yw)}"
+
+    @app.callback(
+        Output("explorer--month-range", "style"),
+        Output("explorer--week-range", "style"),
+        Input("explorer--source", "value"),
+    )
+    def toggle_range_visibility(source):
+        if source == "energy":
+            return {"display": "none"}, {"display": "block"}
+        return {"display": "block"}, {"display": "none"}
+
+    @app.callback(
         Output("explorer--chart", "figure"),
         Output("explorer--chart-fullscreen", "figure"),
         Output("explorer--table", "data"),
@@ -50,24 +95,39 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
         Input("explorer--source", "value"),
         Input("explorer--start-date", "value"),
         Input("explorer--end-date", "value"),
+        Input("explorer--start-week", "value"),
+        Input("explorer--end-week", "value"),
     )
-    def update_chart(source, start_idx, end_idx):
-        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
-        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+    def update_chart(source, start_month_idx, end_month_idx, start_week_idx, end_week_idx):
+        start_ym = controls["date_range"]["index_to_year_month"].get(start_month_idx)
+        end_ym = controls["date_range"]["index_to_year_month"].get(end_month_idx)
+        start_yw = controls["week_range"]["index_to_year_week"].get(start_week_idx)
+        end_yw = controls["week_range"]["index_to_year_week"].get(end_week_idx)
 
         if source == "emissions":
             df = df_emissions
             value_col = "co2_equivalent_t"
+            filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+            summary = filtered.groupby("year_month")[value_col].sum().reset_index()
+            summary["date"] = summary["year_month"].astype(str).str.slice(0, 4) + "-" + summary["year_month"].astype(str).str.slice(4, 6)
         elif source == "waiting_time":
             df = df_waiting
             value_col = "waiting_time"
-        else:
+            filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+            summary = filtered.groupby("year_month")[value_col].sum().reset_index()
+            summary["date"] = summary["year_month"].astype(str).str.slice(0, 4) + "-" + summary["year_month"].astype(str).str.slice(4, 6)
+        elif source == "service_time":
             df = df_waiting
             value_col = "service_time"
-
-        filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
-        summary = filtered.groupby("year_month")[value_col].sum().reset_index()
-        summary["date"] = summary["year_month"].astype(str).str.slice(0, 4) + "-" + summary["year_month"].astype(str).str.slice(4, 6)
+            filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+            summary = filtered.groupby("year_month")[value_col].sum().reset_index()
+            summary["date"] = summary["year_month"].astype(str).str.slice(0, 4) + "-" + summary["year_month"].astype(str).str.slice(4, 6)
+        else:  # energy
+            df = df_energy
+            value_col = "sum_energy"
+            filtered = df[(df["year_week"] >= start_yw) & (df["year_week"] <= end_yw)]
+            summary = filtered.groupby("year_week")[value_col].sum().reset_index()
+            summary["date"] = summary["year_week"].astype(str).str.slice(0, 4) + "-W" + summary["year_week"].astype(str).str.slice(4, None)
         fig = charts_explorer.plot_line_chart(summary, value_col)
         table = filtered.head(6)
         columns = [{"name": c.replace("_", " ").title(), "id": c} for c in table.columns]
@@ -95,38 +155,49 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, controls):
         State("explorer--source", "value"),
         State("explorer--start-date", "value"),
         State("explorer--end-date", "value"),
+        State("explorer--start-week", "value"),
+        State("explorer--end-week", "value"),
         State("explorer--field-name", "value"),
         State("explorer--field-country", "value"),
         State("explorer--field-purpose", "value"),
         State("explorer--field-email", "value"),
         prevent_initial_call=True,
     )
-    def download_data(_, source, start_idx, end_idx, _name, _country, _purpose, _email):
-        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
-        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+    def download_data(_, source, start_month_idx, end_month_idx, start_week_idx, end_week_idx, _name, _country, _purpose, _email):
+        start_ym = controls["date_range"]["index_to_year_month"].get(start_month_idx)
+        end_ym = controls["date_range"]["index_to_year_month"].get(end_month_idx)
+        start_yw = controls["week_range"]["index_to_year_week"].get(start_week_idx)
+        end_yw = controls["week_range"]["index_to_year_week"].get(end_week_idx)
 
         if source == "emissions":
             df = df_emissions
-            value_col = "co2_equivalent_t"
+            filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
         elif source == "waiting_time":
             df = df_waiting
-            value_col = "waiting_time"
-        else:
+            filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+        elif source == "service_time":
             df = df_waiting
-            value_col = "service_time"
-
-        filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+            filtered = df[(df["year_month"] >= start_ym) & (df["year_month"] <= end_ym)]
+        else:
+            df = df_energy
+            filtered = df[(df["year_week"] >= start_yw) & (df["year_week"] <= end_yw)]
 
         # Save form information to S3 before returning the file
-        fmt_date = lambda ym: f"{str(ym)[:4]}-{str(ym)[4:6]}-01"
+        if source == "energy":
+            fmt_date = lambda yw: f"{str(yw)[:4]}-W{str(yw)[4:]}"
+            start_val = fmt_date(start_yw)
+            end_val = fmt_date(end_yw)
+        else:
+            fmt_date = lambda ym: f"{str(ym)[:4]}-{str(ym)[4:6]}-01"
+            start_val = fmt_date(start_ym)
+            end_val = fmt_date(end_ym)
         append_form_row(
             _name,
             _country,
             _purpose,
             _email,
             source,
-            fmt_date(start_ym),
-            fmt_date(end_ym),
+            start_val,
+            end_val,
         )
-
         return dcc.send_data_frame(filtered.to_csv, "explorer_data.csv", index=False)
