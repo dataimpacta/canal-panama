@@ -705,6 +705,8 @@ def build_tutorial_components():
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        dcc.Store(id="energy--role-chart2", data="country_before"),
+        dcc.Store(id="energy--role-chart3", data="country_before"),
         dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
         build_tutorial_components(),
         build_header(),

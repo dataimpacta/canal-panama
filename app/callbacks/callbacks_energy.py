@@ -73,6 +73,22 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         return options, new_selected
 
     @app.callback(
+        Output("energy--role-chart2", "data"),
+        Input("energy--dropdown-chart2", "value"),
+        prevent_initial_call=True,
+    )
+    def store_role_chart2(value):
+        return value
+
+    @app.callback(
+        Output("energy--role-chart3", "data"),
+        Input("energy--dropdown-chart3", "value"),
+        prevent_initial_call=True,
+    )
+    def store_role_chart3(value):
+        return value
+
+    @app.callback(
         Output("energy--checklist--country-after", "options"),
         Output("energy--checklist--country-after", "value"),
         Input("energy--btn--country-after-select", "n_clicks"),
@@ -112,8 +128,8 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             Output("energy--modal--no-data", "is_open"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
-        Input("energy--dropdown-chart2", "value"),
-        Input("energy--dropdown-chart3", "value"),
+        Input("energy--role-chart2", "data"),
+        Input("energy--role-chart3", "data"),
         [
             State("energy--checklist--country-before", "value"),
             State("energy--checklist--country-after", "value"),
