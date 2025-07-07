@@ -123,11 +123,16 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
         start_yw = index_to_year_week[start_idx]
         end_yw = index_to_year_week[end_idx]
+        before_map = controls_energy["country_before_map"]
+        after_map = controls_energy["country_after_map"]
+        selected_before_codes = [before_map.get(n, n) for n in selected_country_before]
+        selected_after_codes = [after_map.get(n, n) for n in selected_country_after]
+
         filtered_df = df_energy[
             (df_energy["year_week"] >= start_yw) &
             (df_energy["year_week"] <= end_yw) &
-            (df_energy["country_before"].isin(selected_country_before)) &
-            (df_energy["country_after"].isin(selected_country_after))
+            (df_energy["country_before"].isin(selected_before_codes)) &
+            (df_energy["country_after"].isin(selected_after_codes))
         ]
         if filtered_df.empty:
             empty_fig = go.Figure()
@@ -144,14 +149,14 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         df_year_week = filtered_df.groupby(['year','week'])['sum_energy'].sum().reset_index()
         fig = charts_energy.plot_line_chart_energy_demand_by_year_week(df_year_week)
         
-        country_col = "country_before"
+        country_col = "country_before_name"
 
         df_country = filtered_df.groupby(country_col)["sum_energy"].sum().reset_index()
         top_countries = df_country.sort_values(country_col, ascending=False).head(6)
         fig2 = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)
-        
-        fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role=country_col)
 
-        fig4 = charts_energy.plot_sankey_before_after(filtered_df)
+        fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role="country_before")
+
+        fig4 = charts_energy.plot_sankey_before_after(filtered_df, origin_col="country_before_name", dest_col="country_after_name")
 
         return fig, fig, fig2, fig2, fig3, fig3, fig4, fig4, False
