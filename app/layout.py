@@ -211,6 +211,8 @@ def create_standard_chart_container(chart):
     """
     Create the standard HTML DIV for the charts with a title, subtitle, and tooltip on the title.
     """
+
+    
     return html.Div([
         html.Div([
             dbc.Row([
@@ -228,13 +230,14 @@ def create_standard_chart_container(chart):
                         id=f"title-tooltip-{chart['id']}",
                         style={"cursor": "pointer", "color": "#666"}
                     ),
+                    chart.get("controls"),
                     dbc.Tooltip(
                         chart.get("description", "No description available."),
                         target=f"title-tooltip-{chart['id']}",
                         placement="right",
                         style={"maxWidth": "300px"}
                     )
-                ], width="auto"),
+                ], width="auto", class_name="d-flex align-items-center gap-2"),
                 dbc.Col(
                     dbc.Button(
                         html.I(className="bi bi-arrows-fullscreen"),
@@ -550,11 +553,6 @@ def build_sidebar_energy(controls):
 
 
 def build_main_container_energy():
-    """
-    Here we only have statick content, with the tags
-    - KPI grid
-    - Chart grid
-    """
     return dbc.Col([
         build_chart_grid([
             {
@@ -565,12 +563,16 @@ def build_main_container_energy():
             },
             {
                 "id": "energy--chart--2",
-                "title": "Energy by Country", 
-                "subtitle": "kWh"},
+                "title": "Energy by Country",
+                "subtitle": "kWh",
+                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart2")
+            },
             {
                 "id": "energy--chart--3",
-                "title": "Energy Demand", 
-                "subtitle": "kWh"},
+                "title": "Energy Demand",
+                "subtitle": "kWh",
+                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart3")
+            },
             {
                 "id": "energy--chart--4",
                 "title": "Interchange of Energy", 
@@ -697,6 +699,8 @@ def build_tutorial_components():
 def build_main_layout():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
+        dcc.Store(id="energy--role-chart2", data="country_before"),
+        dcc.Store(id="energy--role-chart3", data="country_before"),
         dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
         build_tutorial_components(),
         build_header(),

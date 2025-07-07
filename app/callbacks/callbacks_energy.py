@@ -73,6 +73,22 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         return options, new_selected
 
     @app.callback(
+        Output("energy--role-chart2", "data"),
+        Input("energy--dropdown-chart2", "value"),
+        prevent_initial_call=True,
+    )
+    def store_role_chart2(value):
+        return value
+
+    @app.callback(
+        Output("energy--role-chart3", "data"),
+        Input("energy--dropdown-chart3", "value"),
+        prevent_initial_call=True,
+    )
+    def store_role_chart3(value):
+        return value
+
+    @app.callback(
         Output("energy--checklist--country-after", "options"),
         Output("energy--checklist--country-after", "value"),
         Input("energy--btn--country-after-select", "n_clicks"),
@@ -112,6 +128,8 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             Output("energy--modal--no-data", "is_open"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
+        Input("energy--role-chart2", "data"),
+        Input("energy--role-chart3", "data"),
         [
             State("energy--checklist--country-before", "value"),
             State("energy--checklist--country-after", "value"),
@@ -119,7 +137,7 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             State("energy--end-date", "value"),
         ]
     )
-    def update_charts(_n_clicks, selected_country_before, selected_country_after, start_idx, end_idx):
+    def update_charts(_n_clicks, role_chart2, role_chart3, selected_country_before, selected_country_after, start_idx, end_idx):
         index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
         start_yw = index_to_year_week[start_idx]
         end_yw = index_to_year_week[end_idx]
@@ -149,13 +167,13 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         df_year_week = filtered_df.groupby(['year','week'])['sum_energy'].sum().reset_index()
         fig = charts_energy.plot_line_chart_energy_demand_by_year_week(df_year_week)
         
-        country_col = "country_before_name"
+        country_col = "country_before_name" if role_chart2 == "country_before" else "country_after_name"
 
         df_country = filtered_df.groupby(country_col)["sum_energy"].sum().reset_index()
         top_countries = df_country.sort_values(country_col, ascending=False).head(6)
         fig2 = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)
 
-        fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role="country_before")
+        fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role=role_chart3)
 
         fig4 = charts_energy.plot_sankey_before_after(filtered_df, origin_col="country_before_name", dest_col="country_after_name")
 
