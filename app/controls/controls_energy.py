@@ -138,3 +138,18 @@ def build_country_after_checklist(country_after):
             }
         )
     ])
+
+def build_country_role_dropdown(dropdown_id):
+    """Dropdown to choose country role for energy charts."""
+    options = [
+        {"label": "Origin", "value": "country_before"},
+        {"label": "Destination", "value": "country_after"},
+    ]
+    return dcc.Dropdown(
+        id=dropdown_id,
+        options=options,
+        value="country_before",
+        clearable=False,
+        style={"width": "8rem"},
+    )
+
