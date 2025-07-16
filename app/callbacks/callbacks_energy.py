@@ -170,7 +170,7 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         country_col = "country_before_name" if role_chart2 == "country_before" else "country_after_name"
 
         df_country = filtered_df.groupby(country_col)["sum_energy"].sum().reset_index()
-        top_countries = df_country.sort_values(country_col, ascending=False).head(6)
+        top_countries = df_country.sort_values("sum_energy", ascending=False).head(6)
         fig2 = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)
 
         fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role=role_chart3)
