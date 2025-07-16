@@ -5,6 +5,8 @@ This module contains functions to create various charts related to emissions dat
 from dash import html
 import plotly.graph_objects as go
 
+from theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
+
 
 def plot_kpi(name, value, start_date, end_date, comparison_label, comparison_value, delta=None, delta_percent=None):
     """
@@ -40,7 +42,7 @@ def plot_kpi(name, value, start_date, end_date, comparison_label, comparison_val
             html.Span(
                 f" ↑ {delta_percent:.2%}" if delta_percent is not None else "",
                 style={
-                    "color": "#02ACA3",
+                    "color": PRIMARY_COLOR,
                     "fontSize": "0.9rem",
                     "marginLeft": "0.75rem",
                     "fontWeight": "normal"
@@ -78,11 +80,11 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
     y_max = df['co2_equivalent_t'].max()
     y_min = df['co2_equivalent_t'].min()
 
-    line_general_color = "#757575"
+    line_general_color = SOFT_GRAY
     line_general_width = 2
     line_general_opacity = 0.2
 
-    highlight_color = "#F78671"
+    highlight_color = PRIMARY_COLOR
     highlight_opacity = 1
     highlight_width = 3
 
@@ -134,7 +136,7 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
             zerolinewidth=1.5,
             side="left",
             anchor="free",
-            tickfont_color="#757575",
+            tickfont_color=DARK_GRAY,
             shift=-10
         ),
 
@@ -168,7 +170,7 @@ def plot_bar_chart_emissions_by_type(df):
         x=df.values,  # Emission values on X-axis
         orientation="h",
         marker=dict(
-            color="#D9D9D9",  # Custom color for bars
+            color=SOFT_GRAY,
             line=dict(color="black", width=0)  # Border for better visibility
         ),
         xhoverformat=".2s"
@@ -191,7 +193,7 @@ def plot_bar_chart_emissions_by_type(df):
             automargin=True,  # Allows automatic space adjustment for labels
             tickmode="array",
             tickfont=dict(size=12),  # Make labels more readable
-            tickfont_color="#757575",
+            tickfont_color=DARK_GRAY,
 
         ),
 
@@ -215,9 +217,8 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
     avg_emissions = df.groupby("StandardVesselType")["co2_equivalent_t"].sum()
     top_3_types = avg_emissions.sort_values(ascending=False).head(3).index.tolist()
 
-    # Assign highlight colors only for available top types
-    base_colors = ["#F78671", "#02ACA3", "#4273EE"]
-    highlight_colors = {vt: color for vt, color in zip(top_3_types, base_colors)}
+    # Assign highlight color for top types
+    highlight_colors = {vt: PRIMARY_COLOR for vt in top_3_types}
 
     for vessel_type in df["StandardVesselType"].unique():
         vessel_data = df[df["StandardVesselType"] == vessel_type]
@@ -233,7 +234,7 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             mode="lines",
             name=vessel_type,
             line=dict(
-                color=highlight_colors.get(vessel_type, "#757575"),
+                color=highlight_colors.get(vessel_type, SOFT_GRAY),
                 width=3 if is_top else 2
             ),
             opacity=1 if is_top else 0.5,
@@ -265,7 +266,7 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             zerolinewidth=1.5,
             side="left",
             anchor="free",
-            tickfont_color="#757575",
+            tickfont_color=DARK_GRAY,
             shift=-10
         ),
         legend=dict(
@@ -297,7 +298,7 @@ def plot_emissions_map(gdf_json, gdf):
         z=values,
 
         featureidkey="properties.resolution_id",
-        colorscale=[[0, 'rgb(238,238,238)'], [1, 'rgb(247,134,113)']],
+        colorscale=[[0, SOFT_GRAY], [1, PRIMARY_COLOR]],
 
         marker_opacity=0.8,
         marker_line_width=0.5,
