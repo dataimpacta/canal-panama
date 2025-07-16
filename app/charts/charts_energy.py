@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import pycountry
 
-from app.theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
+from theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
 
 
 

@@ -5,7 +5,7 @@ This module contains functions to create various charts related to emissions dat
 from dash import html
 import plotly.graph_objects as go
 
-from app.theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
+from theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
 
 
 def plot_kpi(name, value, start_date, end_date, comparison_label, comparison_value, delta=None, delta_percent=None):

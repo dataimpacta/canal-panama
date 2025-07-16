@@ -4,7 +4,7 @@ This module contains functions to create the charts related to emissions data.
 
 import plotly.graph_objects as go
 
-from app.theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
+from theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
 
 def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time", top_padding_pct=0.1, bottom_padding_pct=0.1):
     """
