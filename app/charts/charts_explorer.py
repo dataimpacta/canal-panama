@@ -2,6 +2,8 @@
 
 import plotly.graph_objects as go
 
+from app.theme import PRIMARY_COLOR
+
 
 def plot_line_chart(df, value_column):
     """Create a simple line chart."""
@@ -14,6 +16,7 @@ def plot_line_chart(df, value_column):
         x=df["date"],
         y=df[value_column],
         mode="lines",
+        line=dict(color=PRIMARY_COLOR)
     ))
 
     fig.update_layout(

@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import pycountry
 
+from app.theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
+
 
 
 def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_padding_pct=0.1):
@@ -19,11 +21,11 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
     y_max = df['sum_energy'].max()
     y_min = df['sum_energy'].min()
 
-    line_general_color = "#757575"
+    line_general_color = SOFT_GRAY
     line_general_width = 2
     line_general_opacity = 0.2
 
-    highlight_color = "#F78671"
+    highlight_color = PRIMARY_COLOR
     highlight_opacity = 1
     highlight_width = 3
 
@@ -71,7 +73,7 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
             zerolinewidth=1.5,
             side="left",
             anchor="free",
-            tickfont_color="#757575",
+            tickfont_color=DARK_GRAY,
             shift=-10
         ),
 
@@ -100,7 +102,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
         x=df['sum_energy'],
         orientation='h',
         marker=dict(
-            color="#02ACA3",  # Custom blue-green color
+            color=PRIMARY_COLOR,
             line=dict(color="black", width=0)
         ),
         hovertemplate='%{y}<br>%{x:.2f} hours<extra></extra>'
@@ -119,7 +121,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
             showgrid=False,
             automargin=True,
             categoryorder="total ascending",
-            tickfont=dict(size=12, color="#757575"),
+            tickfont=dict(size=12, color=DARK_GRAY),
         ),
 
         margin=dict(l=0, r=0, t=0, b=0),
@@ -160,8 +162,8 @@ def plot_sankey_before_after(df, origin_col="country_before", dest_col="country_
     label_to_index = {label: i for i, label in enumerate(all_labels)}
 
     # Simple color palette
-    node_color = "#4273EE"  # blue
-    link_color = "#D9D9D9"  # gray
+    node_color = PRIMARY_COLOR
+    link_color = SOFT_GRAY
     node_colors = [node_color] * len(all_labels)
     link_colors = [link_color] * len(sankey_data)
 
@@ -241,7 +243,8 @@ def generate_energy_bubble_map(df, country_role='country_before', title="Energy 
 
     # Update tooltip with custom formatting
     fig.update_traces(
-        hovertemplate="<b>%{customdata[0]}</b>: %{customdata[1]:,.0f} kWh<extra></extra>"
+        hovertemplate="<b>%{customdata[0]}</b>: %{customdata[1]:,.0f} kWh<extra></extra>",
+        marker=dict(color=PRIMARY_COLOR)
     )
     
     fig.update_layout(
