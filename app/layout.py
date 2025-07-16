@@ -441,22 +441,28 @@ def build_main_container_emissions():
         build_chart_grid([
             {
                 "id": "emissions--chart--1",
-                "title": "Total Emissions",
+                "title": "Monthly Vessel Emissions",
                 "subtitle": "TONNES CO2-eq",
-                "description": "This is the description for total emissions."
+                "description": "Monthly trend of total emissions (in tonnes of CO₂-equivalent) from all vessel types transiting the Panama Canal. This chart helps compare year-over-year changes and detect major shifts in environmental impact."
             },
             {
                 "id": "emissions--chart--2",
-                "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2-eq"},
+                "title": "Total Emissions by Vessel Type", 
+                "subtitle": "TONNES CO2-eq",
+                "description": "Total emissions per vessel type over the selected period. See which vessel categories (like container ships or tankers) contribute the most to overall emissions.",
+            },
             {
                 "id": "emissions--chart--3",
                 "title": "Emissions by Region", 
-                "subtitle": "TONNES CO2-eq"},
+                "subtitle": "TONNES CO2-eq",
+                "description": "Map showing the distribution of emissions across Panama. Darker areas indicate higher levels of recorded emissions in those regions."
+            },
             {
                 "id": "emissions--chart--4",
                 "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2-eq"},
+                "subtitle": "TONNES CO2-eq",
+                "description": "Monthly emissions trends by vessel type. Useful for spotting seasonal changes or long-term patterns for specific vessel categories."
+            },
         ])
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
@@ -503,21 +509,30 @@ def build_main_container_waiting_times():
         build_chart_grid([
             {
                 "id": "time--chart--1",
-                "title": "Overall Waiting Time", 
-                "subtitle": "HOURS"
+                "title": "Average Monthly Waiting Time", 
+                "subtitle": "HOURS",
+                "description": "Average waiting time per month before a vessel enters a stop area (calculated from anchoring out to anchoring in). This helps assess delays before service begins.",
             },
             {
                 "id": "time--chart--2",
-                "title": "AVG Waiting Time by Stop Area", 
-                "subtitle": "HOURS"},
+                "title": "Waiting Time by Stop Area", 
+                "subtitle": "HOURS",
+                "description": "Average number of hours vessels wait at each stop area. Identify locations with the longest delays before docking or service.",
+            },
             {
                 "id": "time--chart--3",
-                "title": "Waiting Time by Vessel  ", 
-                "subtitle": "HOURS"},
+                "title": "Waiting Time by Vessel Type", 
+                "subtitle": "HOURS",
+                "description": "Average waiting time by vessel type. Some vessel types, like bulk carriers, tend to wait longer before receiving service.",
+            
+            },
             {
                 "id": "time--chart--4",
-                "title": "AVG Waiting Time by Vessel Type", 
-                "subtitle": "HOURS"},
+                "title": "Waiting Time Trends by Vessel Type", 
+                "subtitle": "HOURS",
+                "description": "Monthly waiting time trends by vessel type. Helpful for tracking operational efficiency and identifying bottlenecks over time.",
+
+            },
         ])
         ], xs=12, md=12, lg=10, width=10)
 
@@ -557,26 +572,30 @@ def build_main_container_energy():
         build_chart_grid([
             {
                 "id": "energy--chart--1",
-                "title": "Total Energy",
+                "title": "Total Weekly Energy Transported",
                 "subtitle": "kWh",
-                "description": "This is the description for total emissions."
+                "description": "Total amount of energy (in kWh) transported along all routes. Highlights weekly variation in energy volumes."
             },
             {
                 "id": "energy--chart--2",
                 "title": "Energy by Country",
                 "subtitle": "kWh",
-                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart2")
+                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart2"),
+                "description": "Energy transported by country. Shows which countries are major sources or destinations of energy."
             },
             {
                 "id": "energy--chart--3",
-                "title": "Energy Demand",
+                "title": "Global Energy Demand",
                 "subtitle": "kWh",
-                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart3")
+                "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart3"),
+                "description": "World map showing countries based on the energy they send out (origin) or receive (destination). Larger circles represent higher energy volumes."
             },
             {
                 "id": "energy--chart--4",
-                "title": "Interchange of Energy", 
-                "subtitle": "kWh"},
+                "title": "Energy Interchange Between Countries", 
+                "subtitle": "kWh",
+                "description": "Flow diagram showing energy exchanges between countries of origin and destination. Useful for identifying key trading partners in the energy network."
+            },
         ])
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
@@ -598,21 +617,28 @@ def build_main_container_service_times():
         build_chart_grid([
             {
                 "id": "time--chart--1",
-                "title": "Overall Service Time", 
-                "subtitle": "HOURS"
+                "title": "Average Monthly Service Time", 
+                "subtitle": "HOURS",
+                "description": "Average time vessels spend receiving services in stop areas (from stop time in to stop time out). Helps track operational efficiency over time.",
             },
             {
                 "id": "time--chart--2",
-                "title": "AVG Service Time by Stop Area", 
-                "subtitle": "HOURS"},
+                "title": "Service Time by Stop Area", 
+                "subtitle": "HOURS",
+                "description": "Average number of hours vessels spend receiving services in each stop area. Highlights areas with longer or shorter operation times.",
+            },
             {
                 "id": "time--chart--3",
-                "title": "Service Time by Vessel  ", 
-                "subtitle": "HOURS"},
+                "title": "Service Time by Vessel Type", 
+                "subtitle": "HOURS",
+                "description": "Average service time per vessel type. Shows how long different types of vessels typically remain in service zones.",
+            },
             {
                 "id": "time--chart--4",
-                "title": "AVG Service Time by Vessel Type", 
-                "subtitle": "HOURS"},
+                "title": "Service Time Trends by Vessel Type", 
+                "subtitle": "HOURS",
+                "description": "Monthly trends of service time by vessel type. Useful to detect shifts in operational behavior or service efficiency.",
+            },
         ])
         ], xs=12, md=12, lg=10, width=10)
 

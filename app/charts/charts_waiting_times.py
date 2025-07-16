@@ -3,8 +3,7 @@ This module contains functions to create the charts related to emissions data.
 """
 
 import plotly.graph_objects as go
-
-from theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
+import theme
 
 def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time", top_padding_pct=0.1, bottom_padding_pct=0.1):
     """
@@ -16,11 +15,11 @@ def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time", 
     y_max = df[value_column].max()
     y_min = df[value_column].min()
 
-    line_general_color = SOFT_GRAY
+    line_general_color = theme.DARK_GRAY
     line_general_width = 2
     line_general_opacity = 0.2
 
-    highlight_color = PRIMARY_COLOR
+    highlight_color = theme.PRIMARY_COLOR
     highlight_opacity = 1
     highlight_width = 3
 
@@ -64,7 +63,7 @@ def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time", 
             zerolinewidth=1.5,
             side="left",
             anchor="free",
-            tickfont_color=DARK_GRAY,
+            tickfont_color=theme.DARK_GRAY,
             shift=-10
         ),
         legend=dict(
@@ -88,7 +87,7 @@ def plot_bar_chart_waiting_by_stop_area(df, value_column="waiting_time"):
         x=df[value_column],
         orientation='h',
         marker=dict(
-            color=PRIMARY_COLOR,
+            color=theme.PRIMARY_COLOR,
             line=dict(color="black", width=0)
         ),
         hovertemplate='%{y}<br>%{x:.2f} hours<extra></extra>'
@@ -107,7 +106,7 @@ def plot_bar_chart_waiting_by_stop_area(df, value_column="waiting_time"):
             showgrid=False,
             automargin=True,
             categoryorder="total ascending",
-            tickfont=dict(size=12, color=DARK_GRAY),
+            tickfont=dict(size=12, color=theme.DARK_GRAY),
         ),
 
         margin=dict(l=0, r=0, t=0, b=0),
@@ -125,7 +124,7 @@ def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time
         x=df_summary.values,
         orientation="h",
         marker=dict(
-            color=SOFT_GRAY,
+            color=theme.PRIMARY_COLOR,
             line=dict(color="black", width=0)
         ),
         hovertemplate='%{y}<br>%{x:.2f} hours<extra></extra>'
@@ -144,7 +143,7 @@ def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time
             showgrid=False,
             automargin=True,
             categoryorder="total ascending",
-            tickfont=dict(size=12, color=DARK_GRAY),
+            tickfont=dict(size=12, color=theme.DARK_GRAY),
         ),
 
         margin=dict(l=0, r=0, t=0, b=0),
@@ -167,7 +166,9 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_pa
     top_3_types = avg_waiting.sort_values(ascending=False).head(3).index.tolist()
 
     # Assign highlight color for top types
-    highlight_colors = {vt: PRIMARY_COLOR for vt in top_3_types}
+    base_colors = [theme.PRIMARY_DARK, theme.PRIMARY_COLOR, theme.PRIMARY_LIGHT]
+    highlight_colors = {vt: color for vt, color in zip(top_3_types, base_colors)}
+
 
     y_max = df[value_column].max()
     y_min = df[value_column].min()
@@ -185,7 +186,7 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_pa
             mode="lines",
             name=vessel_type,
             line=dict(
-                color=highlight_colors.get(vessel_type, SOFT_GRAY),
+                color=highlight_colors.get(vessel_type, theme.SOFT_GRAY),
                 width=3 if is_top else 2
             ),
             opacity=1 if is_top else 0.5,
@@ -216,7 +217,7 @@ def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_pa
                 zerolinewidth=1.5,
                 side="left",
                 anchor="free",
-                tickfont_color=DARK_GRAY,
+                tickfont_color=theme.DARK_GRAY,
                 shift=-10
             ),
             legend=dict(

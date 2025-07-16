@@ -3,8 +3,7 @@ import pandas as pd
 import plotly.express as px
 import pycountry
 
-from theme import PRIMARY_COLOR, SOFT_GRAY, DARK_GRAY
-
+import theme
 
 
 def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_padding_pct=0.1):
@@ -21,11 +20,11 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
     y_max = df['sum_energy'].max()
     y_min = df['sum_energy'].min()
 
-    line_general_color = SOFT_GRAY
+    line_general_color = theme.SOFT_GRAY
     line_general_width = 2
     line_general_opacity = 0.2
 
-    highlight_color = PRIMARY_COLOR
+    highlight_color = theme.PRIMARY_COLOR
     highlight_opacity = 1
     highlight_width = 3
 
@@ -44,10 +43,13 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
             ),
             opacity=highlight_opacity if is_latest else line_general_opacity,
             showlegend=True,
-            hovertemplate = '%{y:.2s}',
+            hovertemplate = 'Week %{x}<br>%{y:.2s}<extra></extra>',
         ))
 
     # === Layout ===
+    tickvals = list(range(2, 53, 2))  # 2, 4, 6, ..., 52
+    ticktext = [f"{week}" for week in tickvals]
+
     fig.update_layout(
         height=300,
 
@@ -58,8 +60,8 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
 
         xaxis=dict(
             tickmode="array",
-            tickvals=list(range(1, 53)),
-            ticktext=list(range(1, 52)),
+            tickvals=tickvals,
+            ticktext=ticktext,
             tickangle=0,
             showgrid=True
         ),
@@ -69,11 +71,11 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
             gridcolor="lightgray",
             gridwidth=1,
             zeroline=True,
-            zerolinecolor="#000000",
+            zerolinecolor=theme.DARK_GRAY,
             zerolinewidth=1.5,
             side="left",
             anchor="free",
-            tickfont_color=DARK_GRAY,
+            tickfont_color=theme.DARK_GRAY,
             shift=-10
         ),
 
@@ -102,7 +104,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
         x=df['sum_energy'],
         orientation='h',
         marker=dict(
-            color=PRIMARY_COLOR,
+            color=theme.PRIMARY_COLOR,
             line=dict(color="black", width=0)
         ),
         hovertemplate='%{y}<br>%{x:.2f} hours<extra></extra>'
@@ -121,7 +123,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
             showgrid=False,
             automargin=True,
             categoryorder="total ascending",
-            tickfont=dict(size=12, color=DARK_GRAY),
+            tickfont=dict(size=12, color=theme.DARK_GRAY),
         ),
 
         margin=dict(l=0, r=0, t=0, b=0),
@@ -162,8 +164,8 @@ def plot_sankey_before_after(df, origin_col="country_before", dest_col="country_
     label_to_index = {label: i for i, label in enumerate(all_labels)}
 
     # Simple color palette
-    node_color = PRIMARY_COLOR
-    link_color = SOFT_GRAY
+    node_color = theme.PRIMARY_COLOR
+    link_color = theme.LIGHT_GRAY
     node_colors = [node_color] * len(all_labels)
     link_colors = [link_color] * len(sankey_data)
 
@@ -244,7 +246,7 @@ def generate_energy_bubble_map(df, country_role='country_before', title="Energy 
     # Update tooltip with custom formatting
     fig.update_traces(
         hovertemplate="<b>%{customdata[0]}</b>: %{customdata[1]:,.0f} kWh<extra></extra>",
-        marker=dict(color=PRIMARY_COLOR)
+        marker=dict(color=theme.PRIMARY_COLOR)
     )
     
     fig.update_layout(
