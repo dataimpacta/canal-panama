@@ -2,7 +2,7 @@
 
 import plotly.graph_objects as go
 
-from app.theme import PRIMARY_COLOR
+from theme import PRIMARY_COLOR
 
 
 def plot_line_chart(df, value_column):
