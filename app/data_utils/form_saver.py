@@ -2,6 +2,7 @@ import os
 import boto3
 import botocore
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -29,10 +30,23 @@ def append_form_row(
     file: str = FORM_FILE,
 ) -> None:
 
-    if not all([bucket, file, name, country, purpose, email, source, start_date, end_date]):
+    if not all([
+        bucket,
+        file,
+        name,
+        country,
+        purpose,
+        email,
+        source,
+        start_date,
+        end_date,
+    ]):
         return
-    
-    row = ",".join([name, country, purpose, email, source, start_date, end_date])
+
+    submitted_at = datetime.utcnow().strftime("%Y-%m-%d")
+    row = ",".join(
+        [submitted_at, name, country, purpose, email, source, start_date, end_date]
+    )
     
     try:
         obj = s3_client.get_object(Bucket=bucket, Key=file)
@@ -40,7 +54,7 @@ def append_form_row(
     except botocore.exceptions.ClientError as exc:
         error_code = exc.response.get("Error", {}).get("Code")
         if error_code == "NoSuchKey":
-            data = "Name,Country,Purpose,Email\n"
+            data = "Submitted At,Name,Country,Purpose,Email,Source,Start Date,End Date\n"
         else:
             raise
     if data and not data.endswith("\n"):
