@@ -291,7 +291,8 @@ def plot_emissions_map(gdf_json, gdf):
 
     values = gdf["co2_equivalent_t"]
 
-    fig = go.Figure(go.Choroplethmap(
+    # Using Mapbox for much faster choropleth rendering
+    fig = go.Figure(go.Choroplethmapbox(
 
         geojson=gdf_json,
         locations=gdf["resolution_id"],
@@ -327,10 +328,10 @@ def plot_emissions_map(gdf_json, gdf):
 
     fig.update_layout(
         height=300,
-        map=dict(
+        mapbox=dict(
             center={"lat": 9.117975, "lon": -79.735890},
             zoom=7,
-            style="light"  # or "white-bg", "stamen-terrain", etc.
+            style="carto-positron"  # lightweight default style
         ),
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
     )
