@@ -33,7 +33,7 @@ def build_header():
                         "Panama Maritime Statistics",
                         style={
                             "margin": 0,
-                            "fontSize": "2.75rem",  # or 1.75rem
+                            "fontSize": "2.50rem",  # or 1.75rem
                             "fontWeight": 700,
                             "fontFamily": "Arial, Helvetica, sans-serif"  # system fonts = fast
                         }
@@ -43,7 +43,7 @@ def build_header():
                         style={
                             "margin": 0,
                             "fontWeight": 500,
-                            "fontSize": "1.5rem",
+                            "fontSize": "1.3rem",
                             "fontFamily": "Arial, Helvetica, sans-serif"
                         }
                     )
@@ -401,6 +401,7 @@ def build_sidebar_emissions(controls):
     """
     Build the sidebar for the emissions dashboard.
     - Message box
+    - Date range display (outside accordion)
     - Accordion with:
         - Date range slider
         - Vessel type checklist
@@ -418,6 +419,7 @@ def build_sidebar_emissions(controls):
     ], id="tutorial-filters-target")
     return dbc.Col([
         controls_emissions.build_message_box(),
+        controls_emissions.build_date_range_display(),
         accordion,
         html.Br(),
         controls_emissions.build_button_refresh_charts(),
@@ -470,15 +472,18 @@ def build_main_container_emissions():
 
 def build_sidebar_waiting_times(controls):
     """
-    Build the sidebar for the emissions dashboard.
+    Build the sidebar for the waiting times dashboard.
     - Message box
+    - Date range display (outside accordion)
     - Accordion with:
         - Date range slider
         - Vessel type checklist
+        - Stop area checklist
     - Refresh button
     """
     return dbc.Col([
         controls_time.build_message_box(),
+        controls_time.build_date_range_display(),
         dbc.Accordion([
             dbc.AccordionItem(
                 [controls_time.build_date_range_slider(controls["date_range"])],
@@ -541,6 +546,8 @@ def build_main_container_waiting_times():
 def build_sidebar_energy(controls):
     """
     Build the sidebar for the energy dashboard.
+    - Message box
+    - Date range display (outside accordion)
     - Accordion with:
         - Date range slider
         - Country before checklist
@@ -549,6 +556,7 @@ def build_sidebar_energy(controls):
     """
     return dbc.Col([
         controls_energy.build_message_box(),
+        controls_energy.build_date_range_display(),
         dbc.Accordion([
             dbc.AccordionItem(
                 [controls_energy.build_date_range_slider(controls["date_range"])],
@@ -647,6 +655,8 @@ def build_main_container_service_times():
 def build_sidebar_explorer(controls):
     """Sidebar for the explorer tab."""
     return dbc.Col([
+        controls_explorer.build_date_range_display(),
+        controls_explorer.build_week_range_display(),
         dbc.Accordion([
             dbc.AccordionItem(
                 [controls_explorer.build_source_dropdown(controls["sources"])],

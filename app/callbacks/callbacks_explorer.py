@@ -80,12 +80,17 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
     @app.callback(
         Output("explorer--month-range", "style"),
         Output("explorer--week-range", "style"),
+        Output("explorer--month-range-display", "style"),
+        Output("explorer--week-range-display", "style"),
         Input("explorer--source", "value"),
     )
     def toggle_range_visibility(source):
         if source == "energy":
-            return {"display": "none"}, {"display": "block"}
-        return {"display": "block"}, {"display": "none"}
+            # Hide month range, show week range
+            return {"display": "none"}, {"display": "block"}, {"display": "none"}, {"display": "block"}
+        else:
+            # Show month range, hide week range
+            return {"display": "block"}, {"display": "none"}, {"display": "block"}, {"display": "none"}
 
     @app.callback(
         Output("explorer--chart", "figure"),
