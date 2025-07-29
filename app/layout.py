@@ -431,6 +431,7 @@ def build_main_container_emissions():
     - Chart grid
     """
     return dbc.Col([
+        dcc.Store(id="emissions--filtered-data"),
         build_kpi_grid([
             {
                 "id": "emissions--kpi--1",
