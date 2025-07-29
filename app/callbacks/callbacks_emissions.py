@@ -4,6 +4,8 @@
 
 from dash import Input, Output, State, callback
 from dash import html, ctx
+from dash.exceptions import PreventUpdate
+import pandas as pd
 import plotly.graph_objects as go
 
 from data_utils import map_processing
@@ -90,12 +92,11 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             Output("emissions--chart--1-fullscreen", "figure"),
             Output("emissions--chart--2", "figure"),
             Output("emissions--chart--2-fullscreen", "figure"),
-            Output("emissions--chart--3", "figure"),
-            Output("emissions--chart--3-fullscreen", "figure"),
             Output("emissions--chart--4", "figure"),
             Output("emissions--chart--4-fullscreen", "figure"),
             Output("emissions--kpi--1", "children"),
             Output("modal-no-data", "is_open"),
+            Output("emissions--filtered-data", "data"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
@@ -160,18 +161,39 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
         df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
-        gdf_json, df_h3 = map_processing.generate_h3_map_data(filtered_df, unique_polygons_gdf, geojson_template)
-
         fig1 = charts_emissions.plot_line_chart_emissions_by_year_month(df_year_month)
         fig2 = charts_emissions.plot_bar_chart_emissions_by_type(df_type)
-        fig3 = charts_emissions.plot_emissions_map(gdf_json, df_h3)
         fig4 = charts_emissions.plot_line_chart_emissions_by_type_year_month(df_type_ym)
+
+        store_data = filtered_df.to_json(date_format="iso", orient="split")
 
         return (
             fig1, fig1,
             fig2, fig2,
-            fig3, fig3,
             fig4, fig4,
             kpi_component,
-            False
+            False,
+            store_data
         )
+
+    @app.callback(
+        [
+            Output("emissions--chart--3", "figure"),
+            Output("emissions--chart--3-fullscreen", "figure"),
+        ],
+        Input("emissions--filtered-data", "data"),
+        prevent_initial_call=True,
+    )
+    def update_map(data):
+        if not data:
+            raise PreventUpdate
+
+        filtered_df = pd.read_json(data, orient="split")
+
+        gdf_json, df_h3 = map_processing.generate_h3_map_data(
+            filtered_df, unique_polygons_gdf, geojson_template
+        )
+
+        fig3 = charts_emissions.plot_emissions_map(gdf_json, df_h3)
+
+        return fig3, fig3
