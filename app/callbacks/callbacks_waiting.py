@@ -4,6 +4,7 @@
 
 from dash import Input, Output, State, callback, no_update, MATCH
 from dash import html, ctx
+from callbacks.utils import default_if_none, resolve_date_indices
 from controls import controls_time as controls_module
 import plotly.graph_objects as go
 
@@ -155,7 +156,15 @@ def setup_waiting_times_callbacks(app, df, controls):
             State("time--checklist--stop-area", "value")
         ]
     )
-    def update_charts(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+    def update_charts(
+        _n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas
+    ):
+        """Update charts for waiting and service times."""
+
+        selected_vessels = default_if_none(selected_vessels, controls["vessel_types"])
+        selected_areas = default_if_none(selected_areas, controls["stop_area"])
+        start_idx, end_idx = resolve_date_indices(start_idx, end_idx, controls["date_range"])
+
         time_col = "waiting_time" if current_tab == "waiting" else "service_time"
         start_ym = controls["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls["date_range"]["index_to_year_month"][end_idx]

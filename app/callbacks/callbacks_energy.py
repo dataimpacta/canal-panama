@@ -4,6 +4,7 @@
 
 from dash import Input, Output, State, callback, ctx, no_update, MATCH
 from dash import html
+from callbacks.utils import default_if_none, resolve_date_indices
 from controls import controls_energy as controls_module
 import plotly.graph_objects as go
 
@@ -154,7 +155,27 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             State("energy--end-date", "value"),
         ]
     )
-    def update_charts(_n_clicks, role_chart2, role_chart3, selected_country_before, selected_country_after, start_idx, end_idx):
+    def update_charts(
+        _n_clicks,
+        role_chart2,
+        role_chart3,
+        selected_country_before,
+        selected_country_after,
+        start_idx,
+        end_idx,
+    ):
+        """Update charts for the energy tab."""
+
+        selected_country_before = default_if_none(
+            selected_country_before, controls_energy["country_before"]
+        )
+        selected_country_after = default_if_none(
+            selected_country_after, controls_energy["country_after"]
+        )
+        start_idx, end_idx = resolve_date_indices(
+            start_idx, end_idx, controls_energy["date_range"]
+        )
+
         index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
         start_yw = index_to_year_week[start_idx]
         end_yw = index_to_year_week[end_idx]

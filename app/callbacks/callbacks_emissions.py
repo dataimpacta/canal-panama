@@ -4,6 +4,7 @@
 
 from dash import Input, Output, State, callback, no_update, MATCH
 from dash import html, ctx
+from callbacks.utils import default_if_none, resolve_date_indices
 from controls import controls_emissions as controls_module
 import plotly.graph_objects as go
 
@@ -122,11 +123,14 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         ]
     )
     def update_charts(_n_clicks, selected_vessel_types, start_idx, end_idx):
-        """
-        Updates the charts and KPI based on user-selected filters.
-        """
-        #logger.info("🟢 Callback started")
-        #t = time.time()
+        """Update charts and KPIs for the emissions tab."""
+
+        selected_vessel_types = default_if_none(
+            selected_vessel_types, controls_emissions["vessel_types"]
+        )
+        start_idx, end_idx = resolve_date_indices(
+            start_idx, end_idx, controls_emissions["date_range"]
+        )
 
         start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
