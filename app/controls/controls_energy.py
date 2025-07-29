@@ -44,8 +44,15 @@ def build_date_range_slider(date_range):
     return html.Div([
         start_dropdown,
         end_dropdown,
-        html.Div(id="energy--range-label", className="text-center mt-2"),
     ])
+
+def build_date_range_display():
+    """Build the date range display with title outside the accordion."""
+    return html.Div([
+        html.H6("Selected Week Range", className="mb-2", style={"fontWeight": "bold", "color": "#333"}),
+        html.Div(id="energy--range-label", className="text-center p-1", 
+                style={"backgroundColor": "#f8f9fa", "borderRadius": "4px", "border": "1px solid #dee2e6"})
+    ], className="mb-3")
 
 def build_country_before_checklist(country_before):
     return html.Div([

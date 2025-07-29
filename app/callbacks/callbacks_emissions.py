@@ -4,6 +4,8 @@
 
 from dash import Input, Output, State, callback
 from dash import html, ctx
+from dash.exceptions import PreventUpdate
+import pandas as pd
 import plotly.graph_objects as go
 
 from data_utils import map_processing
@@ -57,7 +59,7 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
     def validate_date_range(start_idx, end_idx):
         """Ensure the start date is not after the end date."""
         if start_idx is None:
-            start_idx = controls_emissions["date_range"]["min_index"]
+            start_idx = controls_emissions["date_range"].get("default_start_index", controls_emissions["date_range"]["min_index"])
         if end_idx is None:
             end_idx = controls_emissions["date_range"]["max_index"]
         if start_idx > end_idx:
@@ -66,22 +68,6 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             else:
                 end_idx = start_idx
         return start_idx, end_idx
-
-    @app.callback(
-        Output("emissions--range-label", "children"),
-        Input("emissions--start-date", "value"),
-        Input("emissions--end-date", "value"),
-    )
-    def update_date_label(start_idx, end_idx):
-        """Show the selected year-month range below the dropdowns."""
-        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
-        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
-
-        def _fmt(ym: int) -> str:
-            ym = str(ym)
-            return f"{ym[:4]}-{ym[4:]}"
-
-        return f"{_fmt(start_ym)} to {_fmt(end_ym)}"
 
 
     @app.callback(
@@ -96,6 +82,7 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             Output("emissions--chart--4-fullscreen", "figure"),
             Output("emissions--kpi--1", "children"),
             Output("modal-no-data", "is_open"),
+            Output("emissions--range-label", "children"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
@@ -106,13 +93,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
     )
     def update_charts(_n_clicks, selected_vessel_types, start_idx, end_idx):
         """
-        Updates the charts and KPI based on user-selected filters.
+        Updates all charts and KPI based on user-selected filters.
         """
         #logger.info("🟢 Callback started")
         #t = time.time()
 
         start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
+
+        # Format date range label
+        def _fmt(ym: int) -> str:
+            ym = str(ym)
+            return f"{ym[:4]}-{ym[4:]}"
+        date_range_label = f"{_fmt(start_ym)} to {_fmt(end_ym)}"
 
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
@@ -128,22 +121,23 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
                 empty_fig, empty_fig,
                 empty_fig, empty_fig,
                 html.Div("No data available", style={"color": "#999"}),
-                True
+                True,
+                date_range_label
             )
 
         # KPI Calculation
-        sorted_ym = sorted(filtered_df["year_month"].unique())
+        #sorted_ym = sorted(filtered_df["year_month"].unique())
+        sorted_ym = filtered_df["year_month"].unique()
         kpi_component = html.Div("Insufficient data", style={"color": "#999"})  # fallback default
 
         if len(sorted_ym) >= 2:
             latest_ym = sorted_ym[-1]
             previous_ym = sorted_ym[-2]
 
-            latest_total = filtered_df[
-                filtered_df["year_month"] == latest_ym]["co2_equivalent_t"].sum()
-            previous_total = filtered_df[filtered_df["year_month"] == previous_ym]["co2_equivalent_t"].sum()
-            #change = latest_total - previous_total
-            #pct_change = (change / previous_total * 100) if previous_total != 0 else 0
+            # OPTIMIZATION: Use the same aggregated data for KPI calculation
+            ym_totals = filtered_df.groupby("year_month")["co2_equivalent_t"].sum()
+            latest_total = ym_totals.get(latest_ym, 0)
+            previous_total = ym_totals.get(previous_ym, 0)
 
             comparison_label = "Last Month"
             kpi_component = charts_emissions.plot_kpi(
@@ -155,17 +149,26 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
                 comparison_value=previous_total
             )
 
-
-        df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-        df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-        df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
-
-        gdf_json, df_h3 = map_processing.generate_h3_map_data(filtered_df, unique_polygons_gdf, geojson_template)
+        # OPTIMIZATION: Single groupby operation to get all aggregations at once
+        # Create a comprehensive aggregation
+        agg_data = filtered_df.groupby(['year', 'month', 'StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
+        
+        # Extract different views from the same aggregated data
+        df_year_month = agg_data.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
+        
+        df_type = agg_data.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
+        
+        df_type_ym = agg_data.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
 
         fig1 = charts_emissions.plot_line_chart_emissions_by_year_month(df_year_month)
         fig2 = charts_emissions.plot_bar_chart_emissions_by_type(df_type)
-        fig3 = charts_emissions.plot_emissions_map(gdf_json, df_h3)
         fig4 = charts_emissions.plot_line_chart_emissions_by_type_year_month(df_type_ym)
+
+        # Generate map data directly without JSON serialization
+        gdf_json, df_h3 = map_processing.generate_h3_map_data(
+            filtered_df, unique_polygons_gdf, geojson_template
+        )
+        fig3 = charts_emissions.plot_emissions_map(gdf_json, df_h3)
 
         return (
             fig1, fig1,
@@ -173,5 +176,6 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             fig3, fig3,
             fig4, fig4,
             kpi_component,
-            False
+            False,
+            date_range_label
         )
