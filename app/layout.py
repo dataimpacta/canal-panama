@@ -423,16 +423,24 @@ def build_sidebar_emissions(controls):
         - Vessel type checklist
     - Refresh button
     """
-    accordion = dbc.Accordion([
-        dbc.AccordionItem(
-            [controls_emissions.build_date_range_slider(controls["date_range"])],
-            title="Date Range",
+    accordion = html.Div(
+        dbc.Accordion(
+            [
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "emissions", "item": "date-range"})],
+                    title="Date Range",
+                    item_id="date-range",
+                ),
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "emissions", "item": "vessel-type"})],
+                    title="Vessel Type",
+                    item_id="vessel-type",
+                ),
+            ],
+            id={"type": "accordion", "tab": "emissions"},
         ),
-        dbc.AccordionItem(
-            [controls_emissions.build_vessel_type_checklist(controls["vessel_types"])],
-            title="Vessel Type",
-        ),
-    ], id="tutorial-filters-target")
+        id="tutorial-filters-target",
+    )
     return dbc.Col([
         controls_emissions.build_message_box(),
         accordion,
@@ -503,20 +511,26 @@ def build_sidebar_waiting_times(controls):
     """
     return dbc.Col([
         controls_time.build_message_box(),
-        dbc.Accordion([
-            dbc.AccordionItem(
-                [controls_time.build_date_range_slider(controls["date_range"])],
-                title="Date Range"
-            ),
-            dbc.AccordionItem(
-                [controls_time.build_vessel_type_checklist(controls["vessel_types"])],
-                title="Vessel Type"
-            ),
-            dbc.AccordionItem(
-                [controls_time.build_stop_area_checklist(controls["stop_area"])],
-                title="Stop Area"
-            )
-        ]),
+        dbc.Accordion(
+            [
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "time", "item": "date-range"})],
+                    title="Date Range",
+                    item_id="date-range",
+                ),
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "time", "item": "vessel-type"})],
+                    title="Vessel Type",
+                    item_id="vessel-type",
+                ),
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "time", "item": "stop-area"})],
+                    title="Stop Area",
+                    item_id="stop-area",
+                ),
+            ],
+            id={"type": "accordion", "tab": "time"},
+        ),
         html.Br(),
         controls_emissions.build_button_refresh_charts()
 
@@ -581,20 +595,26 @@ def build_sidebar_energy(controls):
     """
     return dbc.Col([
         controls_energy.build_message_box(),
-        dbc.Accordion([
-            dbc.AccordionItem(
-                [controls_energy.build_date_range_slider(controls["date_range"])],
-                title="Date Range"
-            ),
-            dbc.AccordionItem(
-                [controls_energy.build_country_before_checklist(controls["country_before"])],
-                title="Country Before"
-            ),
-            dbc.AccordionItem(
-                [controls_energy.build_country_after_checklist(controls["country_after"])],
-                title="Country After"
-            )
-        ]),
+        dbc.Accordion(
+            [
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "energy", "item": "date-range"})],
+                    title="Date Range",
+                    item_id="date-range",
+                ),
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "energy", "item": "country-before"})],
+                    title="Country Before",
+                    item_id="country-before",
+                ),
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "energy", "item": "country-after"})],
+                    title="Country After",
+                    item_id="country-after",
+                ),
+            ],
+            id={"type": "accordion", "tab": "energy"},
+        ),
         html.Br(),
         controls_emissions.build_button_refresh_charts()
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
@@ -695,19 +715,21 @@ def build_tab_service(controls):
 def build_sidebar_explorer(controls):
     """Sidebar for the explorer tab."""
     return dbc.Col([
-        dbc.Accordion([
-            dbc.AccordionItem(
-                [controls_explorer.build_source_dropdown(controls["sources"])],
-                title="Source"
-            ),
-            dbc.AccordionItem(
-                [
-                    controls_explorer.build_date_range_slider(controls["date_range"]),
-                    controls_explorer.build_week_range_slider(controls["week_range"]),
-                ],
-                title="Date Range"
-            )
-        ]),
+        dbc.Accordion(
+            [
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "explorer", "item": "source"})],
+                    title="Source",
+                    item_id="source",
+                ),
+                dbc.AccordionItem(
+                    [html.Div(id={"type": "accordion-content", "tab": "explorer", "item": "date-range"})],
+                    title="Date Range",
+                    item_id="date-range",
+                ),
+            ],
+            id={"type": "accordion", "tab": "explorer"},
+        ),
         html.Br(),
         controls_explorer.build_download_button(),
         controls_explorer.build_download_modal(),

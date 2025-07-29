@@ -2,8 +2,9 @@
 
 """Module for emissions dashboard callbacks."""
 
-from dash import Input, Output, State, callback
+from dash import Input, Output, State, callback, no_update, MATCH
 from dash import html, ctx
+from controls import controls_emissions as controls_module
 import plotly.graph_objects as go
 
 from data_utils import map_processing
@@ -14,6 +15,22 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
     """
     These are the callbacks for the emissions dashboard.
     """
+
+    @app.callback(
+        Output({"type": "accordion-content", "tab": "emissions", "item": MATCH}, "children"),
+        Input({"type": "accordion", "tab": "emissions"}, "active_item"),
+        State({"type": "accordion-content", "tab": "emissions", "item": MATCH}, "id"),
+        prevent_initial_call=True,
+    )
+    def render_accordion_item(active_item, content_id):
+        """Render the expanded accordion item on demand."""
+        if active_item != content_id["item"]:
+            return no_update
+        builders = {
+            "date-range": lambda: controls_module.build_date_range_slider(controls_emissions["date_range"]),
+            "vessel-type": lambda: controls_module.build_vessel_type_checklist(controls_emissions["vessel_types"]),
+        }
+        return builders[content_id["item"]]()
     @app.callback(
         Output("emissions--checklist--vessel", "options"),
         Output("emissions--checklist--vessel", "value"),

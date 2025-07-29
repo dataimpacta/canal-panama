@@ -2,8 +2,9 @@
 
 """Module for energy dashboard callbacks."""
 
-from dash import Input, Output, State, callback, ctx
+from dash import Input, Output, State, callback, ctx, no_update, MATCH
 from dash import html
+from controls import controls_energy as controls_module
 import plotly.graph_objects as go
 
 from charts import charts_energy 
@@ -12,6 +13,22 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
     """
     Set up all callbacks for the energy dashboard.
     """
+
+    @app.callback(
+        Output({"type": "accordion-content", "tab": "energy", "item": MATCH}, "children"),
+        Input({"type": "accordion", "tab": "energy"}, "active_item"),
+        State({"type": "accordion-content", "tab": "energy", "item": MATCH}, "id"),
+        prevent_initial_call=True,
+    )
+    def render_accordion_item(active_item, content_id):
+        if active_item != content_id["item"]:
+            return no_update
+        builders = {
+            "date-range": lambda: controls_module.build_date_range_slider(controls_energy["date_range"]),
+            "country-before": lambda: controls_module.build_country_before_checklist(controls_energy["country_before"]),
+            "country-after": lambda: controls_module.build_country_after_checklist(controls_energy["country_after"]),
+        }
+        return builders[content_id["item"]]()
 
     @app.callback(
         Output("energy--start-date", "value"),

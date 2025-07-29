@@ -2,8 +2,9 @@
 
 """Module for waiting times dashboard callbacks."""
 
-from dash import Input, Output, State, callback
+from dash import Input, Output, State, callback, no_update, MATCH
 from dash import html, ctx
+from controls import controls_time as controls_module
 import plotly.graph_objects as go
 
 from data_utils import map_processing
@@ -14,6 +15,22 @@ def setup_waiting_times_callbacks(app, df, controls):
     """
     These are the callbacks for the emissions dashboard.
     """
+
+    @app.callback(
+        Output({"type": "accordion-content", "tab": "time", "item": MATCH}, "children"),
+        Input({"type": "accordion", "tab": "time"}, "active_item"),
+        State({"type": "accordion-content", "tab": "time", "item": MATCH}, "id"),
+        prevent_initial_call=True,
+    )
+    def render_accordion_item(active_item, content_id):
+        if active_item != content_id["item"]:
+            return no_update
+        builders = {
+            "date-range": lambda: controls_module.build_date_range_slider(controls["date_range"]),
+            "vessel-type": lambda: controls_module.build_vessel_type_checklist(controls["vessel_types"]),
+            "stop-area": lambda: controls_module.build_stop_area_checklist(controls["stop_area"]),
+        }
+        return builders[content_id["item"]]()
     @app.callback(
         Output("time--checklist--vessel", "options"),
         Output("time--checklist--vessel", "value"),

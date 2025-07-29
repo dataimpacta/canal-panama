@@ -2,13 +2,32 @@
 
 """Callbacks for the explorer tab."""
 
-from dash import Input, Output, State, dcc, ctx
+from dash import Input, Output, State, dcc, ctx, no_update, MATCH, html
 from charts import charts_explorer
+from controls import controls_explorer as controls_module
 from data_utils.form_saver import append_form_row
 
 
 def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls):
     """Register callbacks for the explorer tab."""
+
+    @app.callback(
+        Output({"type": "accordion-content", "tab": "explorer", "item": MATCH}, "children"),
+        Input({"type": "accordion", "tab": "explorer"}, "active_item"),
+        State({"type": "accordion-content", "tab": "explorer", "item": MATCH}, "id"),
+        prevent_initial_call=True,
+    )
+    def render_accordion_item(active_item, content_id):
+        if active_item != content_id["item"]:
+            return no_update
+        builders = {
+            "source": lambda: controls_module.build_source_dropdown(controls["sources"]),
+            "date-range": lambda: html.Div([
+                controls_module.build_date_range_slider(controls["date_range"]),
+                controls_module.build_week_range_slider(controls["week_range"]),
+            ]),
+        }
+        return builders[content_id["item"]]()
 
     @app.callback(
         Output("explorer--start-date", "value"),
