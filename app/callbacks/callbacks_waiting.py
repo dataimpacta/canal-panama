@@ -131,7 +131,7 @@ def setup_waiting_times_callbacks(app, df, controls):
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
-            State("chart-tabs-store", "value"),
+            State("chart-tabs-store", "data"),
             State("time--start-date", "value"),
             State("time--end-date", "value"),
             State("time--checklist--vessel", "value"),

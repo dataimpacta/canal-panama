@@ -42,7 +42,7 @@ class DashboardUser(HttpUser):
             "changedPropIds": ["emissions--btn--refresh.n_clicks"],
             "parsedChangedPropsIds": ["emissions--btn--refresh.n_clicks"],
             "state": [
-                {"id": "chart-tabs-store", "property": "value"},
+                {"id": "chart-tabs-store", "property": "data"},
                 {"id": "time--start-date", "property": "value", "value": 0},
                 {"id": "time--end-date", "property": "value", "value": 67},
                 {"id": "time--checklist--vessel", "property": "value", "value": [

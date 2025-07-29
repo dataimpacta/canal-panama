@@ -394,21 +394,11 @@ callbacks_energy.setup_energy_callbacks(
 
 @app.callback(
     Output("chart-tabs-store", "data"),
-    [
-        Input("tab-emissions", "n_clicks"),
-        Input("tab-waiting", "n_clicks"),
-        Input("tab-service", "n_clicks"),
-        Input("tab-energy", "n_clicks"),
-        Input("tab-explorer", "n_clicks"),
-        Input("tab-about", "n_clicks"),
-    ],
-    prevent_initial_call=True
+    Input("main-tabs", "value")
 )
-
-def update_tab(*args):
-    """Update name of the tab"""
-    triggered_id = ctx.triggered_id
-    return triggered_id.replace("tab-", "") if triggered_id else "emissions"
+def update_tab(selected):
+    """Store the currently selected tab."""
+    return selected
 
 
 
@@ -416,61 +406,20 @@ def update_tab(*args):
     Output("tab-content", "children"),
     Input("chart-tabs-store", "data")
 )
-
 def update_tab_content(selected_tab):
-    """
-    Update the dashboard depending on the differnt tabs. 
-    """
-    nav_bar = layout.build_navigation_bar(active_tab=selected_tab)
-
+    """Render content for the selected tab."""
     if selected_tab == "emissions":
-        return html.Div([
-            nav_bar,
-            dbc.Row([
-                layout.build_sidebar_emissions(controls_emissions),
-                layout.build_main_container_emissions()
-            ], className="g-0")
-        ])
-    
-    elif selected_tab == "waiting":
-        return html.Div([
-            nav_bar,
-            dbc.Row([
-            layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
-            layout.build_main_container_waiting_times()
-        ], className="g-0")
-        ])
-    elif selected_tab == "service":
-        return html.Div([
-            nav_bar,
-            dbc.Row([
-            layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
-            layout.build_main_container_service_times()
-        ], className="g-0")
-        ])
-    elif selected_tab == "energy":
-        return html.Div([
-            nav_bar,
-            dbc.Row([
-            layout.build_sidebar_energy(controls_energy), 
-            layout.build_main_container_energy()
-        ], className="g-0")
-        ])
-    elif selected_tab == "explorer":
-        return html.Div([
-            nav_bar,
-            dbc.Row([
-                layout.build_sidebar_explorer(controls_explorer),
-                layout.build_main_container_explorer()
-            ], className="g-0")
-        ])
-    elif selected_tab == "about":
-        return html.Div([
-            nav_bar,
-            dbc.Container([
-            layout.build_about_us()
-        ], fluid=True)
-        ])
+        return layout.build_tab_emissions(controls_emissions)
+    if selected_tab == "waiting":
+        return layout.build_tab_waiting(controls_waiting_times)
+    if selected_tab == "service":
+        return layout.build_tab_service(controls_waiting_times)
+    if selected_tab == "energy":
+        return layout.build_tab_energy(controls_energy)
+    if selected_tab == "explorer":
+        return layout.build_tab_explorer(controls_explorer)
+    if selected_tab == "about":
+        return layout.build_tab_about()
 
 
 @app.callback(

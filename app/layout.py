@@ -178,6 +178,23 @@ def build_navigation_bar(active_tab="emissions"):
         className="mb-3"
     )
 
+
+def build_tabs():
+    """Navigation tabs for the dashboard."""
+    return dcc.Tabs(
+        id="main-tabs",
+        value="emissions",
+        children=[
+            dcc.Tab(label="Emissions", value="emissions", id="tab-emissions"),
+            dcc.Tab(label="Waiting Time", value="waiting", id="tab-waiting"),
+            dcc.Tab(label="Service Time", value="service", id="tab-service"),
+            dcc.Tab(label="Energy", value="energy", id="tab-energy"),
+            dcc.Tab(label="Explorer", value="explorer", id="tab-explorer"),
+            dcc.Tab(label="About Us", value="about", id="tab-about"),
+        ],
+        className="mb-3",
+    )
+
 # ============================
 # Funcitons for the charts and KPIs
 
@@ -467,6 +484,14 @@ def build_main_container_emissions():
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
+def build_tab_emissions(controls):
+    """Return layout for the Emissions tab."""
+    return dbc.Row([
+        build_sidebar_emissions(controls),
+        build_main_container_emissions(),
+    ], className="g-0")
+
+
 def build_sidebar_waiting_times(controls):
     """
     Build the sidebar for the emissions dashboard.
@@ -537,6 +562,14 @@ def build_main_container_waiting_times():
         ], xs=12, md=12, lg=10, width=10)
 
 
+def build_tab_waiting(controls):
+    """Return layout for the Waiting Time tab."""
+    return dbc.Row([
+        build_sidebar_waiting_times(controls),
+        build_main_container_waiting_times(),
+    ], className="g-0")
+
+
 def build_sidebar_energy(controls):
     """
     Build the sidebar for the energy dashboard.
@@ -600,6 +633,14 @@ def build_main_container_energy():
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
+def build_tab_energy(controls):
+    """Return layout for the Energy tab."""
+    return dbc.Row([
+        build_sidebar_energy(controls),
+        build_main_container_energy(),
+    ], className="g-0")
+
+
 def build_main_container_service_times():
     """
     Here we only have statick content, with the tags
@@ -641,6 +682,14 @@ def build_main_container_service_times():
             },
         ])
         ], xs=12, md=12, lg=10, width=10)
+
+
+def build_tab_service(controls):
+    """Return layout for the Service Time tab."""
+    return dbc.Row([
+        build_sidebar_waiting_times(controls),
+        build_main_container_service_times(),
+    ], className="g-0")
 
 
 def build_sidebar_explorer(controls):
@@ -690,6 +739,19 @@ def build_main_container_explorer():
     ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
+def build_tab_explorer(controls):
+    """Return layout for the Explorer tab."""
+    return dbc.Row([
+        build_sidebar_explorer(controls),
+        build_main_container_explorer(),
+    ], className="g-0")
+
+
+def build_tab_about():
+    """Return layout for the About Us tab."""
+    return build_about_us()
+
+
 
 # ============================
 
@@ -730,6 +792,7 @@ def build_main_layout():
         dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
         build_tutorial_components(),
         build_header(),
+        build_tabs(),
         html.Div(id="tab-content"),
         build_footer(),
     ], className="g-0 p-4", fluid=True)
