@@ -213,6 +213,17 @@ def create_standard_chart_container(chart):
     """
 
     
+    graph_block = (
+        html.Div([
+            dcc.Interval(id='map-load-delay', interval=1000, n_intervals=0, max_intervals=1),
+            html.Div('Loading emissions map...', id='map-container')
+        ]) if chart["id"] == "emissions--chart--3" else dcc.Loading(
+            id=f"loading-{chart['id']}",
+            type="circle",
+            children=dcc.Graph(id=chart["id"], style={"height": "300px"})
+        )
+    )
+
     return html.Div([
         html.Div([
             dbc.Row([
@@ -253,11 +264,7 @@ def create_standard_chart_container(chart):
             html.P(chart["subtitle"], className="mb-2", style={"fontSize": "0.85rem", "color": "#666"})
         ]),
 
-        dcc.Loading(
-            id=f"loading-{chart['id']}",
-            type="circle",
-            children=dcc.Graph(id=chart["id"], style={"height": "300px"})
-        ),
+        graph_block,
 
         dbc.Modal(
             [

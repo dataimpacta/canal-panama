@@ -175,3 +175,16 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             kpi_component,
             False
         )
+
+    @app.callback(
+        Output("map-container", "children"),
+        Input("map-load-delay", "n_intervals")
+    )
+    def display_map(n_intervals):
+        if n_intervals == 0:
+            return "Loading emissions map..."
+        return dcc.Loading(
+            id="loading-emissions--chart--3",
+            type="circle",
+            children=dcc.Graph(id="emissions--chart--3", style={"height": "300px"})
+        )
