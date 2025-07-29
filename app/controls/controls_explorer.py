@@ -40,7 +40,6 @@ def build_date_range_slider(date_range):
         [
             start_dropdown,
             end_dropdown,
-            html.Div(id="explorer--range-label", className="text-center mt-2"),
         ],
         id="explorer--month-range",
     )
@@ -76,11 +75,27 @@ def build_week_range_slider(week_range):
         [
             start_dd,
             end_dd,
-            html.Div(id="explorer--week-range-label", className="text-center mt-2"),
         ],
         id="explorer--week-range",
         style={"display": "none"},
     )
+
+
+def build_date_range_display():
+    """Build the date range display with title outside the accordion."""
+    return html.Div([
+        html.H6("Selected Date Range", className="mb-2", style={"fontWeight": "bold", "color": "#333"}),
+        html.Div(id="explorer--range-label", className="text-center p-2", 
+                style={"backgroundColor": "#f8f9fa", "borderRadius": "4px", "border": "1px solid #dee2e6"})
+    ], className="mb-3", id="explorer--month-range-display")
+
+def build_week_range_display():
+    """Build the week range display with title outside the accordion."""
+    return html.Div([
+        html.H6("Selected Date Range", className="mb-2", style={"fontWeight": "bold", "color": "#333"}),
+        html.Div(id="explorer--week-range-label", className="text-center p-1", 
+                style={"backgroundColor": "#f8f9fa", "borderRadius": "4px", "border": "1px solid #dee2e6"})
+    ], className="mb-3", id="explorer--week-range-display")
 
 
 def build_download_button():

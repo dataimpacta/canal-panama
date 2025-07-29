@@ -131,12 +131,26 @@ def prepare_emissions_controls(df):
     index_to_year_month = {i: ym for ym, i in year_month_map.items()}
     min_index = min(year_month_map.values())
     max_index = max(year_month_map.values())
+    
+    # Set default start date to 2022-01 instead of minimum value
+    default_start_ym = 202301  # 2022-01
+    if default_start_ym in year_month_map:
+        default_start_index = year_month_map[default_start_ym]
+    else:
+        # If 2022-01 doesn't exist, find the closest date after it
+        available_dates = [ym for ym in unique_year_months if ym >= default_start_ym]
+        if available_dates:
+            default_start_index = year_month_map[min(available_dates)]
+        else:
+            # Fallback to minimum if no dates after 2022-01
+            default_start_index = min_index
 
     return {
         "vessel_types": vessel_types,
         "date_range": {
             "min_index": min_index,
             "max_index": max_index,
+            "default_start_index": default_start_index,  # New field for default start
             "unique_year_months": unique_year_months,
             "index_to_year_month": index_to_year_month,
         }
@@ -162,6 +176,19 @@ def prepare_waiting_time_controls(df):
     index_to_year_month = {i: ym for ym, i in year_month_map.items()}
     min_index = min(year_month_map.values())
     max_index = max(year_month_map.values())
+    
+    # Set default start date to 2022-01 instead of minimum value
+    default_start_ym = 202301  # 2022-01
+    if default_start_ym in year_month_map:
+        default_start_index = year_month_map[default_start_ym]
+    else:
+        # If 2022-01 doesn't exist, find the closest date after it
+        available_dates = [ym for ym in unique_year_months if ym >= default_start_ym]
+        if available_dates:
+            default_start_index = year_month_map[min(available_dates)]
+        else:
+            # Fallback to minimum if no dates after 2022-01
+            default_start_index = min_index
 
     return {
         "vessel_types": vessel_types,
@@ -169,6 +196,7 @@ def prepare_waiting_time_controls(df):
         "date_range": {
             "min_index": min_index,
             "max_index": max_index,
+            "default_start_index": default_start_index,  # New field for default start
             "unique_year_months": unique_year_months,
             "index_to_year_month": index_to_year_month,
         }

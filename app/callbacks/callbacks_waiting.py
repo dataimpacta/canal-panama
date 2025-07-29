@@ -90,7 +90,7 @@ def setup_waiting_times_callbacks(app, df, controls):
     def validate_date_range(start_idx, end_idx):
         """Ensure the start date is not after the end date."""
         if start_idx is None:
-            start_idx = controls["date_range"]["min_index"]
+            start_idx = controls["date_range"].get("default_start_index", controls["date_range"]["min_index"])
         if end_idx is None:
             end_idx = controls["date_range"]["max_index"]
         if start_idx > end_idx:
@@ -99,23 +99,6 @@ def setup_waiting_times_callbacks(app, df, controls):
             else:
                 end_idx = start_idx
         return start_idx, end_idx
-
-    @app.callback(
-        Output("time--range-label", "children"),
-        Input("time--start-date", "value"),
-        Input("time--end-date", "value"),
-    )
-    def update_date_label(start_idx, end_idx):
-        """Show the selected year-month range below the dropdowns."""
-        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
-        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
-
-        def _fmt(ym: int) -> str:
-            ym = str(ym)
-            return f"{ym[:4]}-{ym[4:]}"
-
-        return f"{_fmt(start_ym)} to {_fmt(end_ym)}"
-
 
     @app.callback(
         [
@@ -127,7 +110,8 @@ def setup_waiting_times_callbacks(app, df, controls):
             Output("time--chart--3-fullscreen", "figure"),
             Output("time--chart--4", "figure"),
             Output("time--chart--4-fullscreen", "figure"),
-            Output("time--modal--no-data", "is_open")
+            Output("time--modal--no-data", "is_open"),
+            Output("time--range-label", "children"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
@@ -142,6 +126,12 @@ def setup_waiting_times_callbacks(app, df, controls):
         time_col = "waiting_time" if current_tab == "waiting" else "service_time"
         start_ym = controls["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        # Format date range label
+        def _fmt(ym: int) -> str:
+            ym = str(ym)
+            return f"{ym[:4]}-{ym[4:]}"
+        date_range_label = f"{_fmt(start_ym)} to {_fmt(end_ym)}"
 
         filtered_df = df[
             (df["year_month"] >= start_ym) &
@@ -160,7 +150,8 @@ def setup_waiting_times_callbacks(app, df, controls):
                 empty_fig, empty_fig,
                 empty_fig, empty_fig,
                 empty_fig, empty_fig,
-                True
+                True,
+                date_range_label
             )
         
         
@@ -183,5 +174,6 @@ def setup_waiting_times_callbacks(app, df, controls):
             fig2, fig2,
             fig3, fig3,
             fig4, fig4,
-            False
+            False,
+            date_range_label
         )

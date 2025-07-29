@@ -33,20 +33,6 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         return start_idx, end_idx
 
     @app.callback(
-        Output("energy--range-label", "children"),
-        Input("energy--start-date", "value"),
-        Input("energy--end-date", "value"),
-    )
-    def update_date_label(start_idx, end_idx):
-        index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
-        start_yw = index_to_year_week[start_idx]
-        end_yw = index_to_year_week[end_idx]
-        def _fmt(yw):
-            yw = str(yw)
-            return f"{yw[:4]}-W{yw[4:]}"
-        return f"{_fmt(start_yw)} to {_fmt(end_yw)}"
-
-    @app.callback(
         Output("energy--checklist--country-before", "options"),
         Output("energy--checklist--country-before", "value"),
         Input("energy--btn--country-before-select", "n_clicks"),
@@ -126,6 +112,7 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             Output("energy--chart--4", "figure"),
             Output("energy--chart--4-fullscreen", "figure"),
             Output("energy--modal--no-data", "is_open"),
+            Output("energy--range-label", "children"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         Input("energy--role-chart2", "data"),
@@ -141,6 +128,13 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
         index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
         start_yw = index_to_year_week[start_idx]
         end_yw = index_to_year_week[end_idx]
+        
+        # Format date range label
+        def _fmt(yw):
+            yw = str(yw)
+            return f"{yw[:4]}-W{yw[4:]}"
+        date_range_label = f"{_fmt(start_yw)} to {_fmt(end_yw)}"
+        
         before_map = controls_energy["country_before_map"]
         after_map = controls_energy["country_after_map"]
         selected_before_codes = [before_map.get(n, n) for n in selected_country_before]
@@ -159,7 +153,8 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
                 empty_fig, empty_fig,
                 empty_fig, empty_fig,
                 empty_fig, empty_fig,
-                True
+                True,
+                date_range_label
             )
 
 
@@ -177,4 +172,4 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
 
         fig4 = charts_energy.plot_sankey_before_after(filtered_df, origin_col="country_before_name", dest_col="country_after_name")
 
-        return fig, fig, fig2, fig2, fig3, fig3, fig4, fig4, False
+        return fig, fig, fig2, fig2, fig3, fig3, fig4, fig4, False, date_range_label

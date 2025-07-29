@@ -53,10 +53,19 @@ def generate_h3_map_data(df_to_map, gdf_polygons, precomputed_geojson_template):
         - df_grouped: GeoDataFrame with geometry and emissions
         - gdf_json: GeoJSON ready for plotting
     """
+    # OPTIMIZATION: More efficient groupby and merge
+    # Use as_index=False to avoid reset_index() call
     df_grouped = df_to_map.groupby("resolution_id", as_index=False)["co2_equivalent_t"].sum()
-    df_grouped = df_grouped.merge(gdf_polygons, on="resolution_id", how="left")
+    
+    # OPTIMIZATION: Use merge with only necessary columns
+    df_grouped = df_grouped.merge(
+        gdf_polygons[["resolution_id", "geometry"]], 
+        on="resolution_id", 
+        how="left"
+    )
 
-    values_by_id = df_grouped.set_index("resolution_id")["co2_equivalent_t"].to_dict()
+    # OPTIMIZATION: More efficient dictionary creation
+    values_by_id = dict(zip(df_grouped["resolution_id"], df_grouped["co2_equivalent_t"]))
     gdf_json = inject_values_into_geojson(precomputed_geojson_template, values_by_id)
 
     return gdf_json, df_grouped
