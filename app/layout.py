@@ -17,7 +17,7 @@ def build_header():
         # Logo only visible on small screens (above the title)
         html.Div([
             html.Img(
-                src="/assets/Financing_Logo.png",
+                src="/assets/Financing_Logo.webp",
                 alt="SENACYT Logo",
                 width = "275px",
                 height = "60px",
@@ -33,8 +33,8 @@ def build_header():
                         "Panama Maritime Statistics",
                         style={
                             "margin": 0,
-                            "fontSize": "2rem",  # or 1.75rem
-                            "fontWeight": 600,
+                            "fontSize": "2.75rem",  # or 1.75rem
+                            "fontWeight": 700,
                             "fontFamily": "Arial, Helvetica, sans-serif"  # system fonts = fast
                         }
                     ),
@@ -42,8 +42,8 @@ def build_header():
                         "Efficiency and Sustainability Indicators",
                         style={
                             "margin": 0,
-                            "fontWeight": "normal",
-                            "fontSize": "1.2rem",
+                            "fontWeight": 500,
+                            "fontSize": "1.5rem",
                             "fontFamily": "Arial, Helvetica, sans-serif"
                         }
                     )
@@ -54,7 +54,7 @@ def build_header():
             dbc.Col([
                 html.Div([
                     html.Img(
-                        src="/assets/Financing_Logo.png",
+                        src="/assets/Financing_Logo.webp",
                         alt="SENACYT Logo",
                         width="320px",
                         height="70px",
@@ -69,7 +69,7 @@ def build_header():
                 })
             ], md=2)
         ], className="dashboard-header pb-4")
-    ])
+    ], className="ps-4 pe-4 pt-4")  # Add the same padding as the main container
 
 
 def build_footer():
@@ -722,14 +722,28 @@ def build_tutorial_components():
 
 
 
-def build_main_layout():
+def build_main_layout_content():
     return dbc.Container([
         dcc.Store(id="chart-tabs-store", data="emissions"),
         dcc.Store(id="energy--role-chart2", data="country_before"),
         dcc.Store(id="energy--role-chart3", data="country_before"),
         dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
+        dcc.Interval(id="initial-delay", interval=2000, n_intervals=0, max_intervals=1),
         build_tutorial_components(),
+        html.Div(id="main-content"),
+        html.Div(id="tab-content"),
+        build_footer(),
+    ], className="g-0 ps-4 pe-4 pt-2 pb-4", fluid=True)
+
+
+def build_main_layout():
+    return dbc.Container([
         build_header(),
+        dcc.Store(id="chart-tabs-store", data="emissions"),
+        dcc.Store(id="energy--role-chart2", data="country_before"),
+        dcc.Store(id="energy--role-chart3", data="country_before"),
+        dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
+        build_tutorial_components(),
         html.Div(id="tab-content"),
         build_footer(),
     ], className="g-0 p-4", fluid=True)

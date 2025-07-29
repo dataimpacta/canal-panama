@@ -369,7 +369,10 @@ app.index_string = f"""
 </html>
 """
 
-app.layout = layout.build_main_layout()
+app.layout = html.Div([
+    layout.build_header(),  # <-- Not in dbc.Container
+    layout.build_main_layout_content()  # <-- Refactor everything else into a new function
+])
 
 # ========================== 8️⃣ CALLBACKS ==========================
 
@@ -413,11 +416,34 @@ def update_tab(*args):
 
 
 @app.callback(
+    Output("main-content", "children"),
+    Input("initial-delay", "n_intervals")
+)
+def show_main_content(n_intervals):
+    """Show the main content after initial delay"""
+    if n_intervals is None or n_intervals == 0:
+        return html.Div([
+            html.H4("Loading main content...", className="text-center text-muted"),
+            html.Div(className="text-center", children=[
+                dbc.Spinner(size="lg", color="primary")
+            ])
+        ])
+    return ""  # Let the tab-content callback handle the actual content
+
+
+@app.callback(
     Output("tab-content", "children"),
-    Input("chart-tabs-store", "data")
+    Input("chart-tabs-store", "data"),
+    Input("initial-delay", "n_intervals")
 )
 
-def update_tab_content(selected_tab):
+def update_tab_content(selected_tab, n_intervals):
+    """Update the dashboard depending on the different tabs."""
+    # Don't show content until initial delay is complete
+    if n_intervals is None or n_intervals == 0:
+        return ""
+    
+    nav_bar = layout.build_navigation_bar(active_tab=selected_tab)
     """
     Update the dashboard depending on the differnt tabs. 
     """
