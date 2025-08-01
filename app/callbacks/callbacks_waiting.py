@@ -123,12 +123,8 @@ def setup_waiting_times_callbacks(app, df, controls):
         ]
     )
     def update_charts(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
-        print(f"DEBUG: current_tab = {current_tab}")  # Debug line
-        print(f"DEBUG: _n_clicks = {_n_clicks}")  # Debug line
-        
         # Don't update charts if we don't have a valid tab
         if current_tab is None:
-            print(f"DEBUG: current_tab is None, skipping chart update")  # Debug line
             # Return empty figures to prevent errors
             empty_fig = go.Figure()
             return (
@@ -141,7 +137,6 @@ def setup_waiting_times_callbacks(app, df, controls):
             )
         
         time_col = "waiting_time" if current_tab == "waiting" else "service_time"
-        print(f"DEBUG: time_col = {time_col}")  # Debug line
         start_ym = controls["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls["date_range"]["index_to_year_month"][end_idx]
 
