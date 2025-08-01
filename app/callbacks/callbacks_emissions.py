@@ -126,44 +126,26 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             )
 
         # KPI Calculation
-        sorted_ym = sorted(filtered_df["year_month"].unique())
-        kpi_component = html.Div("Insufficient data", style={"color": "#999"})  # fallback default
+        total_emissions = filtered_df["co2_equivalent_t"].sum()
+        
+        kpi_component = charts_emissions.plot_kpi(
+            name="Total Emissions in the Panama Canal",
+            value=total_emissions,
+            start_date=f"{str(start_ym)}",
+            end_date=f"{str(end_ym)}",
+            comparison_label="",  # Not used since comparison is disabled
+            comparison_value=0    # Not used since comparison is disabled
+        )
 
-        if len(sorted_ym) >= 1:
-            # Calculate total emissions for the entire selected date range
-            total_emissions = filtered_df["co2_equivalent_t"].sum()
-            
-            # For comparison, get the previous period of the same length
-            if len(sorted_ym) >= 2:
-                # Calculate previous period total for comparison
-                period_length = len(sorted_ym)
-                if len(sorted_ym) >= period_length * 2:
-                    # Get the previous period of the same length
-                    previous_period_yms = sorted_ym[:period_length]
-                    previous_total = filtered_df[
-                        filtered_df["year_month"].isin(previous_period_yms)]["co2_equivalent_t"].sum()
-                else:
-                    # If not enough data for full period comparison, use the previous month
-                    previous_ym = sorted_ym[-2] if len(sorted_ym) >= 2 else sorted_ym[0]
-                    previous_total = filtered_df[
-                        filtered_df["year_month"] == previous_ym]["co2_equivalent_t"].sum()
-            else:
-                previous_total = 0
-
-            comparison_label = "Previous Period"
-            kpi_component = charts_emissions.plot_kpi(
-                name="Total Emissions in the Panama Canal",
-                value=total_emissions,
-                start_date=f"{str(start_ym)}",
-                end_date=f"{str(end_ym)}",
-                comparison_label=comparison_label,
-                comparison_value=previous_total
-            )
-
-
-        df_year_month = filtered_df.groupby(['year', 'month'])['co2_equivalent_t'].sum().reset_index()
-        df_type = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum().sort_values(ascending=False).head(6)
-        df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'])['co2_equivalent_t'].sum().reset_index()
+        # Optimized aggregations - use more efficient pandas operations
+        df_year_month = filtered_df.groupby(['year', 'month'], as_index=False)['co2_equivalent_t'].sum()
+        
+        # Cache vessel type aggregation for reuse
+        vessel_emissions = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum()
+        df_type = vessel_emissions.nlargest(6)
+        
+        # More efficient groupby for time series
+        df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'], as_index=False)['co2_equivalent_t'].sum()
 
         fig1 = charts_emissions.plot_line_chart_emissions_by_year_month(df_year_month)
         fig2 = charts_emissions.plot_bar_chart_emissions_by_type(df_type)

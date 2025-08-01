@@ -6,7 +6,7 @@ from dash import html
 import plotly.graph_objects as go
 import theme
 
-def plot_kpi(name, value, start_date, end_date, comparison_label, comparison_value, delta=None, delta_percent=None):
+def plot_kpi(name, value, start_date, end_date, comparison_label="", comparison_value=0, delta=None, delta_percent=None):
     """
     Function to create a KPI card with title, value, and comparison range.
     """
