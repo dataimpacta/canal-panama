@@ -21,7 +21,7 @@ click==8.1.6
 click-plugins==1.1.1
 cligj==0.7.2
 comm==0.2.2
-dash==2.18.2
+dash[compress]==2.18.2
 dash-bootstrap-components==1.7.1
 dash-core-components==2.0.0
 dash-html-components==2.0.0
