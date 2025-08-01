@@ -151,3 +151,7 @@ def build_stop_area_checklist(vessel_types):
             }
         )
     ])
+
+
+def build_button_refresh_charts():
+    return dbc.Button("Refresh Charts", id="time--btn--refresh", n_clicks=0, color="primary")

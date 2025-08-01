@@ -498,7 +498,7 @@ def build_sidebar_waiting_times(controls):
             )
         ]),
         html.Br(),
-        controls_emissions.build_button_refresh_charts()
+        controls_time.build_button_refresh_charts()
 
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
@@ -746,14 +746,3 @@ def build_main_layout_content():
     ], className="g-0 ps-4 pe-4 pt-2 pb-4", fluid=True)
 
 
-def build_main_layout():
-    return dbc.Container([
-        build_header(),
-        dcc.Store(id="chart-tabs-store", data="emissions"),
-        dcc.Store(id="energy--role-chart2", data="country_before"),
-        dcc.Store(id="energy--role-chart3", data="country_before"),
-        dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
-        build_tutorial_components(),
-        html.Div(id="tab-content"),
-        build_footer(),
-    ], className="g-0 p-4", fluid=True)
