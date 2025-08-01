@@ -398,6 +398,15 @@ app.index_string = f"""
         {{%metas%}}
         <title>{{%title%}}</title>
         {{%favicon%}}
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-H01MT5EHCM"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){{dataLayer.push(arguments);}}
+          gtag('js', new Date());
+
+          gtag('config', 'G-H01MT5EHCM');
+        </script>
         <link rel=\"dns-prefetch\" href=\"//cdn.jsdelivr.net\">
         <link rel=\"preconnect\" href=\"//cdn.jsdelivr.net\">
         <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
