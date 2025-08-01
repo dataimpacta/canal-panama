@@ -364,6 +364,8 @@ app = dash.Dash(
     url_base_pathname=None,  # Allow URL routing
     routes_pathname_prefix='/',
     compress=True,  # Enable compression
+    # Reduce JS payload by loading only essential components initially
+    serve_locally=False,  # Use CDN for faster loading
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1"},
         {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
@@ -412,7 +414,22 @@ app.index_string = f"""
         body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
         </style>
         {{%css%}}
+        <!-- Load critical scripts first, defer non-critical ones -->
         <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
+        <script>
+        // Preload critical Dash components
+        const preloadScripts = [
+            '/_dash-component-suites/dash/deps/react@18.v2_18_2m174...12.1.min.js',
+            '/_dash-component-suites/dash/deps/react-dom@18.v2_18_2m174...12.1.min.js'
+        ];
+        preloadScripts.forEach(src => {{
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'script';
+            link.href = src;
+            document.head.appendChild(link);
+        }});
+        </script>
     </head>
     <body>
         {{%app_entry%}}
