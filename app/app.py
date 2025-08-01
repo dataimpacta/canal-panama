@@ -359,7 +359,8 @@ geojson_template = create_geojson_template(unique_polygons_gdf)
 app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
-    suppress_callback_exceptions=True
+    suppress_callback_exceptions=True,
+    title="Panama Canal Analytics"  # This sets the browser tab title
 )
 server = app.server
 
