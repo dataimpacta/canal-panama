@@ -362,7 +362,14 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
     title="Panama Canal Analytics",  # This sets the browser tab title
     url_base_pathname=None,  # Allow URL routing
-    routes_pathname_prefix='/'
+    routes_pathname_prefix='/',
+    compress=True,  # Enable compression
+    meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"},
+        {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
+        {"name": "description", "content": "Panama Canal Analytics Dashboard"},
+        {"name": "theme-color", "content": "#007bff"}
+    ]
 )
 server = app.server
 
@@ -389,22 +396,33 @@ app.index_string = f"""
         {{%metas%}}
         <title>{{%title%}}</title>
         {{%favicon%}}
+        <link rel=\"dns-prefetch\" href=\"//cdn.jsdelivr.net\">
+        <link rel=\"preconnect\" href=\"//cdn.jsdelivr.net\">
         <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"{bootstrap_css}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"/assets/Financing_Logo.png\" as=\"image\">
+        <link rel=\"preload\" href=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" as=\"script\">
         <noscript>
             <link rel=\"stylesheet\" href=\"{bootstrap_icons}\">
             <link rel=\"stylesheet\" href=\"{bootstrap_css}\">
         </noscript>
         <style>{local_css}</style>
+        <style>
+        /* Critical CSS for faster rendering */
+        body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
+        .dash-loading {{ display: flex; justify-content: center; align-items: center; height: 100vh; }}
+        .dash-spinner {{ width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; }}
+        @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
+        </style>
         {{%css%}}
+        <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
     </head>
     <body>
         {{%app_entry%}}
         <footer>
             {{%config%}}
             {{%scripts%}}
-            <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
+
             {{%renderer%}}
         </footer>
     </body>
@@ -452,12 +470,9 @@ callbacks_energy.setup_energy_callbacks(
 )
 def update_tab(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks, pathname):
     """Update name of the tab based on clicks or URL"""
-    print(f"DEBUG: update_tab called with pathname={pathname}, triggered_id={ctx.triggered_id}")
-    
     # If we have a valid pathname, prioritize URL over tab clicks
     if pathname and pathname != "/" and pathname != "/emissions":
         pathname = pathname.lstrip('/')
-        print(f"DEBUG: Processing URL pathname = '{pathname}'")
         
         # Map URL paths to tab names
         tab_mapping = {
@@ -469,19 +484,15 @@ def update_tab(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, 
         }
         
         if pathname in tab_mapping:
-            result = tab_mapping[pathname]
-            print(f"DEBUG: URL-based tab selection, returning {result}")
-            return result
+            return tab_mapping[pathname]
     
     # Check if triggered by a tab click
     triggered_id = ctx.triggered_id
     if triggered_id and triggered_id.startswith("tab-"):
         tab_name = triggered_id.replace("tab-", "")
-        print(f"DEBUG: Tab clicked, returning {tab_name}")
         return tab_name
     
     # Default to emissions
-    print(f"DEBUG: Defaulting to emissions")
     return "emissions"
 
 
