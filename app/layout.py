@@ -33,7 +33,7 @@ def build_header():
                         "Panama Maritime Statistics",
                         style={
                             "margin": 0,
-                            "fontSize": "2.50rem",  # or 1.75rem
+                            "fontSize": "2.75rem",  # or 1.75rem
                             "fontWeight": 700,
                             "fontFamily": "Arial, Helvetica, sans-serif"  # system fonts = fast
                         }
@@ -43,7 +43,7 @@ def build_header():
                         style={
                             "margin": 0,
                             "fontWeight": 500,
-                            "fontSize": "1.3rem",
+                            "fontSize": "1.5rem",
                             "fontFamily": "Arial, Helvetica, sans-serif"
                         }
                     )
@@ -433,7 +433,6 @@ def build_main_container_emissions():
     - Chart grid
     """
     return dbc.Col([
-        dcc.Store(id="emissions--filtered-data-store"),
         build_kpi_grid([
             {
                 "id": "emissions--kpi--1",

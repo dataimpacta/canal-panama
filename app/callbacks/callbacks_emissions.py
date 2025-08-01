@@ -4,8 +4,6 @@
 
 from dash import Input, Output, State, callback
 from dash import html, ctx
-from dash.exceptions import PreventUpdate
-import pandas as pd
 import plotly.graph_objects as go
 
 from data_utils import map_processing
