@@ -360,7 +360,9 @@ app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
-    title="Panama Canal Analytics"  # This sets the browser tab title
+    title="Panama Canal Analytics",  # This sets the browser tab title
+    url_base_pathname=None,  # Allow URL routing
+    routes_pathname_prefix='/'
 )
 server = app.server
 
@@ -444,14 +446,43 @@ callbacks_energy.setup_energy_callbacks(
         Input("tab-energy", "n_clicks"),
         Input("tab-explorer", "n_clicks"),
         Input("tab-about", "n_clicks"),
+        Input("url", "pathname"),
     ],
-    prevent_initial_call=True
+    prevent_initial_call=False
 )
-
-def update_tab(*args):
-    """Update name of the tab"""
+def update_tab(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks, pathname):
+    """Update name of the tab based on clicks or URL"""
+    print(f"DEBUG: update_tab called with pathname={pathname}, triggered_id={ctx.triggered_id}")
+    
+    # If we have a valid pathname, prioritize URL over tab clicks
+    if pathname and pathname != "/" and pathname != "/emissions":
+        pathname = pathname.lstrip('/')
+        print(f"DEBUG: Processing URL pathname = '{pathname}'")
+        
+        # Map URL paths to tab names
+        tab_mapping = {
+            "waiting": "waiting", 
+            "service": "service",
+            "energy": "energy",
+            "explorer": "explorer",
+            "about": "about"
+        }
+        
+        if pathname in tab_mapping:
+            result = tab_mapping[pathname]
+            print(f"DEBUG: URL-based tab selection, returning {result}")
+            return result
+    
+    # Check if triggered by a tab click
     triggered_id = ctx.triggered_id
-    return triggered_id.replace("tab-", "") if triggered_id else "emissions"
+    if triggered_id and triggered_id.startswith("tab-"):
+        tab_name = triggered_id.replace("tab-", "")
+        print(f"DEBUG: Tab clicked, returning {tab_name}")
+        return tab_name
+    
+    # Default to emissions
+    print(f"DEBUG: Defaulting to emissions")
+    return "emissions"
 
 
 
@@ -470,6 +501,65 @@ def show_main_content(n_intervals):
         ])
     return ""  # Let the tab-content callback handle the actual content
 
+@app.callback(
+    Output("url", "pathname"),
+    [
+        Input("tab-emissions", "n_clicks"),
+        Input("tab-waiting", "n_clicks"),
+        Input("tab-service", "n_clicks"),
+        Input("tab-energy", "n_clicks"),
+        Input("tab-explorer", "n_clicks"),
+        Input("tab-about", "n_clicks"),
+    ],
+    prevent_initial_call=True
+)
+def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks):
+    """Update URL when tabs are clicked"""
+    # Check if any actual clicks occurred (not just initial rendering)
+    all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks]
+    if all(click is None for click in all_clicks):
+        raise dash.exceptions.PreventUpdate
+    
+    triggered_id = ctx.triggered_id
+    if triggered_id and triggered_id.startswith("tab-"):
+        tab_name = triggered_id.replace("tab-", "")
+        new_path = "/emissions" if tab_name == "emissions" else f"/{tab_name}"
+        return new_path
+    return "/emissions"
+
+@app.callback(
+    Output("url", "pathname", allow_duplicate=True),
+    Input("url", "pathname"),
+    prevent_initial_call=True
+)
+def handle_initial_url(pathname):
+    """Handle initial URL load and redirects"""
+    if pathname is None or pathname == "/":
+        return "/emissions"
+    
+    # If it's a valid path, just return it to keep it
+    valid_paths = ["/emissions", "/waiting", "/service", "/energy", "/explorer", "/about"]
+    if pathname in valid_paths:
+        return pathname
+    
+    return "/emissions"
+
+
+@app.callback(
+    Output("navigation-bar", "children"),
+    Input("chart-tabs-store", "data"),
+    Input("url", "pathname"),
+)
+def update_navigation_bar(selected_tab, pathname):
+    """Update the navigation bar based on the current tab and URL"""
+    # If we have a URL, use it to determine the active tab
+    if pathname and pathname != "/":
+        pathname = pathname.lstrip('/')
+        if pathname in ["waiting", "service", "energy", "explorer", "about"]:
+            return layout.build_navigation_bar(active_tab=pathname)
+    
+    # Otherwise use the selected tab from the store
+    return layout.build_navigation_bar(active_tab=selected_tab)
 
 @app.callback(
     Output("tab-content", "children"),
@@ -483,15 +573,8 @@ def update_tab_content(selected_tab, n_intervals):
     if n_intervals is None or n_intervals == 0:
         return ""
     
-    nav_bar = layout.build_navigation_bar(active_tab=selected_tab)
-    """
-    Update the dashboard depending on the differnt tabs. 
-    """
-    nav_bar = layout.build_navigation_bar(active_tab=selected_tab)
-
     if selected_tab == "emissions":
         return html.Div([
-            nav_bar,
             dbc.Row([
                 layout.build_sidebar_emissions(controls_emissions),
                 layout.build_main_container_emissions()
@@ -500,7 +583,6 @@ def update_tab_content(selected_tab, n_intervals):
     
     elif selected_tab == "waiting":
         return html.Div([
-            nav_bar,
             dbc.Row([
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_waiting_times()
@@ -508,7 +590,6 @@ def update_tab_content(selected_tab, n_intervals):
         ])
     elif selected_tab == "service":
         return html.Div([
-            nav_bar,
             dbc.Row([
             layout.build_sidebar_waiting_times(controls_waiting_times),  # Your existing sidebar
             layout.build_main_container_service_times()
@@ -516,7 +597,6 @@ def update_tab_content(selected_tab, n_intervals):
         ])
     elif selected_tab == "energy":
         return html.Div([
-            nav_bar,
             dbc.Row([
             layout.build_sidebar_energy(controls_energy), 
             layout.build_main_container_energy()
@@ -524,7 +604,6 @@ def update_tab_content(selected_tab, n_intervals):
         ])
     elif selected_tab == "explorer":
         return html.Div([
-            nav_bar,
             dbc.Row([
                 layout.build_sidebar_explorer(controls_explorer),
                 layout.build_main_container_explorer()
@@ -532,7 +611,6 @@ def update_tab_content(selected_tab, n_intervals):
         ])
     elif selected_tab == "about":
         return html.Div([
-            nav_bar,
             dbc.Container([
             layout.build_about_us()
         ], fluid=True)
