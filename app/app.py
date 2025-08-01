@@ -285,6 +285,17 @@ df_emissions["year_month"] = (
     df_emissions["year"].astype(str) + df_emissions["month"].astype(str).str.zfill(2)
 ).astype(int)
 
+# Pre-sort the DataFrame by year_month for better performance in callbacks
+df_emissions = df_emissions.sort_values("year_month").reset_index(drop=True)
+
+# Optimize data types for better memory usage and performance
+df_emissions = df_emissions.astype({
+    "year": "int16",
+    "month": "int8", 
+    "year_month": "int32",
+    "co2_equivalent_t": "float32"
+})
+
 controls_emissions = prepare_emissions_controls(df_emissions)
 
 
