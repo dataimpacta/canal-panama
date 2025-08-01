@@ -410,9 +410,6 @@ app.index_string = f"""
         <style>
         /* Critical CSS for faster rendering */
         body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
-        .dash-loading {{ display: flex; justify-content: center; align-items: center; height: 100vh; }}
-        .dash-spinner {{ width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; }}
-        @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
         </style>
         {{%css%}}
         <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
