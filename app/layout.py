@@ -739,7 +739,7 @@ def build_main_layout_content():
         dcc.Store(id="energy--role-chart2", data="country_before"),
         dcc.Store(id="energy--role-chart3", data="country_before"),
         dcc.Interval(id='footer-delay', interval=2000, n_intervals=0),
-        dcc.Interval(id="initial-delay", interval=500, n_intervals=0, max_intervals=1),
+        dcc.Interval(id="initial-delay", interval=2000, n_intervals=0, max_intervals=1),
         build_tutorial_components(),
         # Navigation bar - always available
         html.Div(id="navigation-bar"),
