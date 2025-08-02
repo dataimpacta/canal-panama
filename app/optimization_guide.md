@@ -1,98 +1,146 @@
-# JavaScript Optimization Guide for Panama Canal Dashboard
+# Performance Optimization Guide for Panama Canal Dashboard
 
-## Current JS Payload Issues:
-- **Dash Core**: ~2-3MB
-- **Plotly.js**: ~1-2MB  
-- **Bootstrap JS**: ~200KB
-- **Polyfills**: ~100KB
+## Current Performance Issues
 
-## Implemented Optimizations:
+Your Lighthouse test shows **3+ seconds of Total Blocking Time (TBT)** caused by:
+- Plotly library loading (295ms)
+- Plotly JavaScript execution (3,031ms)
+- Multiple charts rendering simultaneously
 
-### ✅ 1. Compression Enabled
-- `compress=True` in Dash app
-- Gzip compression in nginx
+## ✅ Implemented Fixes
 
-### ✅ 2. CDN Loading
-- `serve_locally=False` - Uses CDN for faster loading
-- Preload critical React components
+### 1. Split Large Callbacks
+- **Before**: One callback rendering 4 charts + KPI simultaneously
+- **After**: 6 separate callbacks (4 charts + KPI + UI elements)
+- **Benefit**: Charts render progressively, reducing main thread blocking
 
-### ✅ 3. Script Deferring
-- Polyfill script loaded with `defer`
-- Non-critical scripts loaded after page render
+### 2. Optimized Chart Rendering
+- Each chart now renders independently
+- Empty state handling prevents unnecessary processing
+- Proper column name fixes (`StandardVesselType` vs `vessel_type`)
 
-## Additional Optimizations to Implement:
+## 🚀 Additional Performance Optimizations
 
-### 🔄 4. Lazy Loading Charts
+### 3. Lazy Loading Implementation
 ```python
-# In your callback functions, add lazy loading
+# Add to your layout.py
+def create_lazy_loading_chart(chart_id):
+    return html.Div([
+        html.Div("Loading...", id=f"{chart_id}-loading"),
+        dcc.Graph(id=chart_id, style={"display": "none"})
+    ])
+```
+
+### 4. Data Preprocessing
+```python
+# Cache frequently used aggregations
+@lru_cache(maxsize=128)
+def get_cached_emissions_data(year_month_range, vessel_types):
+    # Pre-compute aggregations
+    return processed_data
+```
+
+### 5. Chart Configuration Optimization
+```python
+# In your chart functions, add these Plotly optimizations:
+fig.update_layout(
+    # Reduce rendering complexity
+    uirevision=True,  # Prevents unnecessary re-renders
+    # Optimize for performance
+    showlegend=False,  # If not needed
+    hovermode='closest',  # Faster hover
+)
+```
+
+### 6. Progressive Loading
+```python
+# Load charts in sequence with delays
 @app.callback(
-    Output("chart-container", "children"),
-    Input("tab-content", "children"),
+    Output("chart-1", "figure"),
+    Input("btn-refresh", "n_clicks"),
     prevent_initial_call=True
 )
-def lazy_load_charts(tab_content):
-    # Only load chart JS when tab is active
-    if tab_content:
-        return dcc.Graph(...)
-    return []
+def load_chart_1(n_clicks):
+    # Add small delay to prevent blocking
+    time.sleep(0.1)
+    return create_chart_1()
+
+@app.callback(
+    Output("chart-2", "figure"),
+    Input("chart-1", "figure"),  # Trigger after chart 1 loads
+    prevent_initial_call=True
+)
+def load_chart_2(chart_1_figure):
+    return create_chart_2()
 ```
 
-### 🔄 5. Code Splitting by Tab
+## 📊 Expected Performance Improvements
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Total Blocking Time | 3,326ms | ~500ms | 85% reduction |
+| First Contentful Paint | 4s+ | 1.5s | 60% improvement |
+| Largest Contentful Paint | 6s+ | 2s | 70% improvement |
+
+## 🔧 Additional Recommendations
+
+### 7. Asset Optimization
+```nginx
+# Add to your nginx.conf
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+### 8. Data Compression
 ```python
-# Load different JS bundles per tab
-def get_tab_specific_assets(tab_name):
-    if tab_name == "emissions":
-        return ["emissions-charts.js"]
-    elif tab_name == "waiting":
-        return ["waiting-charts.js"]
-    # etc.
+# Enable gzip compression in your Dash app
+app = dash.Dash(
+    __name__,
+    compress=True,
+    external_stylesheets=[dbc.themes.BOOTSTRAP]
+)
 ```
 
-### 🔄 6. Reduce Plotly Bundle Size
+### 9. Memory Management
 ```python
-# Use specific Plotly components instead of full bundle
-import plotly.graph_objects as go
-import plotly.express as px
-# Instead of: import plotly
+# Clear unused data
+import gc
+
+def cleanup_after_callback():
+    gc.collect()
+    # Clear any cached data that's no longer needed
 ```
 
-### 🔄 7. Webpack Bundle Analyzer
-```bash
-# Install bundle analyzer
-npm install --save-dev webpack-bundle-analyzer
+### 10. Monitoring
+```python
+# Add performance monitoring
+import time
 
-# Analyze your bundle
-npx webpack-bundle-analyzer bundle.js
+def log_performance(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        duration = time.time() - start
+        logger.info(f"{func.__name__} took {duration:.2f}s")
+        return result
+    return wrapper
 ```
 
-## Performance Monitoring:
+## 🎯 Next Steps
 
-### 📊 Measure JS Execution Time:
-```javascript
-// Add to your HTML template
-<script>
-performance.mark('js-start');
-// Your JS code here
-performance.mark('js-end');
-performance.measure('js-execution', 'js-start', 'js-end');
-console.log('JS Execution Time:', performance.getEntriesByName('js-execution')[0].duration);
-</script>
-```
+1. **Test the current changes** - Run Lighthouse again
+2. **Implement lazy loading** - Start with the most complex charts
+3. **Add data caching** - Cache aggregations and filtered datasets
+4. **Optimize chart configurations** - Reduce Plotly rendering complexity
+5. **Monitor performance** - Add logging to track improvements
 
-### 📊 Lighthouse Audit:
-```bash
-# Run Lighthouse audit
-npx lighthouse https://canalpanama.online --output=html --output-path=./lighthouse-report.html
-```
+## 📈 Performance Targets
 
-## Expected Improvements:
-- **Initial JS Payload**: 60-70% reduction
-- **Parse Time**: 40-50% faster
-- **Execute Time**: 30-40% faster
-- **Time to Interactive**: 50-60% improvement
+- **Total Blocking Time**: < 200ms (Good)
+- **First Contentful Paint**: < 1.5s
+- **Largest Contentful Paint**: < 2.5s
+- **Cumulative Layout Shift**: < 0.1
 
-## Next Steps:
-1. Implement lazy loading for charts
-2. Add bundle analysis
-3. Optimize Plotly imports
-4. Monitor performance metrics 
+Your dashboard should now load much faster and feel more responsive! 
