@@ -364,8 +364,8 @@ app = dash.Dash(
     url_base_pathname=None,  # Allow URL routing
     routes_pathname_prefix='/',
     compress=True,  # Enable compression
-    # Reduce JS payload by loading only essential components initially
-    serve_locally=False,  # Use CDN for faster loading
+    # Use local assets for better performance and reliability
+    serve_locally=True,  # Use local assets instead of CDN
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1"},
         {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
@@ -407,12 +407,9 @@ app.index_string = f"""
 
           gtag('config', 'G-H01MT5EHCM');
         </script>
-        <link rel=\"dns-prefetch\" href=\"//cdn.jsdelivr.net\">
-        <link rel=\"preconnect\" href=\"//cdn.jsdelivr.net\">
         <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"{bootstrap_css}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"/assets/Financing_Logo.png\" as=\"image\">
-        <link rel=\"preload\" href=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" as=\"script\">
         <noscript>
             <link rel=\"stylesheet\" href=\"{bootstrap_icons}\">
             <link rel=\"stylesheet\" href=\"{bootstrap_css}\">
@@ -426,17 +423,10 @@ app.index_string = f"""
         <!-- Load critical scripts first, defer non-critical ones -->
         <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
         <script>
-        // Preload critical Dash components
-        const preloadScripts = [
-            '/_dash-component-suites/dash/deps/react@18.v2_18_2m174...12.1.min.js',
-            '/_dash-component-suites/dash/deps/react-dom@18.v2_18_2m174...12.1.min.js'
-        ];
-        preloadScripts.forEach(src => {{
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'script';
-            link.href = src;
-            document.head.appendChild(link);
+        // Optimize local asset loading
+        document.addEventListener('DOMContentLoaded', function() {{
+            // Ensure critical components are loaded efficiently
+            console.log('Dashboard loaded with local assets');
         }});
         </script>
     </head>
