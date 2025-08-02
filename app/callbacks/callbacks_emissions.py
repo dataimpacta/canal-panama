@@ -67,18 +67,201 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
                 end_idx = start_idx
         return start_idx, end_idx
 
-
+    # Split the large callback into smaller, individual callbacks
     @app.callback(
         [
             Output("emissions--chart--1", "figure"),
             Output("emissions--chart--1-fullscreen", "figure"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("emissions--checklist--vessel", "value"),
+            State("emissions--start-date", "value"),
+            State("emissions--end-date", "value"),
+        ]
+    )
+    def update_chart_1(_n_clicks, selected_vessel_types, start_idx, end_idx):
+        """Updates chart 1 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
+        
+        # Filter data for this specific chart
+        filtered_df = df_emissions[
+            (df_emissions["year_month"] >= start_ym) &
+            (df_emissions["year_month"] <= end_ym)
+        ]
+        
+        if selected_vessel_types:
+            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 1: Line chart of emissions by year and month
+        df_year_month = filtered_df.groupby(['year', 'month'], as_index=False)['co2_equivalent_t'].sum()
+        fig = charts_emissions.plot_line_chart_emissions_by_year_month(df_year_month)
+        return fig, fig
+
+    @app.callback(
+        [
             Output("emissions--chart--2", "figure"),
             Output("emissions--chart--2-fullscreen", "figure"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("emissions--checklist--vessel", "value"),
+            State("emissions--start-date", "value"),
+            State("emissions--end-date", "value"),
+        ]
+    )
+    def update_chart_2(_n_clicks, selected_vessel_types, start_idx, end_idx):
+        """Updates chart 2 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
+        
+        filtered_df = df_emissions[
+            (df_emissions["year_month"] >= start_ym) &
+            (df_emissions["year_month"] <= end_ym)
+        ]
+        
+        if selected_vessel_types:
+            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 2: Bar chart of emissions by vessel type
+        vessel_emissions = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum()
+        df_type = vessel_emissions.nlargest(6)
+        fig = charts_emissions.plot_bar_chart_emissions_by_type(df_type)
+        return fig, fig
+
+    @app.callback(
+        [
             Output("emissions--chart--3", "figure"),
             Output("emissions--chart--3-fullscreen", "figure"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("emissions--checklist--vessel", "value"),
+            State("emissions--start-date", "value"),
+            State("emissions--end-date", "value"),
+        ]
+    )
+    def update_chart_3(_n_clicks, selected_vessel_types, start_idx, end_idx):
+        """Updates chart 3 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
+        
+        filtered_df = df_emissions[
+            (df_emissions["year_month"] >= start_ym) &
+            (df_emissions["year_month"] <= end_ym)
+        ]
+        
+        if selected_vessel_types:
+            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 3: Map of emissions
+        gdf_json, df_h3 = map_processing.generate_h3_map_data(
+            filtered_df, unique_polygons_gdf, geojson_template
+        )
+        fig = charts_emissions.plot_emissions_map(gdf_json, df_h3)
+        return fig, fig
+
+    @app.callback(
+        [
             Output("emissions--chart--4", "figure"),
             Output("emissions--chart--4-fullscreen", "figure"),
-            Output("emissions--kpi--1", "children"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("emissions--checklist--vessel", "value"),
+            State("emissions--start-date", "value"),
+            State("emissions--end-date", "value"),
+        ]
+    )
+    def update_chart_4(_n_clicks, selected_vessel_types, start_idx, end_idx):
+        """Updates chart 4 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
+        
+        filtered_df = df_emissions[
+            (df_emissions["year_month"] >= start_ym) &
+            (df_emissions["year_month"] <= end_ym)
+        ]
+        
+        if selected_vessel_types:
+            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 4: Line chart of emissions by type and year/month
+        df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'], as_index=False)['co2_equivalent_t'].sum()
+        fig = charts_emissions.plot_line_chart_emissions_by_type_year_month(df_type_ym)
+        return fig, fig
+
+    @app.callback(
+        Output("emissions--kpi--1", "children"),
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("emissions--checklist--vessel", "value"),
+            State("emissions--start-date", "value"),
+            State("emissions--end-date", "value"),
+        ]
+    )
+    def update_kpi(_n_clicks, selected_vessel_types, start_idx, end_idx):
+        """Updates KPI only."""
+        if start_idx is None or end_idx is None:
+            return ""
+        
+        start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
+        
+        filtered_df = df_emissions[
+            (df_emissions["year_month"] >= start_ym) &
+            (df_emissions["year_month"] <= end_ym)
+        ]
+        
+        if selected_vessel_types:
+            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
+        
+        # Calculate KPI
+        total_emissions = filtered_df["co2_equivalent_t"].sum()
+        
+        # Use the proper plot_kpi function for consistent styling
+        kpi_component = charts_emissions.plot_kpi(
+            name="Total Emissions in the Panama Canal",
+            value=total_emissions,
+            start_date=f"{str(start_ym)}",
+            end_date=f"{str(end_ym)}",
+            comparison_label="",  # Not used since comparison is disabled
+            comparison_value=0    # Not used since comparison is disabled
+        )
+        
+        return kpi_component
+
+    @app.callback(
+        [
             Output("modal-no-data", "is_open"),
             Output("emissions--range-label", "children"),
         ],
@@ -89,78 +272,31 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
             State("emissions--end-date", "value"),
         ]
     )
-    def update_charts(_n_clicks, selected_vessel_types, start_idx, end_idx):
-        """
-        Updates all charts and KPI based on user-selected filters.
-        """
-        #logger.info("🟢 Callback started")
-        #t = time.time()
-
+    def update_ui_elements(_n_clicks, selected_vessel_types, start_idx, end_idx):
+        """Updates UI elements only."""
+        if start_idx is None or end_idx is None:
+            return False, ""
+        
         start_ym = controls_emissions["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls_emissions["date_range"]["index_to_year_month"][end_idx]
-
-        # Format date range label
-        def _fmt(ym: int) -> str:
-            ym = str(ym)
-            return f"{ym[:4]}-{ym[4:]}"
-        date_range_label = f"{_fmt(start_ym)} to {_fmt(end_ym)}"
-
+        
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym) &
-            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
+            (df_emissions["year_month"] <= end_ym)
         ]
-
-        if filtered_df.empty:
-            empty_fig = go.Figure()
-            return (
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                html.Div("No data available", style={"color": "#999"}),
-                True,
-                date_range_label
-            )
-
-        # KPI Calculation
-        total_emissions = filtered_df["co2_equivalent_t"].sum()
         
-        kpi_component = charts_emissions.plot_kpi(
-            name="Total Emissions in the Panama Canal",
-            value=total_emissions,
-            start_date=f"{str(start_ym)}",
-            end_date=f"{str(end_ym)}",
-            comparison_label="",  # Not used since comparison is disabled
-            comparison_value=0    # Not used since comparison is disabled
-        )
-
-        # Optimized aggregations - use more efficient pandas operations
-        df_year_month = filtered_df.groupby(['year', 'month'], as_index=False)['co2_equivalent_t'].sum()
+        if selected_vessel_types:
+            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
-        # Cache vessel type aggregation for reuse
-        vessel_emissions = filtered_df.groupby('StandardVesselType')['co2_equivalent_t'].sum()
-        df_type = vessel_emissions.nlargest(6)
+        # Check if data exists
+        has_data = len(filtered_df) > 0
         
-        # More efficient groupby for time series
-        df_type_ym = filtered_df.groupby(['StandardVesselType', 'year_month'], as_index=False)['co2_equivalent_t'].sum()
-
-        fig1 = charts_emissions.plot_line_chart_emissions_by_year_month(df_year_month)
-        fig2 = charts_emissions.plot_bar_chart_emissions_by_type(df_type)
-        fig4 = charts_emissions.plot_line_chart_emissions_by_type_year_month(df_type_ym)
-
-        # Generate map data directly without JSON serialization
-        gdf_json, df_h3 = map_processing.generate_h3_map_data(
-            filtered_df, unique_polygons_gdf, geojson_template
-        )
-        fig3 = charts_emissions.plot_emissions_map(gdf_json, df_h3)
-
-        return (
-            fig1, fig1,
-            fig2, fig2,
-            fig3, fig3,
-            fig4, fig4,
-            kpi_component,
-            False,
-            date_range_label
-        )
+        # Format date range
+        def _fmt(ym: int) -> str:
+            year = ym // 100
+            month = ym % 100
+            return f"{year}-{month:02d}"
+        
+        date_range_text = f"{_fmt(start_ym)} to {_fmt(end_ym)}"
+        
+        return not has_data, date_range_text
