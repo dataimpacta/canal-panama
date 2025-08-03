@@ -132,8 +132,8 @@ def build_download_modal():
                     html.Div(
                         [
                             html.Hr(),
-                            html.Span(
-                                "\"Example citation:\"",
+                            html.Small(
+                                "Example citation: ",
                                 style={"fontWeight": "bold"}
                             ),
                             html.Small(
