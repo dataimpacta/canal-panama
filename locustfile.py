@@ -3,7 +3,7 @@ import json
 
 class PublicUser(HttpUser):
     """Simple user that just visits the main webpages."""
-    host = "https://www.canalpanama.online"
+    host = "http://127.0.0.1:8050/e"
     wait_time = between(3, 6)
 
     def on_start(self):
@@ -44,7 +44,7 @@ class PublicUser(HttpUser):
 class DashboardUser(HttpUser):
     """User that visits pages and loads Dash dependencies."""
     host = "https://www.canalpanama.online"
-    wait_time = between(1, 2)
+    wait_time = between(8, 15)  # More realistic: 8-15 seconds between actions
 
     def on_start(self):
         """Initialize session"""
@@ -83,7 +83,7 @@ class DashboardUser(HttpUser):
 class ChartUser(HttpUser):
     """User that triggers actual chart updates and map generation."""
     host = "https://www.canalpanama.online"
-    wait_time = between(3, 6)
+    wait_time = between(2, 5)  # More realistic: 8-15 seconds between chart updates
 
     def on_start(self):
         """Initialize session"""
@@ -91,23 +91,138 @@ class ChartUser(HttpUser):
 
     @task(4)
     def emissions_chart_update(self):
-        """Trigger emissions chart update with map generation"""
+        """Trigger emissions chart updates - multiple requests for separate callbacks"""
         # Load emissions page first
         self.client.get("/emissions", name="/emissions")
         
-        # Trigger chart update with exact payload structure from browser
-        payload = {
-            "output": "..emissions--chart--1.figure...emissions--chart--1-fullscreen.figure...emissions--chart--2.figure...emissions--chart--2-fullscreen.figure...emissions--chart--3.figure...emissions--chart--3-fullscreen.figure...emissions--chart--4.figure...emissions--chart--4-fullscreen.figure...emissions--kpi--1.children...modal-no-data.is_open...emissions--range-label.children..",
+        # Common state for all emissions callbacks
+        common_state = [
+            {"id": "emissions--checklist--vessel", "property": "value", "value": [
+                "Container", "Oil tanker", "Chemical tanker", "Liquified gas tanker", 
+                "Bulk carrier", "General cargo", "Vehicle", "Refrigerated bulk", 
+                "Yacht", "Cruise", "Miscellaneous-other", "Offshore", 
+                "Miscellaneous-fishing", "Service-tug", "Ferry-pax only", 
+                "Ro-Ro", "Service-other", "Ferry-RoPax", "Other liquids tankers"
+            ]},
+            {"id": "emissions--start-date", "property": "value", "value": 48},
+            {"id": "emissions--end-date", "property": "value", "value": 71}
+        ]
+
+        headers = {"Content-Type": "application/json"}
+
+        # Trigger chart 1 callback
+        payload_chart1 = {
+            "output": "..emissions--chart--1.figure...emissions--chart--1-fullscreen.figure..",
             "outputs": [
                 {"id": "emissions--chart--1", "property": "figure"},
-                {"id": "emissions--chart--1-fullscreen", "property": "figure"},
+                {"id": "emissions--chart--1-fullscreen", "property": "figure"}
+            ],
+            "inputs": [
+                {"id": "emissions--btn--refresh", "property": "n_clicks", "value": 1}
+            ],
+            "changedPropIds": ["emissions--btn--refresh.n_clicks"],
+            "parsedChangedPropsIds": ["emissions--btn--refresh.n_clicks"],
+            "state": common_state
+        }
+
+        with self.client.post(
+            "/_dash-update-component",
+            data=json.dumps(payload_chart1),
+            headers=headers,
+            name="/_dash-update-component (emissions chart 1)",
+            catch_response=True
+        ) as response:
+            if response.status_code != 200:
+                response.failure(f"Status {response.status_code}: {response.text}")
+            else:
+                response.success()
+
+        # Trigger chart 2 callback
+        payload_chart2 = {
+            "output": "..emissions--chart--2.figure...emissions--chart--2-fullscreen.figure..",
+            "outputs": [
                 {"id": "emissions--chart--2", "property": "figure"},
-                {"id": "emissions--chart--2-fullscreen", "property": "figure"},
+                {"id": "emissions--chart--2-fullscreen", "property": "figure"}
+            ],
+            "inputs": [
+                {"id": "emissions--btn--refresh", "property": "n_clicks", "value": 1}
+            ],
+            "changedPropIds": ["emissions--btn--refresh.n_clicks"],
+            "parsedChangedPropsIds": ["emissions--btn--refresh.n_clicks"],
+            "state": common_state
+        }
+
+        with self.client.post(
+            "/_dash-update-component",
+            data=json.dumps(payload_chart2),
+            headers=headers,
+            name="/_dash-update-component (emissions chart 2)",
+            catch_response=True
+        ) as response:
+            if response.status_code != 200:
+                response.failure(f"Status {response.status_code}: {response.text}")
+            else:
+                response.success()
+
+        # Trigger chart 3 callback (map)
+        payload_chart3 = {
+            "output": "..emissions--chart--3.figure...emissions--chart--3-fullscreen.figure..",
+            "outputs": [
                 {"id": "emissions--chart--3", "property": "figure"},
-                {"id": "emissions--chart--3-fullscreen", "property": "figure"},
+                {"id": "emissions--chart--3-fullscreen", "property": "figure"}
+            ],
+            "inputs": [
+                {"id": "emissions--btn--refresh", "property": "n_clicks", "value": 1}
+            ],
+            "changedPropIds": ["emissions--btn--refresh.n_clicks"],
+            "parsedChangedPropsIds": ["emissions--btn--refresh.n_clicks"],
+            "state": common_state
+        }
+
+        with self.client.post(
+            "/_dash-update-component",
+            data=json.dumps(payload_chart3),
+            headers=headers,
+            name="/_dash-update-component (emissions chart 3)",
+            catch_response=True
+        ) as response:
+            if response.status_code != 200:
+                response.failure(f"Status {response.status_code}: {response.text}")
+            else:
+                response.success()
+
+        # Trigger chart 4 callback
+        payload_chart4 = {
+            "output": "..emissions--chart--4.figure...emissions--chart--4-fullscreen.figure..",
+            "outputs": [
                 {"id": "emissions--chart--4", "property": "figure"},
-                {"id": "emissions--chart--4-fullscreen", "property": "figure"},
-                {"id": "emissions--kpi--1", "property": "children"},
+                {"id": "emissions--chart--4-fullscreen", "property": "figure"}
+            ],
+            "inputs": [
+                {"id": "emissions--btn--refresh", "property": "n_clicks", "value": 1}
+            ],
+            "changedPropIds": ["emissions--btn--refresh.n_clicks"],
+            "parsedChangedPropsIds": ["emissions--btn--refresh.n_clicks"],
+            "state": common_state
+        }
+
+        with self.client.post(
+            "/_dash-update-component",
+            data=json.dumps(payload_chart4),
+            headers=headers,
+            name="/_dash-update-component (emissions chart 4)",
+            catch_response=True
+        ) as response:
+            if response.status_code != 200:
+                response.failure(f"Status {response.status_code}: {response.text}")
+            else:
+                response.success()
+
+
+        # Trigger UI elements callback
+        payload_ui = {
+            "output": "..modal-no-data.is_open...emissions--range-label.children..",
+            "outputs": [
                 {"id": "modal-no-data", "property": "is_open"},
                 {"id": "emissions--range-label", "property": "children"}
             ],
@@ -116,25 +231,14 @@ class ChartUser(HttpUser):
             ],
             "changedPropIds": ["emissions--btn--refresh.n_clicks"],
             "parsedChangedPropsIds": ["emissions--btn--refresh.n_clicks"],
-            "state": [
-                {"id": "emissions--checklist--vessel", "property": "value", "value": [
-                    "Container", "Oil tanker", "Chemical tanker", "Liquified gas tanker", 
-                    "Bulk carrier", "General cargo", "Vehicle", "Refrigerated bulk", 
-                    "Yacht", "Cruise", "Miscellaneous-other", "Offshore", 
-                    "Miscellaneous-fishing", "Service-tug", "Ferry-pax only", 
-                    "Ro-Ro", "Service-other", "Ferry-RoPax", "Other liquids tankers"
-                ]},
-                {"id": "emissions--start-date", "property": "value", "value": 48},
-                {"id": "emissions--end-date", "property": "value", "value": 71}
-            ]
+            "state": common_state
         }
 
-        headers = {"Content-Type": "application/json"}
         with self.client.post(
             "/_dash-update-component",
-            data=json.dumps(payload),
+            data=json.dumps(payload_ui),
             headers=headers,
-            name="/_dash-update-component (emissions chart)",
+            name="/_dash-update-component (emissions ui)",
             catch_response=True
         ) as response:
             if response.status_code != 200:
@@ -225,20 +329,12 @@ class ChartUser(HttpUser):
         ]
         
         for combo in filter_combinations:
+            # Trigger chart 2 update (bar chart by vessel type)
             payload = {
-                "output": "..emissions--chart--1.figure...emissions--chart--1-fullscreen.figure...emissions--chart--2.figure...emissions--chart--2-fullscreen.figure...emissions--chart--3.figure...emissions--chart--3-fullscreen.figure...emissions--chart--4.figure...emissions--chart--4-fullscreen.figure...emissions--kpi--1.children...modal-no-data.is_open...emissions--range-label.children..",
+                "output": "..emissions--chart--2.figure...emissions--chart--2-fullscreen.figure..",
                 "outputs": [
-                    {"id": "emissions--chart--1", "property": "figure"},
-                    {"id": "emissions--chart--1-fullscreen", "property": "figure"},
                     {"id": "emissions--chart--2", "property": "figure"},
-                    {"id": "emissions--chart--2-fullscreen", "property": "figure"},
-                    {"id": "emissions--chart--3", "property": "figure"},
-                    {"id": "emissions--chart--3-fullscreen", "property": "figure"},
-                    {"id": "emissions--chart--4", "property": "figure"},
-                    {"id": "emissions--chart--4-fullscreen", "property": "figure"},
-                    {"id": "emissions--kpi--1", "property": "children"},
-                    {"id": "modal-no-data", "property": "is_open"},
-                    {"id": "emissions--range-label", "property": "children"}
+                    {"id": "emissions--chart--2-fullscreen", "property": "figure"}
                 ],
                 "inputs": [
                     {"id": "emissions--btn--refresh", "property": "n_clicks", "value": 1}
@@ -257,7 +353,7 @@ class ChartUser(HttpUser):
                 "/_dash-update-component",
                 data=json.dumps(payload),
                 headers=headers,
-                name="/_dash-update-component (emissions multiple)",
+                name="/_dash-update-component (emissions chart 2)",
                 catch_response=True
             ) as response:
                 if response.status_code != 200:
@@ -269,7 +365,7 @@ class ChartUser(HttpUser):
 class AssetLoader(HttpUser):
     """User that loads various assets and static files."""
     host = "https://www.canalpanama.online"
-    wait_time = between(1, 3)
+    wait_time = between(5, 10)  # More realistic asset loading timing
 
     def on_start(self):
         """Initialize session"""

@@ -100,23 +100,13 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             new_selected = selected_values
         return options, new_selected
 
-
+    # Split the large callback into smaller, individual callbacks
     @app.callback(
         [
             Output("energy--chart--1", "figure"),
             Output("energy--chart--1-fullscreen", "figure"),
-            Output("energy--chart--2", "figure"),
-            Output("energy--chart--2-fullscreen", "figure"),
-            Output("energy--chart--3", "figure"),
-            Output("energy--chart--3-fullscreen", "figure"),
-            Output("energy--chart--4", "figure"),
-            Output("energy--chart--4-fullscreen", "figure"),
-            Output("energy--modal--no-data", "is_open"),
-            Output("energy--range-label", "children"),
         ],
         Input("emissions--btn--refresh", "n_clicks"),
-        Input("energy--role-chart2", "data"),
-        Input("energy--role-chart3", "data"),
         [
             State("energy--checklist--country-before", "value"),
             State("energy--checklist--country-after", "value"),
@@ -124,16 +114,14 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             State("energy--end-date", "value"),
         ]
     )
-    def update_charts(_n_clicks, role_chart2, role_chart3, selected_country_before, selected_country_after, start_idx, end_idx):
+    def update_chart_1(_n_clicks, selected_country_before, selected_country_after, start_idx, end_idx):
+        """Updates chart 1 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
         index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
         start_yw = index_to_year_week[start_idx]
         end_yw = index_to_year_week[end_idx]
-        
-        # Format date range label
-        def _fmt(yw):
-            yw = str(yw)
-            return f"{yw[:4]}-W{yw[4:]}"
-        date_range_label = f"{_fmt(start_yw)} to {_fmt(end_yw)}"
         
         before_map = controls_energy["country_before_map"]
         after_map = controls_energy["country_after_map"]
@@ -146,30 +134,203 @@ def setup_energy_callbacks(app, df_energy, controls_energy):
             (df_energy["country_before"].isin(selected_before_codes)) &
             (df_energy["country_after"].isin(selected_after_codes))
         ]
+        
         if filtered_df.empty:
             empty_fig = go.Figure()
-            return (
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                True,
-                date_range_label
-            )
-
-
-        # For now, use the same chart for all outputs
+            return empty_fig, empty_fig
+        
+        # Chart 1: Line chart of energy demand by year and week
         df_year_week = filtered_df.groupby(['year','week'])['sum_energy'].sum().reset_index()
         fig = charts_energy.plot_line_chart_energy_demand_by_year_week(df_year_week)
-        
-        country_col = "country_before_name" if role_chart2 == "country_before" else "country_after_name"
+        return fig, fig
 
+    @app.callback(
+        [
+            Output("energy--chart--2", "figure"),
+            Output("energy--chart--2-fullscreen", "figure"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        Input("energy--role-chart2", "data"),
+        [
+            State("energy--checklist--country-before", "value"),
+            State("energy--checklist--country-after", "value"),
+            State("energy--start-date", "value"),
+            State("energy--end-date", "value"),
+        ]
+    )
+    def update_chart_2(_n_clicks, role_chart2, selected_country_before, selected_country_after, start_idx, end_idx):
+        """Updates chart 2 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
+        start_yw = index_to_year_week[start_idx]
+        end_yw = index_to_year_week[end_idx]
+        
+        before_map = controls_energy["country_before_map"]
+        after_map = controls_energy["country_after_map"]
+        selected_before_codes = [before_map.get(n, n) for n in selected_country_before]
+        selected_after_codes = [after_map.get(n, n) for n in selected_country_after]
+
+        filtered_df = df_energy[
+            (df_energy["year_week"] >= start_yw) &
+            (df_energy["year_week"] <= end_yw) &
+            (df_energy["country_before"].isin(selected_before_codes)) &
+            (df_energy["country_after"].isin(selected_after_codes))
+        ]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 2: Bar chart of energy by country
+        country_col = "country_before_name" if role_chart2 == "country_before" else "country_after_name"
         df_country = filtered_df.groupby(country_col)["sum_energy"].sum().reset_index()
         top_countries = df_country.sort_values("sum_energy", ascending=False).head(6)
-        fig2 = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)
+        fig = charts_energy.plot_bar_chart_energy_by_country(top_countries, value_column=country_col)
+        return fig, fig
 
-        fig3 = charts_energy.generate_energy_bubble_map(filtered_df, country_role=role_chart3)
+    @app.callback(
+        [
+            Output("energy--chart--3", "figure"),
+            Output("energy--chart--3-fullscreen", "figure"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        Input("energy--role-chart3", "data"),
+        [
+            State("energy--checklist--country-before", "value"),
+            State("energy--checklist--country-after", "value"),
+            State("energy--start-date", "value"),
+            State("energy--end-date", "value"),
+        ]
+    )
+    def update_chart_3(_n_clicks, role_chart3, selected_country_before, selected_country_after, start_idx, end_idx):
+        """Updates chart 3 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
+        start_yw = index_to_year_week[start_idx]
+        end_yw = index_to_year_week[end_idx]
+        
+        before_map = controls_energy["country_before_map"]
+        after_map = controls_energy["country_after_map"]
+        selected_before_codes = [before_map.get(n, n) for n in selected_country_before]
+        selected_after_codes = [after_map.get(n, n) for n in selected_country_after]
 
-        fig4 = charts_energy.plot_sankey_before_after(filtered_df, origin_col="country_before_name", dest_col="country_after_name")
+        filtered_df = df_energy[
+            (df_energy["year_week"] >= start_yw) &
+            (df_energy["year_week"] <= end_yw) &
+            (df_energy["country_before"].isin(selected_before_codes)) &
+            (df_energy["country_after"].isin(selected_after_codes))
+        ]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 3: Bubble map
+        fig = charts_energy.generate_energy_bubble_map(filtered_df, country_role=role_chart3)
+        return fig, fig
 
-        return fig, fig, fig2, fig2, fig3, fig3, fig4, fig4, False, date_range_label
+    @app.callback(
+        [
+            Output("energy--chart--4", "figure"),
+            Output("energy--chart--4-fullscreen", "figure"),
+        ],
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("energy--checklist--country-before", "value"),
+            State("energy--checklist--country-after", "value"),
+            State("energy--start-date", "value"),
+            State("energy--end-date", "value"),
+        ]
+    )
+    def update_chart_4(_n_clicks, selected_country_before, selected_country_after, start_idx, end_idx):
+        """Updates chart 4 only."""
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
+        start_yw = index_to_year_week[start_idx]
+        end_yw = index_to_year_week[end_idx]
+        
+        before_map = controls_energy["country_before_map"]
+        after_map = controls_energy["country_after_map"]
+        selected_before_codes = [before_map.get(n, n) for n in selected_country_before]
+        selected_after_codes = [after_map.get(n, n) for n in selected_country_after]
+
+        filtered_df = df_energy[
+            (df_energy["year_week"] >= start_yw) &
+            (df_energy["year_week"] <= end_yw) &
+            (df_energy["country_before"].isin(selected_before_codes)) &
+            (df_energy["country_after"].isin(selected_after_codes))
+        ]
+        
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 4: Sankey diagram
+        fig = charts_energy.plot_sankey_before_after(filtered_df, origin_col="country_before_name", dest_col="country_after_name")
+        return fig, fig
+
+    @app.callback(
+        Output("energy--modal--no-data", "is_open"),
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("energy--checklist--country-before", "value"),
+            State("energy--checklist--country-after", "value"),
+            State("energy--start-date", "value"),
+            State("energy--end-date", "value"),
+        ]
+    )
+    def update_modal(_n_clicks, selected_country_before, selected_country_after, start_idx, end_idx):
+        """Updates modal only."""
+        if start_idx is None or end_idx is None:
+            return False
+        
+        index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
+        start_yw = index_to_year_week[start_idx]
+        end_yw = index_to_year_week[end_idx]
+        
+        before_map = controls_energy["country_before_map"]
+        after_map = controls_energy["country_after_map"]
+        selected_before_codes = [before_map.get(n, n) for n in selected_country_before]
+        selected_after_codes = [after_map.get(n, n) for n in selected_country_after]
+
+        filtered_df = df_energy[
+            (df_energy["year_week"] >= start_yw) &
+            (df_energy["year_week"] <= end_yw) &
+            (df_energy["country_before"].isin(selected_before_codes)) &
+            (df_energy["country_after"].isin(selected_after_codes))
+        ]
+        
+        # Check if data exists
+        has_data = len(filtered_df) > 0
+        return not has_data
+
+    @app.callback(
+        Output("energy--range-label", "children"),
+        Input("emissions--btn--refresh", "n_clicks"),
+        [
+            State("energy--start-date", "value"),
+            State("energy--end-date", "value"),
+        ]
+    )
+    def update_range_label(_n_clicks, start_idx, end_idx):
+        """Updates range label only."""
+        if start_idx is None or end_idx is None:
+            return ""
+        
+        index_to_year_week = controls_energy["date_range"]["index_to_year_week"]
+        start_yw = index_to_year_week[start_idx]
+        end_yw = index_to_year_week[end_idx]
+        
+        # Format date range label
+        def _fmt(yw):
+            yw = str(yw)
+            return f"{yw[:4]}-W{yw[4:]}"
+        date_range_label = f"{_fmt(start_yw)} to {_fmt(end_yw)}"
+        
+        return date_range_label
