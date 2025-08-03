@@ -8,3 +8,6 @@ venv/
 secrets/
 sample_data/
 *.log
+.vscode/
+pyrightconfig.json
+.python-version

@@ -135,7 +135,6 @@ def prepare_emissions_controls(df):
     index_to_year_month = {i: ym for ym, i in year_month_map.items()}
     min_index = min(year_month_map.values())
     max_index = max(year_month_map.values())
-    
     # Set default start date to 2022-01 instead of minimum value
     default_start_ym = 202301  # 2022-01
     if default_start_ym in year_month_map:
@@ -180,7 +179,6 @@ def prepare_waiting_time_controls(df):
     index_to_year_month = {i: ym for ym, i in year_month_map.items()}
     min_index = min(year_month_map.values())
     max_index = max(year_month_map.values())
-    
     # Set default start date to 2022-01 instead of minimum value
     default_start_ym = 202301  # 2022-01
     if default_start_ym in year_month_map:
@@ -490,7 +488,6 @@ def update_tab(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, 
     # If we have a valid pathname, prioritize URL over tab clicks
     if pathname and pathname != "/" and pathname != "/emissions":
         pathname = pathname.lstrip('/')
-        
         # Map URL paths to tab names
         tab_mapping = {
             "waiting": "waiting", 
