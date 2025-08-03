@@ -12,7 +12,7 @@ from charts import charts_waiting_times
 
 def setup_waiting_times_callbacks(app, df, controls):
     """
-    These are the callbacks for the emissions dashboard.
+    These are the callbacks for the waiting times dashboard.
     """
     @app.callback(
         Output("time--checklist--vessel", "options"),
@@ -100,18 +100,11 @@ def setup_waiting_times_callbacks(app, df, controls):
                 end_idx = start_idx
         return start_idx, end_idx
 
+    # Split the large callback into smaller, individual callbacks
     @app.callback(
         [
             Output("time--chart--1", "figure"),
             Output("time--chart--1-fullscreen", "figure"),
-            Output("time--chart--2", "figure"),
-            Output("time--chart--2-fullscreen", "figure"),
-            Output("time--chart--3", "figure"),
-            Output("time--chart--3-fullscreen", "figure"),
-            Output("time--chart--4", "figure"),
-            Output("time--chart--4-fullscreen", "figure"),
-            Output("time--modal--no-data", "is_open"),
-            Output("time--range-label", "children"),
         ],
         Input("time--btn--refresh", "n_clicks"),
         [
@@ -122,29 +115,19 @@ def setup_waiting_times_callbacks(app, df, controls):
             State("time--checklist--stop-area", "value")
         ]
     )
-    def update_charts(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+    def update_chart_1(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+        """Updates chart 1 only."""
         # Don't update charts if we don't have a valid tab
         if current_tab is None:
-            # Return empty figures to prevent errors
             empty_fig = go.Figure()
-            return (
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                False,
-                "No data available"
-            )
+            return empty_fig, empty_fig
+        
+        if start_idx is None or end_idx is None:
+            return {}, {}
         
         time_col = "waiting_time" if current_tab == "waiting" else "service_time"
         start_ym = controls["date_range"]["index_to_year_month"][start_idx]
         end_ym = controls["date_range"]["index_to_year_month"][end_idx]
-
-        # Format date range label
-        def _fmt(ym: int) -> str:
-            ym = str(ym)
-            return f"{ym[:4]}-{ym[4:]}"
-        date_range_label = f"{_fmt(start_ym)} to {_fmt(end_ym)}"
 
         filtered_df = df[
             (df["year_month"] >= start_ym) &
@@ -158,35 +141,213 @@ def setup_waiting_times_callbacks(app, df, controls):
 
         if filtered_df.empty:
             empty_fig = go.Figure()
-            return (
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                empty_fig, empty_fig,
-                True,
-                date_range_label
-            )
+            return empty_fig, empty_fig
         
-        
-
+        # Chart 1: Line chart of waiting/service time by year and month
         df_waiting_time_avg = filtered_df.groupby(['year', 'month'])[time_col].mean().reset_index()
-        fig1 = charts_waiting_times.plot_line_chart_waiting_time_by_year_month(df_waiting_time_avg, value_column=time_col)
+        fig = charts_waiting_times.plot_line_chart_waiting_time_by_year_month(df_waiting_time_avg, value_column=time_col)
+        return fig, fig
 
+    @app.callback(
+        [
+            Output("time--chart--2", "figure"),
+            Output("time--chart--2-fullscreen", "figure"),
+        ],
+        Input("time--btn--refresh", "n_clicks"),
+        [
+            State("chart-tabs-store", "data"),
+            State("time--start-date", "value"),
+            State("time--end-date", "value"),
+            State("time--checklist--vessel", "value"),
+            State("time--checklist--stop-area", "value")
+        ]
+    )
+    def update_chart_2(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+        """Updates chart 2 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        time_col = "waiting_time" if current_tab == "waiting" else "service_time"
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        filtered_df = df[
+            (df["year_month"] >= start_ym) &
+            (df["year_month"] <= end_ym) &
+            (df["StandardVesselType"].isin(selected_vessels)) &
+            (df["stop_area"].isin(selected_areas))
+        ]
+
+        # Sort by year_month
+        filtered_df = filtered_df.sort_values("year_month")
+
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 2: Bar chart of waiting/service time by stop area
         avg_waiting_times = filtered_df.groupby('stop_area')[time_col].mean().reset_index()
         top_areas = avg_waiting_times.sort_values(time_col, ascending=False).head(6)
-        fig2 = charts_waiting_times.plot_bar_chart_waiting_by_stop_area(top_areas, value_column=time_col)
+        fig = charts_waiting_times.plot_bar_chart_waiting_by_stop_area(top_areas, value_column=time_col)
+        return fig, fig
 
+    @app.callback(
+        [
+            Output("time--chart--3", "figure"),
+            Output("time--chart--3-fullscreen", "figure"),
+        ],
+        Input("time--btn--refresh", "n_clicks"),
+        [
+            State("chart-tabs-store", "data"),
+            State("time--start-date", "value"),
+            State("time--end-date", "value"),
+            State("time--checklist--vessel", "value"),
+            State("time--checklist--stop-area", "value")
+        ]
+    )
+    def update_chart_3(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+        """Updates chart 3 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        time_col = "waiting_time" if current_tab == "waiting" else "service_time"
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        filtered_df = df[
+            (df["year_month"] >= start_ym) &
+            (df["year_month"] <= end_ym) &
+            (df["StandardVesselType"].isin(selected_vessels)) &
+            (df["stop_area"].isin(selected_areas))
+        ]
+
+        # Sort by year_month
+        filtered_df = filtered_df.sort_values("year_month")
+
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 3: Bar chart of waiting/service time by vessel type
         top_waiting_by_vessel = filtered_df.groupby('StandardVesselType')[time_col].mean().sort_values(ascending=False).head(6)
-        fig3 = charts_waiting_times.plot_bar_chart_waiting_by_vessel_type(top_waiting_by_vessel, value_column=time_col)
+        fig = charts_waiting_times.plot_bar_chart_waiting_by_vessel_type(top_waiting_by_vessel, value_column=time_col)
+        return fig, fig
 
+    @app.callback(
+        [
+            Output("time--chart--4", "figure"),
+            Output("time--chart--4-fullscreen", "figure"),
+        ],
+        Input("time--btn--refresh", "n_clicks"),
+        [
+            State("chart-tabs-store", "data"),
+            State("time--start-date", "value"),
+            State("time--end-date", "value"),
+            State("time--checklist--vessel", "value"),
+            State("time--checklist--stop-area", "value")
+        ]
+    )
+    def update_chart_4(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+        """Updates chart 4 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        if start_idx is None or end_idx is None:
+            return {}, {}
+        
+        time_col = "waiting_time" if current_tab == "waiting" else "service_time"
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        filtered_df = df[
+            (df["year_month"] >= start_ym) &
+            (df["year_month"] <= end_ym) &
+            (df["StandardVesselType"].isin(selected_vessels)) &
+            (df["stop_area"].isin(selected_areas))
+        ]
+
+        # Sort by year_month
+        filtered_df = filtered_df.sort_values("year_month")
+
+        if filtered_df.empty:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
+        # Chart 4: Line chart of waiting/service time by vessel type and year/month
         df_type_week = filtered_df.groupby(["StandardVesselType", "year_month"])[time_col].mean().reset_index()
-        fig4 = charts_waiting_times.plot_line_chart_waiting_by_type_week(df_type_week, value_column=time_col)
+        fig = charts_waiting_times.plot_line_chart_waiting_by_type_week(df_type_week, value_column=time_col)
+        return fig, fig
 
-        return (
-            fig1, fig1,
-            fig2, fig2,
-            fig3, fig3,
-            fig4, fig4,
-            False,
-            date_range_label
-        )
+    @app.callback(
+        Output("time--modal--no-data", "is_open"),
+        Input("time--btn--refresh", "n_clicks"),
+        [
+            State("chart-tabs-store", "data"),
+            State("time--start-date", "value"),
+            State("time--end-date", "value"),
+            State("time--checklist--vessel", "value"),
+            State("time--checklist--stop-area", "value")
+        ]
+    )
+    def update_modal(_n_clicks, current_tab, start_idx, end_idx, selected_vessels, selected_areas):
+        """Updates modal only."""
+        # Don't update if we don't have a valid tab
+        if current_tab is None:
+            return False
+        
+        if start_idx is None or end_idx is None:
+            return False
+        
+        time_col = "waiting_time" if current_tab == "waiting" else "service_time"
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        filtered_df = df[
+            (df["year_month"] >= start_ym) &
+            (df["year_month"] <= end_ym) &
+            (df["StandardVesselType"].isin(selected_vessels)) &
+            (df["stop_area"].isin(selected_areas))
+        ]
+
+        # Sort by year_month
+        filtered_df = filtered_df.sort_values("year_month")
+        
+        # Check if data exists
+        has_data = len(filtered_df) > 0
+        return not has_data
+
+    @app.callback(
+        Output("time--range-label", "children"),
+        Input("time--btn--refresh", "n_clicks"),
+        [
+            State("time--start-date", "value"),
+            State("time--end-date", "value"),
+        ]
+    )
+    def update_range_label(_n_clicks, start_idx, end_idx):
+        """Updates range label only."""
+        if start_idx is None or end_idx is None:
+            return ""
+        
+        start_ym = controls["date_range"]["index_to_year_month"][start_idx]
+        end_ym = controls["date_range"]["index_to_year_month"][end_idx]
+
+        # Format date range label
+        def _fmt(ym: int) -> str:
+            ym_str = str(ym)
+            return f"{ym_str[:4]}-{ym_str[4:]}"
+        date_range_label = f"{_fmt(start_ym)} to {_fmt(end_ym)}"
+        
+        return date_range_label
