@@ -177,6 +177,39 @@ def build_about_us():
             ], xs=12, md=12, lg=9, width=9)
         ], className="mb-4 g-4"),
 
+        html.Br(),
+
+        dbc.Row([
+            dbc.Col([
+                html.Img(
+                    src="/assets/data_impacta_logo.png",
+                    alt="Data Impacta",
+                    style={"width": "100%", "maxWidth": "200px"}
+                )
+            ], xs=12, md=12, lg=3, width=3),
+            dbc.Col([
+                html.H5("Data Impacta"),
+                html.P(
+                    "Data Impacta is a data-driven solutions company that develops tools to help "
+                    "organizations measure and monitor problems for better decision making. "
+                    "They create solutions that contribute to generating positive impact in areas "
+                    "such as health, economy, environment, energy, equity, and innovation. "
+                    "This dashboard was developed by their team to visualize maritime emissions "
+                    "and performance indicators, supporting sustainable shipping practices and "
+                    "informed decision-making."
+                ),
+                html.P([
+                    "Visit their website: ",
+                    html.A(
+                        "dataimpacta.com",
+                        href="https://dataimpacta.com/en/",
+                        target="_blank",
+                        style={"textDecoration": "underline"}
+                    )
+                ])
+            ], xs=12, md=12, lg=9, width=9)
+        ], className="mb-4 g-4"),
+
         html.Br()
     ], className="")
 

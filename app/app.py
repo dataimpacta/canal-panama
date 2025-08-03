@@ -11,6 +11,33 @@ from io import StringIO
 from pathlib import Path
 import datetime
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+# ========== Third-Party Libraries ==========
+import dash
+import dash_bootstrap_components as dbc
+
+from dash import Input, Output, State, ctx, html, MATCH
+
+import pandas as pd
+import geopandas as gpd
+import boto3
+import psutil
+from dotenv import load_dotenv
+
+from shapely.geometry import Polygon
+from h3.api.basic_int import cell_to_boundary
+
+# ========== Custom Modules ==========
+
+from callbacks import callbacks_emissions
+from callbacks import callbacks_waiting
+from callbacks import callbacks_energy
+from callbacks import callbacks_explorer
+from charts.charts_energy import get_country_name
+
+import layout
+
 PRIORITY_VESSEL_TYPES = [
     "Bulk Carrier",
     "Container",
@@ -34,31 +61,6 @@ def reorder_with_priority(options, priority):
     remaining = [o for o in options if o not in priority_items]
     return priority_items + remaining
 
-# ========== Third-Party Libraries ==========
-import dash
-import dash_bootstrap_components as dbc
-
-from dash import Input, Output, State, ctx, html, MATCH
-
-import pandas as pd
-import geopandas as gpd
-import boto3
-import psutil
-from dotenv import load_dotenv
-
-from shapely.geometry import Polygon
-from h3.api.basic_int import cell_to_boundary
-
-# ========== Custom Modules ==========
-
-from callbacks import callbacks_emissions
-from callbacks import callbacks_waiting
-from callbacks import callbacks_energy
-from callbacks import callbacks_explorer
-from layout import build_footer
-from charts.charts_energy import get_country_name
-
-import layout
 
 # ========================== LOGS CONFIGURATION ==========================
 
@@ -209,7 +211,6 @@ def prepare_energy_controls(df):
     Given a DataFrame with energy demand data, returns a dictionary
     with control values for origin (country_before), destination (country_after), and date ranges.
     """
-    
     # Unique origin and destination countries (use full names for controls)
     country_before = sorted(df['country_before_name'].unique())
     country_after = sorted(df['country_after_name'].unique())
@@ -381,7 +382,6 @@ server = app.server
 
 # Respect headers set by a reverse proxy like nginx
 # This ensures correct URLs when the app is served behind a proxy
-from werkzeug.middleware.proxy_fix import ProxyFix
 server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1, x_host=1)
 
 # Inline the local stylesheet and preload external CSS to minimise
@@ -391,10 +391,8 @@ try:
     local_css = local_css_path.read_text()
 except FileNotFoundError:
     local_css = ""
-
 bootstrap_css = dbc.themes.BOOTSTRAP
 bootstrap_icons = dbc.icons.BOOTSTRAP
-
 app.index_string = f"""
 <!DOCTYPE html>
 <html>
@@ -496,16 +494,13 @@ def update_tab(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, 
             "explorer": "explorer",
             "about": "about"
         }
-        
         if pathname in tab_mapping:
             return tab_mapping[pathname]
-    
     # Check if triggered by a tab click
     triggered_id = ctx.triggered_id
     if triggered_id and triggered_id.startswith("tab-"):
         tab_name = triggered_id.replace("tab-", "")
         return tab_name
-    
     # Default to emissions
     return "emissions"
 
@@ -544,7 +539,6 @@ def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, en
     all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks]
     if all(click is None for click in all_clicks):
         raise dash.exceptions.PreventUpdate
-    
     triggered_id = ctx.triggered_id
     if triggered_id and triggered_id.startswith("tab-"):
         tab_name = triggered_id.replace("tab-", "")
@@ -561,12 +555,10 @@ def handle_initial_url(pathname):
     """Handle initial URL load and redirects"""
     if pathname is None or pathname == "/":
         return "/emissions"
-    
     # If it's a valid path, just return it to keep it
     valid_paths = ["/emissions", "/waiting", "/service", "/energy", "/explorer", "/about"]
     if pathname in valid_paths:
         return pathname
-    
     return "/emissions"
 
 
@@ -582,7 +574,6 @@ def update_navigation_bar(selected_tab, pathname):
         pathname = pathname.lstrip('/')
         if pathname in ["waiting", "service", "energy", "explorer", "about"]:
             return layout.build_navigation_bar(active_tab=pathname)
-    
     # Otherwise use the selected tab from the store
     return layout.build_navigation_bar(active_tab=selected_tab)
 
@@ -597,7 +588,6 @@ def update_tab_content(selected_tab, n_intervals):
     # Don't show content until initial delay is complete
     if n_intervals is None or n_intervals == 0:
         return ""
-    
     if selected_tab == "emissions":
         return html.Div([
             dbc.Row([
@@ -605,7 +595,6 @@ def update_tab_content(selected_tab, n_intervals):
                 layout.build_main_container_emissions()
             ], className="g-0")
         ])
-    
     elif selected_tab == "waiting":
         return html.Div([
             dbc.Row([
@@ -623,7 +612,7 @@ def update_tab_content(selected_tab, n_intervals):
     elif selected_tab == "energy":
         return html.Div([
             dbc.Row([
-            layout.build_sidebar_energy(controls_energy), 
+            layout.build_sidebar_energy(controls_energy),
             layout.build_main_container_energy()
         ], className="g-0")
         ])
@@ -648,6 +637,9 @@ def update_tab_content(selected_tab, n_intervals):
     Input("tutorial-store", "data")
 )
 def display_tutorial(step):
+    """
+    Display the tutorial modal and popover.
+    """
     if step is None:
         return True, False
     return False, step == "filters"
@@ -661,6 +653,9 @@ def display_tutorial(step):
     prevent_initial_call=True
 )
 def update_tutorial(start_click, next_click, current):
+    """
+    Update the tutorial step.
+    """
     triggered = ctx.triggered_id
     if triggered == "btn-tutorial-start":
         return "filters"
@@ -677,6 +672,9 @@ def update_tutorial(start_click, next_click, current):
     prevent_initial_call=True
 )
 def toggle_chart_modal(open_clicks, close_clicks, is_open):
+    """
+    Toggle the chart modal.
+    """
     trigger = ctx.triggered_id
     if trigger and trigger.get("type") == "open-fullscreen":
         return True
@@ -695,5 +693,4 @@ callbacks_explorer.setup_explorer_callbacks(
 
 # Run the app
 if __name__ == '__main__':
-    
     app.run_server(debug=False, host='0.0.0.0', port=8050)
