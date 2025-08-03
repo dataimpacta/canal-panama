@@ -65,7 +65,11 @@ import layout
 # Configure logging to show up in nohup.out
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('nohup.out', mode='a')
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -366,6 +370,8 @@ app = dash.Dash(
     compress=True,  # Enable compression
     # Use local assets for better performance and reliability
     serve_locally=True,  # Use local assets instead of CDN
+    # Add error handling for asset loading
+    assets_folder='assets',
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1"},
         {"http-equiv": "X-UA-Compatible", "content": "IE=edge"},
@@ -420,8 +426,6 @@ app.index_string = f"""
         body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
         </style>
         {{%css%}}
-        <!-- Load critical scripts first, defer non-critical ones -->
-        <script src=\"/_dash-component-suites/dash/deps/polyfill@7.v2_18_2m174...12.1.min.js\" defer></script>
         <script>
         // Optimize local asset loading
         document.addEventListener('DOMContentLoaded', function() {{
