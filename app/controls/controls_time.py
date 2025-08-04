@@ -12,7 +12,7 @@ def build_message_box():
     return dbc.Modal(
             [
                 dbc.ModalHeader("No Data Available"),
-                dbc.ModalBody("Please select at least one vessel type to view the emissions data."),
+                dbc.ModalBody("Please select at least one option from each category to view the data."),
             ],
             id="time--modal--no-data",
             is_open=False,

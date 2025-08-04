@@ -9,7 +9,7 @@ def build_message_box():
     return dbc.Modal(
             [
                 dbc.ModalHeader("No Data Available"),
-                dbc.ModalBody("Please select at least one vessel type to view the emissions data."),
+                dbc.ModalBody("Please select at least one option from each category to view the energy data."),
             ],
             id="energy--modal--no-data",
             is_open=False,
@@ -75,7 +75,7 @@ def build_country_before_checklist(country_before):
         dcc.Input(
             id="energy--input--country-before-search",
             type="text",
-            placeholder="Search country before",
+            placeholder="Search origin country",
             debounce=False,
             className="form-control mb-2"
         ),
@@ -121,7 +121,7 @@ def build_country_after_checklist(country_after):
         dcc.Input(
             id="energy--input--country-after-search",
             type="text",
-            placeholder="Search country after",
+            placeholder="Search destination country",
             debounce=False,
             className="form-control mb-2"
         ),
@@ -159,4 +159,3 @@ def build_country_role_dropdown(dropdown_id):
         clearable=False,
         style={"width": "8rem"},
     )
-
