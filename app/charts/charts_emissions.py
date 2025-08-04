@@ -219,6 +219,13 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
     base_colors = [theme.PRIMARY_DARK, theme.PRIMARY_COLOR, theme.PRIMARY_LIGHT]
     highlight_colors = {vt: color for vt, color in zip(top_3_types, base_colors)}
 
+    # Format year_month for display
+    def format_year_month(ym):
+        """Convert 202301 format to 2023-01 format"""
+        ym_str = str(ym)
+        if len(ym_str) == 6:
+            return f"{ym_str[:4]}-{ym_str[4:]}"
+        return ym_str
 
     for vessel_type in df["StandardVesselType"].unique():
         vessel_data = df[df["StandardVesselType"] == vessel_type]
@@ -227,6 +234,9 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
 
         is_top = vessel_type in top_3_types
         avg_value = avg_emissions[vessel_type]
+
+        # Format the year_month values for hover display
+        formatted_dates = [format_year_month(ym) for ym in vessel_data["year_month"]]
 
         fig.add_trace(go.Scatter(
             x=vessel_data["year_month"],
@@ -239,12 +249,33 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             ),
             opacity=1 if is_top else 0.5,
             showlegend=is_top,
-            hovertemplate=f'{vessel_type}: ' + '%{y:.2s} hrs<br>Month: %{x}<extra></extra>'
+            hovertemplate=f'{vessel_type}: ' + '%{y:.2s} t CO₂<br>Month: %{text}<extra></extra>',
+            text=formatted_dates  # Use formatted dates for hover
         ))
 
 
     y_max = df["co2_equivalent_t"].max()
     y_min = df["co2_equivalent_t"].min()
+
+    # Get unique year_month values and format them for display
+    unique_year_months = sorted(df["year_month"].unique())
+    formatted_labels = [format_year_month(ym) for ym in unique_year_months]
+    
+    # Show only 5 evenly spaced labels
+    n_labels = 5
+    if len(unique_year_months) > n_labels:
+        # Calculate step to get exactly 5 labels
+        step = (len(unique_year_months) - 1) // (n_labels - 1)
+        selected_indices = [0]  # Always include first
+        for i in range(1, n_labels - 1):
+            selected_indices.append(i * step)
+        selected_indices.append(len(unique_year_months) - 1)  # Always include last
+        
+        selected_year_months = [unique_year_months[i] for i in selected_indices]
+        selected_labels = [formatted_labels[i] for i in selected_indices]
+    else:
+        selected_year_months = unique_year_months
+        selected_labels = formatted_labels
 
     fig.update_layout(
         height=300,
@@ -253,9 +284,10 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             showgrid=False,
             type="category",
             categoryorder="array",
-            categoryarray=sorted(df["year_month"].unique()),
-            tickangle=0,
-            ticklabelstep=5
+            categoryarray=unique_year_months,
+            ticktext=selected_labels,
+            tickvals=selected_year_months,
+            tickangle=0
         ),
         yaxis=dict(
             range=[y_min * (1 - bottom_padding_pct), y_max * (1 + top_padding_pct)],

@@ -681,11 +681,11 @@ def build_sidebar_energy(controls):
             ),
             dbc.AccordionItem(
                 [controls_energy.build_country_before_checklist(controls["country_before"])],
-                title="Country Before"
+                title="Origin Country"
             ),
             dbc.AccordionItem(
                 [controls_energy.build_country_after_checklist(controls["country_after"])],
-                title="Country After"
+                title="Destination Country"
             )
         ]),
         html.Br(),

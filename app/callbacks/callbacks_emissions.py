@@ -75,13 +75,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
+            State("chart-tabs-store", "data"),
             State("emissions--checklist--vessel", "value"),
             State("emissions--start-date", "value"),
             State("emissions--end-date", "value"),
         ]
     )
-    def update_chart_1(_n_clicks, selected_vessel_types, start_idx, end_idx):
+    def update_chart_1(_n_clicks, current_tab, selected_vessel_types, start_idx, end_idx):
         """Updates chart 1 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
         if start_idx is None or end_idx is None:
             return {}, {}
         
@@ -91,11 +97,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         # Filter data for this specific chart
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym)
+            (df_emissions["year_month"] <= end_ym) &
+            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
         ]
-        
-        if selected_vessel_types:
-            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
         if filtered_df.empty:
             empty_fig = go.Figure()
@@ -113,13 +117,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
+            State("chart-tabs-store", "data"),
             State("emissions--checklist--vessel", "value"),
             State("emissions--start-date", "value"),
             State("emissions--end-date", "value"),
         ]
     )
-    def update_chart_2(_n_clicks, selected_vessel_types, start_idx, end_idx):
+    def update_chart_2(_n_clicks, current_tab, selected_vessel_types, start_idx, end_idx):
         """Updates chart 2 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
         if start_idx is None or end_idx is None:
             return {}, {}
         
@@ -128,11 +138,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym)
+            (df_emissions["year_month"] <= end_ym) &
+            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
         ]
-        
-        if selected_vessel_types:
-            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
         if filtered_df.empty:
             empty_fig = go.Figure()
@@ -151,13 +159,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
+            State("chart-tabs-store", "data"),
             State("emissions--checklist--vessel", "value"),
             State("emissions--start-date", "value"),
             State("emissions--end-date", "value"),
         ]
     )
-    def update_chart_3(_n_clicks, selected_vessel_types, start_idx, end_idx):
+    def update_chart_3(_n_clicks, current_tab, selected_vessel_types, start_idx, end_idx):
         """Updates chart 3 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
         if start_idx is None or end_idx is None:
             return {}, {}
         
@@ -166,11 +180,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym)
+            (df_emissions["year_month"] <= end_ym) &
+            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
         ]
-        
-        if selected_vessel_types:
-            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
         if filtered_df.empty:
             empty_fig = go.Figure()
@@ -190,13 +202,19 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
+            State("chart-tabs-store", "data"),
             State("emissions--checklist--vessel", "value"),
             State("emissions--start-date", "value"),
             State("emissions--end-date", "value"),
         ]
     )
-    def update_chart_4(_n_clicks, selected_vessel_types, start_idx, end_idx):
+    def update_chart_4(_n_clicks, current_tab, selected_vessel_types, start_idx, end_idx):
         """Updates chart 4 only."""
+        # Don't update charts if we don't have a valid tab
+        if current_tab is None:
+            empty_fig = go.Figure()
+            return empty_fig, empty_fig
+        
         if start_idx is None or end_idx is None:
             return {}, {}
         
@@ -205,11 +223,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym)
+            (df_emissions["year_month"] <= end_ym) &
+            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
         ]
-        
-        if selected_vessel_types:
-            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
         if filtered_df.empty:
             empty_fig = go.Figure()
@@ -224,13 +240,18 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         Output("emissions--kpi--1", "children"),
         Input("emissions--btn--refresh", "n_clicks"),
         [
+            State("chart-tabs-store", "data"),
             State("emissions--checklist--vessel", "value"),
             State("emissions--start-date", "value"),
             State("emissions--end-date", "value"),
         ]
     )
-    def update_kpi(_n_clicks, selected_vessel_types, start_idx, end_idx):
+    def update_kpi(_n_clicks, current_tab, selected_vessel_types, start_idx, end_idx):
         """Updates KPI only."""
+        # Don't update if we don't have a valid tab
+        if current_tab is None:
+            return ""
+        
         if start_idx is None or end_idx is None:
             return ""
         
@@ -239,11 +260,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym)
+            (df_emissions["year_month"] <= end_ym) &
+            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
         ]
-        
-        if selected_vessel_types:
-            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
         # Calculate KPI
         total_emissions = filtered_df["co2_equivalent_t"].sum()
@@ -267,13 +286,18 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         ],
         Input("emissions--btn--refresh", "n_clicks"),
         [
+            State("chart-tabs-store", "data"),
             State("emissions--checklist--vessel", "value"),
             State("emissions--start-date", "value"),
             State("emissions--end-date", "value"),
         ]
     )
-    def update_ui_elements(_n_clicks, selected_vessel_types, start_idx, end_idx):
+    def update_ui_elements(_n_clicks, current_tab, selected_vessel_types, start_idx, end_idx):
         """Updates UI elements only."""
+        # Don't update if we don't have a valid tab
+        if current_tab is None:
+            return False, ""
+        
         if start_idx is None or end_idx is None:
             return False, ""
         
@@ -282,11 +306,9 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         
         filtered_df = df_emissions[
             (df_emissions["year_month"] >= start_ym) &
-            (df_emissions["year_month"] <= end_ym)
+            (df_emissions["year_month"] <= end_ym) &
+            (df_emissions["StandardVesselType"].isin(selected_vessel_types))
         ]
-        
-        if selected_vessel_types:
-            filtered_df = filtered_df[filtered_df["StandardVesselType"].isin(selected_vessel_types)]
         
         # Check if data exists
         has_data = len(filtered_df) > 0
