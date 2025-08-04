@@ -126,7 +126,6 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
                 'Apr', 'May', 'Jun', 
                 'Jul', 'Aug', 'Sep', 
                 'Oct', 'Nov', 'Dec'],
-            tickangle=0,
             showgrid=True
         ),
         yaxis=dict(
