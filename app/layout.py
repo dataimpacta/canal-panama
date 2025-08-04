@@ -855,9 +855,9 @@ def build_main_container_explorer():
                 create_standard_table_container({
                     "id": "explorer--table",
                     "title": "Sample Data",
-                    "subtitle": "First five rows",
+                    "subtitle": "First rows",
                     "description": (
-                        "Sample data table showing the first five rows of the filtered dataset. "
+                        "Sample data table showing the first rows of the filtered dataset. "
                         "This table displays all available fields for the selected source, "
                         "allowing you to explore the data structure and available columns. "
                         "Use the download button to export the complete filtered dataset."
