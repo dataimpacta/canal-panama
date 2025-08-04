@@ -93,15 +93,20 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
         fig.add_trace(go.Scatter(
             x=year_data['month'],
             y=year_data['co2_equivalent_t'],
-            mode='lines',
+            mode='lines+markers',
             name=str(year),
             line=dict(
                 color=highlight_color if is_latest else line_general_color,
                 width=highlight_width if is_latest else line_general_width
             ),
+            marker=dict(
+                color=highlight_color if is_latest else line_general_color,
+                size=6 if is_latest else 4,
+                opacity=highlight_opacity if is_latest else line_general_opacity
+            ),
             opacity=highlight_opacity if is_latest else line_general_opacity,
             showlegend=True,
-            hovertemplate = '%{y:.2s}',
+            hovertemplate = '%{y:,.0f} tonnes CO₂<extra></extra>',
         ))
 
     # === Layout ===
@@ -135,7 +140,8 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
             side="left",
             anchor="free",
             tickfont_color=theme.DARK_GRAY,
-            shift=-10
+            shift=-10,
+            tickformat=","
         ),
 
         showlegend=True,
@@ -171,7 +177,7 @@ def plot_bar_chart_emissions_by_type(df):
             color=theme.PRIMARY_COLOR,
             line=dict(color="black", width=0)  # Border for better visibility
         ),
-        xhoverformat=".2s"
+        hovertemplate='%{x:,.0f} tonnes CO₂<extra></extra>'
 
     ))
 
@@ -183,7 +189,8 @@ def plot_bar_chart_emissions_by_type(df):
         xaxis=dict(
             showgrid=True, gridcolor="lightgray", gridwidth=0,
             zeroline=False,  # Removes the thick zero line
-            range=[-df.values.max() * 0.02, df.values.max()]
+            range=[-df.values.max() * 0.02, df.values.max()],
+            tickformat=","
         ),
         yaxis=dict(
             showgrid=False,
@@ -299,7 +306,8 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             side="left",
             anchor="free",
             tickfont_color=theme.DARK_GRAY,
-            shift=-10
+            shift=-10,
+            tickformat=","
         ),
         legend=dict(
             x=0, y=1,
@@ -338,17 +346,17 @@ def plot_emissions_map(gdf_json, gdf):
 
 
         name="",  # Prevents "trace 0" in the tooltip
-        hovertemplate='%{z:.2s}',
+        hovertemplate='%{z:,.0f} tonnes CO₂<extra></extra>',
 
         showscale=False,
 
-        colorbar_title="Emissions (tons)",
+        colorbar_title="Emissions (tonnes CO₂)",
 
         colorbar=dict(
             orientation="h",
             thickness=10,
             tickfont=dict(size=9),
-            title="Emissions (tons)"
+            title="Emissions (tonnes CO₂)"
         )
     )
     )
