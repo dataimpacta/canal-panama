@@ -400,6 +400,7 @@ app.index_string = f"""
         {{%metas%}}
         <title>{{%title%}}</title>
         {{%favicon%}}
+        <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-H01MT5EHCM"></script>
         <script>
