@@ -3,6 +3,7 @@ import boto3
 import botocore
 from dotenv import load_dotenv
 from datetime import datetime
+from ipaddress import ip_address, ip_network
 
 load_dotenv()
 
@@ -18,11 +19,22 @@ s3_client = boto3.client(
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
 )
 
+def anonymize_ip(ip: str) -> str:
+    try:
+        ip_obj = ip_address(ip)
+        if ip_obj.version == 4:
+            network = ip_network(f"{ip}/24", strict=False)
+        else:
+            network = ip_network(f"{ip}/48", strict=False)
+        return str(network.network_address)
+    except ValueError:
+        return ""
+
+
 def append_form_row(
-    name: str,
+    anonymized_ip: str,
     country: str,
     purpose: str,
-    email: str,
     source: str,
     start_date: str,
     end_date: str,
@@ -33,19 +45,18 @@ def append_form_row(
     if not all([
         bucket,
         file,
-        name,
+        anonymized_ip,
         country,
         purpose,
-        email,
         source,
         start_date,
         end_date,
     ]):
         return
 
-    submitted_at = datetime.utcnow().strftime("%Y-%m-%d")
+    submission_date = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
     row = ",".join(
-        [submitted_at, name, country, purpose, email, source, start_date, end_date]
+        [submission_date, anonymized_ip, country, purpose, source, start_date, end_date]
     )
     
     try:
@@ -54,7 +65,7 @@ def append_form_row(
     except botocore.exceptions.ClientError as exc:
         error_code = exc.response.get("Error", {}).get("Code")
         if error_code == "NoSuchKey":
-            data = "Submitted At,Name,Country,Purpose,Email,Source,Start Date,End Date\n"
+            data = "submission_date,anonymized_ip,country,purpose,source,start_date,end_date\n"
         else:
             raise
     if data and not data.endswith("\n"):

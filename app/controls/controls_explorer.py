@@ -122,13 +122,11 @@ def build_download_modal():
             dbc.ModalBody(
                 [
                     html.P(
-                        "Please provide the following details so we understand how the data will be used and can inform you of updates.",
+                        "Please provide the following details so we understand how the data will be used.",
                         className="small",
                     ),
-                    dbc.Input(id="explorer--field-name", placeholder="Name and Last Name", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
-                    dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
                     html.Div(
                         [
                             html.Hr(),
@@ -148,10 +146,29 @@ def build_download_modal():
                 ]
             ),
             dbc.ModalFooter(
-                [
-                    dbc.Button("Cancel", id="explorer--download-cancel", className="me-2"),
-                    dbc.Button("Download", id="explorer--download-submit", color="primary"),
-                ]
+                html.Div(
+                    [
+                        html.Small(
+                            [
+                                "We collect country and purpose to understand usage. Your IP address is processed for security and regional statistics. See our ",
+                                html.A(
+                                    "Privacy Notice",
+                                    href="https://www.worldbank.org/en/about/privacy-notice",
+                                    target="_blank",
+                                ),
+                                ".",
+                            ],
+                            className="text-muted",
+                        ),
+                        html.Div(
+                            [
+                                dbc.Button("Cancel", id="explorer--download-cancel", className="me-2"),
+                                dbc.Button("Download", id="explorer--download-submit", color="primary"),
+                            ],
+                            className="mt-2",
+                        ),
+                    ]
+                )
             ),
         ],
         id="explorer--download-modal",

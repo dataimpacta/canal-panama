@@ -9,7 +9,12 @@ from h3.api.basic_int import cell_to_boundary
 
 
 def h3_to_polygon(h3_index):
-    """Converts an H3 index to a Shapely Polygon."""
+    """Converts an H3 index to a Shapely Polygon.
+
+    Accepts either an integer H3 index or a hexadecimal string.
+    """
+    if isinstance(h3_index, str):
+        h3_index = int(h3_index, 16)
     boundary = cell_to_boundary(h3_index)
     return Polygon([(lng, lat) for lat, lng in boundary])
 
