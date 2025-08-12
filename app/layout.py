@@ -338,9 +338,10 @@ def create_standard_chart_container(chart):
                 ),
             ], className="align-items-center g-0"),
 
-            html.P(
+            dcc.Markdown(
                 chart["subtitle"], className="mb-2",
-                style={"fontSize": "0.85rem", "color": "#666"}
+                style={"fontSize": "0.85rem", "color": "#666"},
+                dangerously_allow_html=True
             )
         ]),
 
@@ -364,12 +365,13 @@ def create_standard_chart_container(chart):
                                     "marginRight": "0.75rem"
                                 },
                             ),
-                            html.Span(
+                            dcc.Markdown(
                                 chart["subtitle"],
                                 style={
                                     "fontSize": "0.85rem",
                                     "color": "#666"
                                 },
+                                dangerously_allow_html=True
                             ),
                         ], style={"display": "flex", "alignItems": "center"}),
 
@@ -536,7 +538,7 @@ def build_main_container_emissions():
             {
                 "id": "emissions--chart--1",
                 "title": "Monthly Vessel Emissions",
-                "subtitle": "TONNES CO2-eq",
+                "subtitle": "TONNES CO<sub>2</sub><sub>-eq</sub>",
                 "description": (
                     "Monthly total emissions (in tonnes of CO2-equivalent) from all vessels "
                     "within the country of reference territorial waters. This chart helps in "
@@ -547,13 +549,13 @@ def build_main_container_emissions():
             {
                 "id": "emissions--chart--2",
                 "title": "Total Emissions by Vessel Type", 
-                "subtitle": "TONNES CO2-eq",
+                "subtitle": "TONNES CO<sub>2</sub><sub>-eq</sub>",
                 "description": "Total emissions per vessel type over the selected period.",
             },
             {
                 "id": "emissions--chart--3",
                 "title": "Emissions by Region", 
-                "subtitle": "TONNES CO2-eq",
+                "subtitle": "TONNES CO<sub>2</sub><sub>-eq</sub>",
                 "description": (
                     "Map showing the geographical distribution of emissions across Panama "
                     "territorial waters. Darker areas indicate hot spots emissions."
@@ -562,7 +564,7 @@ def build_main_container_emissions():
             {
                 "id": "emissions--chart--4",
                 "title": "Emissions by Type of Vessel", 
-                "subtitle": "TONNES CO2-eq",
+                "subtitle": "TONNES CO<sub>2</sub><sub>-eq</sub>",
                 "description": (
                     "Monthly emissions by vessel type. Useful for spotting seasonal "
                     "changes or long-term patterns for specific vessel categories."

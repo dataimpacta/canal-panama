@@ -2,7 +2,7 @@
 This module contains functions to create various charts related to emissions data.
 """
 
-from dash import html
+from dash import html, dcc
 import plotly.graph_objects as go
 import theme
 
@@ -25,17 +25,20 @@ def plot_kpi(name, value, start_date, end_date, comparison_label="", comparison_
         # Main value + delta percent
         html.Div([
             html.Span([
-                html.Span(f"{value:,.0f}", style={
+                html.Span(f"{value:,.0f} ", style={
                     "fontSize": "1.5rem",
                     "fontWeight": "bold",
                     "color": "#222"
                 }),
-                html.Span(" tonnes CO2-eq", style={
+                dcc.Markdown(" tonnes CO<sub>2</sub><sub>-eq</sub>", style={
                     "fontSize": "1.0rem",
                     "fontWeight": "bold",
                     "color": "#666",
-                    "marginLeft": "0.25rem"
-                }),
+                    "marginLeft": "0.25rem",
+                    "display": "inline-block",
+                    "margin": "0",
+                    "padding": "0"
+                }, dangerously_allow_html=True),
             ]),
             html.Span(
                 f" ↑ {delta_percent:.2%}" if delta_percent is not None else "",
@@ -46,7 +49,7 @@ def plot_kpi(name, value, start_date, end_date, comparison_label="", comparison_
                     "fontWeight": "normal"
                 }
             )
-        ], style={"marginTop": "0.25rem", "marginBottom": "0.25rem"}),
+        ], style={"marginTop": "0.25rem", "marginBottom": "0rem"}),
 
         # Date range
         html.Div(f"From {format_date(start_date)} to {format_date(end_date)}", style={
@@ -58,7 +61,7 @@ def plot_kpi(name, value, start_date, end_date, comparison_label="", comparison_
         # Comparison value (optional delta)
 
         # html.Div(
-        #     f"{comparison_label}: {comparison_value:,.0f} tonnes CO2-eq"
+        #     f"{comparison_label}: {comparison_value:,.0f} tonnes CO₂-eq"
         #     + (f" (+{delta:,.0f})" if delta is not None else ""),
         #     style={"color": "#999", "fontSize": "0.8rem"}
         # )
@@ -106,7 +109,7 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
             ),
             opacity=highlight_opacity if is_latest else line_general_opacity,
             showlegend=True,
-            hovertemplate = '%{y:,.0f} tonnes CO₂<extra></extra>',
+            hovertemplate = '%{y:.2e} tonnes CO<sub>2</sub><sub>-eq</sub><extra></extra>',
         ))
 
     # === Layout ===
@@ -140,7 +143,7 @@ def plot_line_chart_emissions_by_year_month(df, top_padding_pct=0.1, bottom_padd
             anchor="free",
             tickfont_color=theme.DARK_GRAY,
             shift=-10,
-            tickformat=","
+            tickformat=".2e"
         ),
 
         showlegend=True,
@@ -176,7 +179,7 @@ def plot_bar_chart_emissions_by_type(df):
             color=theme.PRIMARY_COLOR,
             line=dict(color="black", width=0)  # Border for better visibility
         ),
-        hovertemplate='%{x:,.0f} tonnes CO₂<extra></extra>'
+        hovertemplate='%{x:.2e} tonnes CO<sub>2</sub><sub>-eq</sub><extra></extra>'
 
     ))
 
@@ -189,7 +192,7 @@ def plot_bar_chart_emissions_by_type(df):
             showgrid=True, gridcolor="lightgray", gridwidth=0,
             zeroline=False,  # Removes the thick zero line
             range=[-df.values.max() * 0.02, df.values.max()],
-            tickformat=","
+            tickformat=".2e"
         ),
         yaxis=dict(
             showgrid=False,
@@ -255,7 +258,7 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             ),
             opacity=1 if is_top else 0.5,
             showlegend=is_top,
-            hovertemplate=f'{vessel_type}: ' + '%{y:.2s} t CO₂<br>Month: %{text}<extra></extra>',
+            hovertemplate=f'{vessel_type}: ' + '%{y:.2e} t CO<sub>2</sub><sub>-eq</sub><br>Month: %{text}<extra></extra>',
             text=formatted_dates  # Use formatted dates for hover
         ))
 
@@ -306,7 +309,7 @@ def plot_line_chart_emissions_by_type_year_month(df, top_padding_pct=0.1, bottom
             anchor="free",
             tickfont_color=theme.DARK_GRAY,
             shift=-10,
-            tickformat=","
+            tickformat=".2e"
         ),
         legend=dict(
             x=0, y=1,
@@ -345,17 +348,18 @@ def plot_emissions_map(gdf_json, gdf):
 
 
         name="",  # Prevents "trace 0" in the tooltip
-        hovertemplate='%{z:,.0f} tonnes CO₂<extra></extra>',
+        hovertemplate='%{z:.2e} tonnes CO<sub>2</sub><sub>-eq</sub><extra></extra>',
 
         showscale=False,
 
-        colorbar_title="Emissions (tonnes CO₂)",
+        colorbar_title="Emissions (tonnes CO<sub>2</sub><sub>-eq</sub>)",
 
         colorbar=dict(
             orientation="h",
             thickness=10,
             tickfont=dict(size=9),
-            title="Emissions (tonnes CO₂)"
+            title="Emissions (tonnes CO<sub>2</sub><sub>-eq</sub>)",
+            tickformat=".2e"
         )
     )
     )
