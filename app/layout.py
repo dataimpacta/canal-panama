@@ -530,7 +530,7 @@ def build_main_container_emissions():
         build_kpi_grid([
             {
                 "id": "emissions--kpi--1",
-                "title": "Total Emissions in the Panama Canal",
+                "title": "Total Emissions in Panama",
                 "subtitle": "TONNES"
             },
         ]),
