@@ -717,7 +717,7 @@ def build_main_container_energy():
                 },
             {
                 "id": "energy--chart--2",
-                "title": "Energy by Country",
+                "title": "Energy Transported by Vessels via Panama",
                 "subtitle": "kWh",
                 "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart2"),
                 "description": (
@@ -729,7 +729,7 @@ def build_main_container_energy():
             },
             {
                 "id": "energy--chart--3",
-                "title": "Global Energy Demand",
+                "title": "Energy Transported by Vessels via Panama",
                 "subtitle": "kWh",
                 "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart3"),
                 "description": (
@@ -741,7 +741,7 @@ def build_main_container_energy():
             },
             {
                 "id": "energy--chart--4",
-                "title": "Energy Interchange Between Countries", 
+                "title": "Energy Interchange Between Countries via Panama", 
                 "subtitle": "kWh",
                 "description": (
                     "Flow diagram showing energy exchanges between countries of origin and "
