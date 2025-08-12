@@ -182,6 +182,31 @@ def build_about_us():
         dbc.Row([
             dbc.Col([
                 html.Img(
+                    src="/assets/MTCC-logo.png",
+                    alt="MTCC Latin America",
+                    style={"width": "100%", "maxWidth": "200px"}
+                )
+            ], xs=12, md=12, lg=3, width=3),
+            dbc.Col([
+                html.H5("MTCC Latin America"),
+                html.P(
+                    "The Maritime Technology Cooperation Centre for Latin America (MTCC Caribbean) "
+                    "operates within the Universidad Marítima Internacional de Panama (UMIP), "
+                    "serving as a center for maritime industry training and coastal marine studies. "
+                    "Strategically located near the Port of Panama City, MTCC Latin America focuses "
+                    "on all aspects of the maritime sector including shipping, maritime infrastructure, "
+                    "services, and environmental protection. The center plays a crucial role in "
+                    "promoting sustainable maritime practices and technological cooperation across "
+                    "the Latin American region."
+                )
+            ], xs=12, md=12, lg=9, width=9)
+        ], className="mb-4 g-4"),
+
+        html.Br(),
+
+        dbc.Row([
+            dbc.Col([
+                html.Img(
                     src="/assets/data_impacta_logo.png",
                     alt="Data Impacta",
                     style={"width": "100%", "maxWidth": "200px"}
@@ -209,6 +234,30 @@ def build_about_us():
                 ])
             ], xs=12, md=12, lg=9, width=9)
         ], className="mb-4 g-4"),
+
+        html.Br(),
+
+        html.H4("Collaboration with", style={
+            "fontWeight": "bold",
+            "color": "#333",
+            "marginTop": "2rem",
+            "marginBottom": "1rem",
+            "fontFamily": "Arial, Helvetica, sans-serif"
+        }),
+
+        html.P([
+            "This dashboard was developed in collaboration with ",
+            html.Strong("Universidad Marítima Internacional de Panamá"),
+            ", ",
+            html.Strong("University of Liverpool"),
+            ", and ",
+            html.Strong("The Norwegian School of Economics (NHH)"),
+            ". We extend our gratitude to these institutions for their valuable contributions and support in making this project possible."
+        ], style={
+            "fontSize": "1rem",
+            "lineHeight": "1.6",
+            "fontFamily": "Arial, Helvetica, sans-serif"
+        }),
 
         html.Br()
     ], className="")
