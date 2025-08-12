@@ -153,13 +153,14 @@ def build_download_modal():
                                 "We collect country and purpose to understand usage. Your IP address is processed for security and regional statistics. See our ",
                                 html.A(
                                     "Privacy Notice",
-                                    href="https://www.worldbank.org/en/about/privacy-notice",
+                                    href="/privacy",
                                     target="_blank",
                                 ),
                                 ".",
                             ],
                             className="text-muted",
                         ),
+                        html.Hr(),
                         html.Div(
                             [
                                 dbc.Button("Cancel", id="explorer--download-cancel", className="me-2"),

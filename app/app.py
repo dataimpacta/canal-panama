@@ -384,6 +384,97 @@ server = app.server
 # This ensures correct URLs when the app is served behind a proxy
 server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1, x_host=1)
 
+# ========================== PRIVACY NOTICE ROUTE ==========================
+
+@app.server.route("/privacy")
+def privacy():
+    """Serve the privacy notice page."""
+    html_doc = """
+    <html>
+    <head>
+        <title>Privacy Notice – Panama Canal Analytics</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 24px;
+                background-color: #f8f9fa;
+            }
+            .container {
+                background: white;
+                padding: 32px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            h1 {
+                color: #007bff;
+                border-bottom: 2px solid #007bff;
+                padding-bottom: 8px;
+            }
+            h2 {
+                color: #495057;
+                margin-top: 24px;
+            }
+            ul {
+                padding-left: 20px;
+            }
+            li {
+                margin-bottom: 8px;
+            }
+            .back-link {
+                display: inline-block;
+                margin-top: 24px;
+                color: #007bff;
+                text-decoration: none;
+                font-weight: 500;
+            }
+            .back-link:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Privacy Notice – Panama Canal Analytics</h1>
+            
+            <p><strong>Controller:</strong> Panama Canal Analytics Team, contact: [your-email@domain.com]</p>
+            
+            <h2>What we collect</h2>
+            <p>Country (from the form), Purpose of the download (from the form), and your IP address (processed automatically when you submit the form).</p>
+            
+            <h2>Why we process it</h2>
+            <ul>
+                <li>To understand usage by region and purpose</li>
+                <li>To protect our systems against misuse (security)</li>
+                <li>To create anonymised statistics</li>
+            </ul>
+            
+            <h2>Legal basis</h2>
+            <p>Legitimate interests (GDPR Art. 6(1)(f)).</p>
+            
+            <h2>Retention</h2>
+            <p>Submission rows are kept for up to 90 days. We keep only aggregated, non-personal statistics after that period.</p>
+            
+            <h2>Sharing</h2>
+            <p>We may use trusted processors (e.g., hosting, storage) under contract. We do not sell your data.</p>
+            
+            <h2>Your rights</h2>
+            <p>You can request access, correction, deletion, restriction, or object to processing. You can also lodge a complaint with your data protection authority.</p>
+            
+            <h2>International transfers</h2>
+            <p>Where data is transferred outside the EEA, we rely on Standard Contractual Clauses.</p>
+            
+            <a href="/explorer" class="back-link">← Back to Dashboard</a>
+        </div>
+    </body>
+    </html>
+    """
+    return html_doc
+
 # Inline the local stylesheet and preload external CSS to minimise
 # render-blocking resources.
 local_css_path = Path(__file__).resolve().parent / "assets" / "styles.css"
@@ -410,6 +501,8 @@ app.index_string = f"""
 
           gtag('config', 'G-H01MT5EHCM');
         </script>
+        <!-- Cookiebot -->
+        <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="a3d8223b-4a06-42bf-87d5-5a706a03c9ba" data-blockingmode="auto" type="text/javascript"></script>
         <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"{bootstrap_css}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"/assets/Financing_Logo.png\" as=\"image\">
