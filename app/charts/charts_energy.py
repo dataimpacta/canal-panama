@@ -43,7 +43,7 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
             ),
             opacity=highlight_opacity if is_latest else line_general_opacity,
             showlegend=True,
-            hovertemplate = 'Week %{x} {y:,.0f} kWh<extra></extra>',
+            hovertemplate = 'Week %{x}<br>%{y:.2e} kWh<extra></extra>',
         ))
 
     # === Layout ===
@@ -77,7 +77,7 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
             anchor="free",
             tickfont_color=theme.DARK_GRAY,
             shift=-10,
-            tickformat=","
+            tickformat=".2e"
         ),
 
         showlegend=True,
@@ -108,7 +108,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
             color=theme.PRIMARY_COLOR,
             line=dict(color="black", width=0)
         ),
-        hovertemplate='%{y}<br>%{x:,.0f} kWh<extra></extra>'
+        hovertemplate='%{y}<br>%{x:.2e} kWh<extra></extra>'
     ))
 
     fig.update_layout(
@@ -119,7 +119,7 @@ def plot_bar_chart_energy_by_country(df, value_column="country_before"):
             showgrid=True, gridcolor="lightgray", gridwidth=0,
             zeroline=False,
             range=[-df['sum_energy'].max() * 0.05, df['sum_energy'].max()],
-            tickformat=","
+            tickformat=".2e"
         ),
         yaxis=dict(
             showgrid=False,
@@ -185,7 +185,7 @@ def plot_sankey_before_after(df, origin_col="country_before", dest_col="country_
             target=sankey_data['dest_label'].map(label_to_index),
             value=sankey_data['sum_energy'],
             color=link_colors,
-            hovertemplate='%{source.label} → %{target.label}<br>%{value:,.0f} kWh<extra></extra>'
+            hovertemplate='%{source.label} → %{target.label}<br>%{value:.2e} kWh<extra></extra>'
         )
     )])
     fig.update_layout(
@@ -248,7 +248,7 @@ def generate_energy_bubble_map(df, country_role='country_before', title="Energy 
 
     # Update tooltip with custom formatting
     fig.update_traces(
-        hovertemplate="<b>%{customdata[0]}</b>: %{customdata[1]:,.0f} kWh<extra></extra>",
+        hovertemplate="<b>%{customdata[0]}</b>: %{customdata[1]:.2e} kWh<extra></extra>",
         marker=dict(color=theme.PRIMARY_COLOR)
     )
     
