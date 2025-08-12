@@ -4,7 +4,8 @@
 
 from dash import Input, Output, State, dcc, ctx
 from charts import charts_explorer
-from data_utils.form_saver import append_form_row
+from data_utils.form_saver import append_form_row, anonymize_ip
+from flask import request
 
 
 def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls):
@@ -162,13 +163,11 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         State("explorer--end-date", "value"),
         State("explorer--start-week", "value"),
         State("explorer--end-week", "value"),
-        State("explorer--field-name", "value"),
         State("explorer--field-country", "value"),
         State("explorer--field-purpose", "value"),
-        State("explorer--field-email", "value"),
         prevent_initial_call=True,
     )
-    def download_data(_, source, start_month_idx, end_month_idx, start_week_idx, end_week_idx, _name, _country, _purpose, _email):
+    def download_data(_, source, start_month_idx, end_month_idx, start_week_idx, end_week_idx, country, purpose):
         start_ym = controls["date_range"]["index_to_year_month"].get(start_month_idx)
         end_ym = controls["date_range"]["index_to_year_month"].get(end_month_idx)
         start_yw = controls["week_range"]["index_to_year_week"].get(start_week_idx)
@@ -196,11 +195,15 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             fmt_date = lambda ym: f"{str(ym)[:4]}-{str(ym)[4:6]}-01"
             start_val = fmt_date(start_ym)
             end_val = fmt_date(end_ym)
+        ip_addr = request.headers.get("X-Forwarded-For", request.remote_addr)
+        if ip_addr and "," in ip_addr:
+            ip_addr = ip_addr.split(",")[0].strip()
+        anonymized = anonymize_ip(ip_addr)
+
         append_form_row(
-            _name,
-            _country,
-            _purpose,
-            _email,
+            anonymized,
+            country,
+            purpose,
             source,
             start_val,
             end_val,
