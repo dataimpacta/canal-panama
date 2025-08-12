@@ -515,7 +515,27 @@ def create_standard_table_container(table):
                     }
                 )
             )
-        )
+        ),
+        
+        # Data Dictionary Download Link
+        html.Div([
+            html.Hr(style={"margin": "20px 0 15px 0"}),
+            html.Div([
+                html.I(className="bi bi-file-text me-2", style={"color": "#666"}),
+                html.A(
+                    "Download Data Dictionary",
+                    href="/download-data-dictionary",
+                    target="_blank",
+                    style={
+                        "color": "#007bff",
+                        "textDecoration": "none",
+                        "fontSize": "0.9rem",
+                        "fontFamily": "system-ui, sans-serif"
+                    }
+                ),
+                html.I(className="bi bi-box-arrow-up-right ms-1", style={"fontSize": "0.8rem", "color": "#666"})
+            ], style={"display": "flex", "alignItems": "center"})
+        ], style={"marginTop": "10px"})
     ], className="border p-4 m-0 g-0")
 
 def build_chart_grid(chart_items):

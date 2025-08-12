@@ -475,6 +475,66 @@ def privacy():
     """
     return html_doc
 
+# ========================== DATA DICTIONARY DOWNLOAD ROUTE ==========================
+
+@app.server.route("/download-data-dictionary")
+def download_data_dictionary():
+    """Serve the data dictionary as a text file."""
+    data_dictionary = """
+PANAMA CANAL ANALYTICS - DATA DICTIONARY
+========================================
+
+This document provides detailed information about the data sources and variables available in the Panama Canal Analytics dashboard.
+
+DATA SOURCES
+===========
+
+1. EMISSIONS DATA
+-----------------
+Source: [Add source information here]
+Description: [Add description of emissions data source]
+Variables:
+- co2_equivalent_t: [Add description]
+- year_month: [Add description]
+- [Add other variables and their descriptions]
+
+2. WAITING TIME DATA
+--------------------
+Source: [Add source information here]
+Description: [Add description of waiting time data source]
+Variables:
+- waiting_time: [Add description]
+- service_time: [Add description]
+- year_month: [Add description]
+- [Add other variables and their descriptions]
+
+3. ENERGY DATA
+--------------
+Source: [Add source information here]
+Description: [Add description of energy data source]
+Variables:
+- sum_energy: [Add description]
+- year_week: [Add description]
+- [Add other variables and their descriptions]
+
+DATA QUALITY NOTES
+=================
+[Add information about data quality, limitations, and any important notes]
+
+CONTACT INFORMATION
+==================
+For questions about this data dictionary or the data sources, please contact: [Add contact information]
+
+Last updated: [Add date]
+"""
+    
+    from flask import Response
+    return Response(
+        data_dictionary,
+        mimetype='text/plain',
+        headers={'Content-Disposition': 'attachment; filename=data_dictionary.txt'}
+    )
+
 # Inline the local stylesheet and preload external CSS to minimise
 # render-blocking resources.
 local_css_path = Path(__file__).resolve().parent / "assets" / "styles.css"
