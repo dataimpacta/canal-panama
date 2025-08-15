@@ -491,41 +491,57 @@ DATA SOURCES
 
 1. EMISSIONS DATA
 -----------------
-Source: [Add source information here]
-Description: [Add description of emissions data source]
-Variables:
-- co2_equivalent_t: [Add description]
-- year_month: [Add description]
-- [Add other variables and their descriptions]
+Source: Maritime vessel emissions data from Panama Canal operations
+Description: CO2 equivalent emissions data aggregated by vessel type, location, and time period
 
-2. WAITING TIME DATA
---------------------
-Source: [Add source information here]
-Description: [Add description of waiting time data source]
 Variables:
-- waiting_time: [Add description]
-- service_time: [Add description]
-- year_month: [Add description]
-- [Add other variables and their descriptions]
+- Year: Calendar year of the emission measurement
+- Month: Calendar month (1-12) of the emission measurement  
+- Resolution Id: H3 geospatial index identifier for location-based aggregation
+- StandardVesselType: Standardized classification of vessel type (e.g., Container, Oil tanker, Bulk Carrier)
+- Co2 Equivalent T: Total CO2 equivalent emissions in tonnes
+- Year Month: Combined year-month identifier in YYYYMM format (e.g., 202301 for January 2023)
+
+2. WAITING AND SERVICE TIME DATA
+--------------------
+Source: Panama Canal vessel transit and waiting time records
+Description: Vessel waiting times and service times at different canal locations and stop areas
+
+Variables:
+- Year: Calendar year of the time measurement
+- Month: Calendar month (1-12) of the time measurement
+- StandardVesselType: Standardized classification of vessel type
+- Stop Area: Specific location or area where vessels wait (e.g., PPC Balboa, MIT, Panama Canal South Transit)
+- Service Time: Time in hours that vessels spend in active service/transit
+- Waiting Time: Time in hours that vessels spend waiting before service
+- Sample Size: Number of vessels included in the aggregated measurement
+- Neo Transit: Indicator for new/neo vessel transit classification
+- Year Month: Combined year-month identifier in YYYYMM format
 
 3. ENERGY DATA
 --------------
-Source: [Add source information here]
-Description: [Add description of energy data source]
+Source: Energy demand data for maritime operations in Panama Canal region
+Description: Energy consumption data aggregated by origin/destination countries and time periods
+
 Variables:
-- sum_energy: [Add description]
-- year_week: [Add description]
-- [Add other variables and their descriptions]
+- Year: Calendar year of the energy measurement
+- Week: ISO week number (1-53) of the energy measurement
+- Country Before: ISO-2 country code for origin country
+- Country After: ISO-2 country code for destination country
+- Sum Energy: Total energy consumption in kilowatt-hours (kWh)
+- Year Week: Combined year-week identifier in YYYYWW format (e.g., 202301 for week 1 of 2023)
+- Year Month: Combined year-month identifier derived from year-week
+- Country Before Name: Full country name for origin country
+- Country After Name: Full country name for destination country
 
 DATA QUALITY NOTES
 =================
-[Add information about data quality, limitations, and any important notes]
+- All time-based variables use consistent date formatting (YYYYMM for months, YYYYWW for weeks)
+- Vessel types follow standardized maritime classification system
+- Geographic data uses H3 hexagonal grid system for spatial aggregation
+- Energy data includes both origin and destination country information for route analysis
+- Sample sizes are provided for waiting/service time data to indicate data reliability
 
-CONTACT INFORMATION
-==================
-For questions about this data dictionary or the data sources, please contact: [Add contact information]
-
-Last updated: [Add date]
 """
     
     from flask import Response
