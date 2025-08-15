@@ -207,7 +207,7 @@ def build_about_us():
         dbc.Row([
             dbc.Col([
                 html.Img(
-                    src="/assets/data_impacta_logo.png",
+                    src="/assets/data_impacta_logo.jpg",
                     alt="Data Impacta",
                     style={"width": "100%", "maxWidth": "200px"}
                 )
