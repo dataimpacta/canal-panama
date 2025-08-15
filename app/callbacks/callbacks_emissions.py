@@ -269,7 +269,7 @@ def setup_emissions_callbacks(app, df_emissions, controls_emissions, geojson_tem
         
         # Use the proper plot_kpi function for consistent styling
         kpi_component = charts_emissions.plot_kpi(
-            name="Total Emissions in Panama",
+            name="Total Emissions in Panama’s Territorial Sea",
             value=total_emissions,
             start_date=f"{str(start_ym)}",
             end_date=f"{str(end_ym)}",
