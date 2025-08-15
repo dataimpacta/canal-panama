@@ -198,7 +198,7 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         ip_addr = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip_addr and "," in ip_addr:
             ip_addr = ip_addr.split(",")[0].strip()
-        anonymized = anonymize_ip(ip_addr)
+        anonymized = anonymize_ip(ip_addr) if ip_addr else ""
 
         append_form_row(
             anonymized,
@@ -208,4 +208,7 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             start_val,
             end_val,
         )
-        return dcc.send_data_frame(filtered.to_csv, "explorer_data.csv", index=False)
+        
+        # Create filename with source information for better tracking
+        filename = f"panama_canal_{source}_data.csv"
+        return dcc.send_data_frame(filtered.to_csv, filename, index=False)
