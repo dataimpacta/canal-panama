@@ -1,6 +1,7 @@
 import os
 import boto3
 import botocore
+import hashlib
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -19,6 +20,22 @@ s3_client = boto3.client(
 )
 
 
+def hash_email(email: str) -> str:
+    """
+    Hash email address for use as unique identifier.
+    Returns empty string if email is None or empty.
+    """
+    if not email or not email.strip():
+        return ""
+    
+    # Normalize email (lowercase, trim whitespace)
+    normalized_email = email.strip().lower()
+    
+    # Create SHA-256 hash and return first 16 characters
+    # This provides uniqueness while keeping the hash manageable
+    return hashlib.sha256(normalized_email.encode('utf-8')).hexdigest()[:16]
+
+
 def append_form_row(
     email: str,
     country: str,
@@ -33,7 +50,6 @@ def append_form_row(
     if not all([
         bucket,
         file,
-        email,
         country,
         purpose,
         source,
@@ -42,9 +58,12 @@ def append_form_row(
     ]):
         return
 
+    # Hash the email immediately - we never store the original
+    email_hash = hash_email(email)
+
     submission_date = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
     row = ",".join(
-        [submission_date, email, country, purpose, source, start_date, end_date]
+        [submission_date, email_hash, country, purpose, source, start_date, end_date]
     )
 
     try:
@@ -53,7 +72,7 @@ def append_form_row(
     except botocore.exceptions.ClientError as exc:
         error_code = exc.response.get("Error", {}).get("Code")
         if error_code == "NoSuchKey":
-            data = "submission_date,email,country,purpose,source,start_date,end_date\n"
+            data = "submission_date,email_hash,country,purpose,source,start_date,end_date\n"
         else:
             raise
     if data and not data.endswith("\n"):
