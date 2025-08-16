@@ -66,22 +66,48 @@
     }
     
     // Function to get date range information
-    function getDateRangeInfo() {
-        const sourceDropdown = document.querySelector('#explorer--source');
-        const source = sourceDropdown ? sourceDropdown.value : 'unknown';
-        
+    function getDateRangeInfo(source) {
         let dateRange = '';
         let dateType = '';
         
-        if (source === 'energy') {
+        // Check if energy data is selected (either by source parameter or by checking which range is visible)
+        const isEnergyData = source === 'energy' || 
+                            (document.querySelector('#explorer--week-range') && 
+                             document.querySelector('#explorer--week-range').style.display !== 'none');
+        
+        if (isEnergyData) {
             // For energy data, use week range
             const startWeek = document.querySelector('#explorer--start-week');
             const endWeek = document.querySelector('#explorer--end-week');
             const startWeekLabel = document.querySelector('#explorer--week-range-label');
             
+            console.log('GA4 Debug - Energy data detected, checking week range elements:');
+            console.log('GA4 Debug - startWeek element:', !!startWeek);
+            console.log('GA4 Debug - endWeek element:', !!endWeek);
+            console.log('GA4 Debug - startWeekLabel element:', !!startWeekLabel);
+            console.log('GA4 Debug - startWeekLabel text:', startWeekLabel ? startWeekLabel.textContent : 'no label');
+            
             if (startWeek && endWeek && startWeekLabel) {
                 dateRange = startWeekLabel.textContent || '';
                 dateType = 'week_range';
+                console.log('GA4 Debug - Using week range:', dateRange);
+            } else {
+                console.log('GA4 Debug - Week range elements not found, trying fallback');
+                // Fallback: try to get from the dropdown values directly
+                if (startWeek && endWeek) {
+                    const startValue = startWeek.value;
+                    const endValue = endWeek.value;
+                    if (startValue !== null && endValue !== null) {
+                        // Try to get the labels from the options
+                        const startOption = startWeek.options[startValue];
+                        const endOption = endWeek.options[endValue];
+                        if (startOption && endOption) {
+                            dateRange = `${startOption.text} to ${endOption.text}`;
+                            dateType = 'week_range';
+                            console.log('GA4 Debug - Fallback week range from options:', dateRange);
+                        }
+                    }
+                }
             }
         } else {
             // For other data types, use month range
@@ -89,9 +115,33 @@
             const endDate = document.querySelector('#explorer--end-date');
             const startDateLabel = document.querySelector('#explorer--range-label');
             
+            console.log('GA4 Debug - Non-energy data detected, checking month range elements:');
+            console.log('GA4 Debug - startDate element:', !!startDate);
+            console.log('GA4 Debug - endDate element:', !!endDate);
+            console.log('GA4 Debug - startDateLabel element:', !!startDateLabel);
+            console.log('GA4 Debug - startDateLabel text:', startDateLabel ? startDateLabel.textContent : 'no label');
+            
             if (startDate && endDate && startDateLabel) {
                 dateRange = startDateLabel.textContent || '';
                 dateType = 'month_range';
+                console.log('GA4 Debug - Using month range:', dateRange);
+            } else {
+                console.log('GA4 Debug - Month range elements not found, trying fallback');
+                // Fallback: try to get from the dropdown values directly
+                if (startDate && endDate) {
+                    const startValue = startDate.value;
+                    const endValue = endDate.value;
+                    if (startValue !== null && endValue !== null) {
+                        // Try to get the labels from the options
+                        const startOption = startDate.options[startValue];
+                        const endOption = endDate.options[endValue];
+                        if (startOption && endOption) {
+                            dateRange = `${startOption.text} to ${endOption.text}`;
+                            dateType = 'month_range';
+                            console.log('GA4 Debug - Fallback month range from options:', dateRange);
+                        }
+                    }
+                }
             }
         }
         
@@ -160,7 +210,7 @@
             const fileDetails = getFileDetails(source);
             console.log('GA4 Debug - File details name:', fileDetails.name);
             
-            const { dateRange, dateType } = getDateRangeInfo();
+            const { dateRange, dateType } = getDateRangeInfo(source);
             const { country, purpose } = getFormInfo();
         
         // Get additional metadata
