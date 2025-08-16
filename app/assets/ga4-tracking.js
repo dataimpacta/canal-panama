@@ -232,9 +232,11 @@
                                         // Get the current source value from the dropdown
                                         const sourceDropdown = document.querySelector('#explorer--source');
                                         console.log('GA4 Debug - Dropdown element found:', !!sourceDropdown);
+                                        console.log('GA4 Debug - Dropdown element:', sourceDropdown);
+                                        console.log('GA4 Debug - Dropdown HTML:', sourceDropdown ? sourceDropdown.outerHTML : 'no dropdown');
                                         console.log('GA4 Debug - Dropdown value:', sourceDropdown ? sourceDropdown.value : 'no dropdown');
                                         console.log('GA4 Debug - Dropdown selectedIndex:', sourceDropdown ? sourceDropdown.selectedIndex : 'no dropdown');
-                                        console.log('GA4 Debug - Dropdown options length:', sourceDropdown ? sourceDropdown.options.length : 'no dropdown');
+                                        console.log('GA4 Debug - Dropdown options length:', sourceDropdown && sourceDropdown.options ? sourceDropdown.options.length : 'no options');
                                         
                                         if (sourceDropdown && sourceDropdown.options && sourceDropdown.selectedIndex >= 0) {
                                             console.log('GA4 Debug - Selected option text:', sourceDropdown.options[sourceDropdown.selectedIndex].text);
@@ -243,7 +245,34 @@
                                         
                                         let source = 'unknown';
                                         if (sourceDropdown) {
-                                            source = sourceDropdown.value;
+                                            // Try multiple ways to get the value from Dash component
+                                            source = sourceDropdown.value || 
+                                                    sourceDropdown.getAttribute('value') ||
+                                                    sourceDropdown.dataset.value ||
+                                                    sourceDropdown.getAttribute('data-value');
+                                            
+                                            console.log('GA4 Debug - Tried to get source from dropdown:', source);
+                                            
+                                            // If still no value, try to get from the component's children
+                                            if (!source || source === 'unknown') {
+                                                const selectedElement = sourceDropdown.querySelector('.Select-value-label, .Select-placeholder, [data-value]');
+                                                if (selectedElement) {
+                                                    const selectedText = selectedElement.textContent || selectedElement.getAttribute('data-value');
+                                                    console.log('GA4 Debug - Found selected text:', selectedText);
+                                                    
+                                                    // Map the display text back to the source value
+                                                    if (selectedText && selectedText.toLowerCase().includes('emissions')) {
+                                                        source = 'emissions';
+                                                    } else if (selectedText && selectedText.toLowerCase().includes('waiting')) {
+                                                        source = 'waiting_time';
+                                                    } else if (selectedText && selectedText.toLowerCase().includes('service')) {
+                                                        source = 'service_time';
+                                                    } else if (selectedText && selectedText.toLowerCase().includes('energy')) {
+                                                        source = 'energy';
+                                                    }
+                                                    console.log('GA4 Debug - Mapped source from text:', source);
+                                                }
+                                            }
                                         }
                                         
                                         console.log('GA4 Debug - Final source value before tracking:', source);
