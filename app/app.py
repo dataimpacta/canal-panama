@@ -441,32 +441,75 @@ def privacy():
         <div class="container">
             <h1>Privacy Notice – Panama Canal Analytics</h1>
             
-            <p><strong>Controller:</strong> Panama Canal Analytics Team, contact: [your-email@domain.com]</p>
+            <p><strong>Controller:</strong> Panama Canal Analytics Team</p>
+            <p><strong>Contact:</strong> gabriel.fuentes@nhh.no</p>
             
-            <h2>What we collect</h2>
-            <p>Country (from the form), Purpose of the download (from the form), and your email address (if you choose to provide it).</p>
-
-            <h2>Why we process it</h2>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
+            
+            <h2>1. What we collect</h2>
+            <p>When you download data from our platform, we collect the following information:</p>
             <ul>
-                <li>To understand usage by region and purpose</li>
-                <li>To create anonymised statistics</li>
+                <li>Country (as provided in the form)</li>
+                <li>Purpose of the download (as provided in the form)</li>
+                <li>Email address (if you choose to provide it; immediately hashed, see below)</li>
             </ul>
-            <p>Your email is used solely for analytics and will not be used for marketing or other communications.</p>
 
-            <h2>Legal basis</h2>
-            <p>Consent (GDPR Art. 6(1)(a)).</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
+            
+            <h2>2. How we process your email</h2>
+            <ul>
+                <li>Your email is immediately converted into a secure one-way hash (SHA-256).</li>
+                <li>We never store or use your actual email.</li>
+                <li>The hash cannot be reversed into your original email, but it allows us to:</li>
+                <ul>
+                    <li>Track unique downloads</li>
+                    <li>Deduplicate repeated requests</li>
+                    <li>Generate anonymised statistics</li>
+                </ul>
+            </ul>
+            <p>Your email (or its hash) is never used for marketing, sales, or third-party sharing.</p>
 
-            <h2>Retention</h2>
-            <p>Submission rows are kept for up to 90 days. We keep only aggregated, non-personal statistics after that period.</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
             
-            <h2>Sharing</h2>
-            <p>We may use trusted processors (e.g., hosting, storage) under contract. We do not sell your data.</p>
+            <h2>3. Purpose of processing</h2>
+            <p>We process your data to:</p>
+            <ul>
+                <li>Understand usage by region and purpose</li>
+                <li>Generate anonymised statistics to improve our platform</li>
+                <li>Track unique users while avoiding storage of personal identifiers</li>
+            </ul>
+
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
             
-            <h2>Your rights</h2>
-            <p>You can request access, correction, deletion, restriction, or object to processing. You can also lodge a complaint with your data protection authority.</p>
+            <h2>4. Legal basis</h2>
+            <p>We rely on your consent (GDPR Art. 6(1)(a)) for collecting and processing your email for analytics purposes.</p>
+
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
             
-            <h2>International transfers</h2>
-            <p>Where data is transferred outside the EEA, we rely on Standard Contractual Clauses.</p>
+            <h2>5. Retention</h2>
+            <p>We retain data only as long as necessary to fulfil the purposes described in this notice.</p>
+            <p>We periodically review our datasets and delete records that are no longer required.</p>
+
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
+            
+            <h2>6. Sharing and transfers</h2>
+            <ul>
+                <li>We may use trusted service providers (e.g. cloud hosting, storage) under strict data processing agreements.</li>
+                <li>We do not sell or share your data with third parties.</li>
+                <li>Where data is transferred outside the EEA, we rely on Standard Contractual Clauses to safeguard your rights.</li>
+            </ul>
+
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
+            
+            <h2>7. Your rights</h2>
+            <p>Under GDPR and applicable U.S. data protection laws, you have the right to:</p>
+            <ul>
+                <li>Access, correct, or delete your data</li>
+                <li>Restrict or object to processing</li>
+                <li>Withdraw your consent at any time (by contacting us)</li>
+                <li>Request portability of your data in certain circumstances</li>
+                <li>Lodge a complaint with your local data protection authority</li>
+            </ul>
             
             <a href="/explorer" class="back-link">← Back to Dashboard</a>
         </div>

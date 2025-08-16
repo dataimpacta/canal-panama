@@ -6,7 +6,6 @@ from dash import Input, Output, State, dcc, ctx
 from dash.exceptions import PreventUpdate
 from charts import charts_explorer
 from data_utils.form_saver import append_form_row
-from flask import request
 
 
 def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls):
@@ -157,6 +156,85 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         return is_open
 
     @app.callback(
+        Output("download-summary-type", "children"),
+        Output("download-summary-range", "children"),
+        Input("explorer--source", "value"),
+        Input("explorer--start-date", "value"),
+        Input("explorer--end-date", "value"),
+        Input("explorer--start-week", "value"),
+        Input("explorer--end-week", "value"),
+    )
+    def update_download_summary(source, start_month_idx, end_month_idx, start_week_idx, end_week_idx):
+        """Update the download summary with current selections."""
+        if not source:
+            return "Not selected", "Not selected"
+        
+        # Get data type display name
+        data_type_map = {
+            'emissions': 'Emissions Data',
+            'waiting_time': 'Waiting Time Data', 
+            'service_time': 'Service Time Data',
+            'energy': 'Energy Data'
+        }
+        data_type = data_type_map.get(source, source.replace('_', ' ').title())
+        
+        # Get date range
+        if source == "energy":
+            if start_week_idx is not None and end_week_idx is not None:
+                start_yw = controls["week_range"]["index_to_year_week"].get(start_week_idx)
+                end_yw = controls["week_range"]["index_to_year_week"].get(end_week_idx)
+                if start_yw and end_yw:
+                    start_val = f"{str(start_yw)[:4]}-W{str(start_yw)[4:]}"
+                    end_val = f"{str(end_yw)[:4]}-W{str(end_yw)[4:]}"
+                    date_range = f"{start_val} to {end_val}"
+                else:
+                    date_range = "Not selected"
+            else:
+                date_range = "Not selected"
+        else:
+            if start_month_idx is not None and end_month_idx is not None:
+                start_ym = controls["date_range"]["index_to_year_month"].get(start_month_idx)
+                end_ym = controls["date_range"]["index_to_year_month"].get(end_month_idx)
+                if start_ym and end_ym:
+                    start_val = f"{str(start_ym)[:4]}-{str(start_ym)[4:6]}"
+                    end_val = f"{str(end_ym)[:4]}-{str(end_ym)[4:6]}"
+                    date_range = f"{start_val} to {end_val}"
+                else:
+                    date_range = "Not selected"
+            else:
+                date_range = "Not selected"
+        
+        return data_type, date_range
+
+    @app.callback(
+        Output("explorer--download-submit", "disabled"),
+        Output("explorer--download-submit", "children"),
+        Output("explorer--field-country", "valid"),
+        Output("explorer--field-country", "invalid"),
+        Output("explorer--field-purpose", "valid"),
+        Output("explorer--field-purpose", "invalid"),
+        Input("explorer--field-country", "value"),
+        Input("explorer--field-purpose", "value"),
+        Input("explorer--download-submit", "n_clicks"),
+    )
+    def validate_required_fields(country, purpose, submit_clicks):
+        """Validate required fields and update download button state."""
+        country_valid = bool(country and country.strip())
+        purpose_valid = bool(purpose and purpose.strip())
+        is_valid = country_valid and purpose_valid
+        
+        # Only show validation errors if user has tried to submit or has entered data
+        show_validation = submit_clicks is not None or country is not None or purpose is not None
+        
+        if is_valid:
+            return False, "Download Data", True, False, True, False  # Button enabled, fields valid
+        else:
+            if show_validation:
+                return True, "Fill Required Fields", country_valid, not country_valid, purpose_valid, not purpose_valid  # Button disabled, show field validation
+            else:
+                return True, "Download Data", False, False, False, False  # Button disabled, no validation errors shown
+    
+    @app.callback(
         Output("explorer--download", "data"),
         Input("explorer--download-submit", "n_clicks"),
         State("explorer--source", "value"),
@@ -212,7 +290,10 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             # Create descriptive filename for other data types
             filename = f"panama_canal_{source}_data_{start_val}_to_{end_val}.csv"
 
-        if not email or not consent:
+        # Validate required fields
+        if not country or not country.strip():
+            raise PreventUpdate
+        if not purpose or not purpose.strip():
             raise PreventUpdate
 
         append_form_row(
@@ -234,9 +315,6 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             'filename': filename
         }
         
-        # Store metadata in a data attribute that can be accessed by JavaScript
-        # This will be used by the GA4 tracking script
-        import json
-        request.environ['DOWNLOAD_METADATA'] = json.dumps(download_metadata)
+
         
         return dcc.send_data_frame(filtered.to_csv, filename, index=False)
