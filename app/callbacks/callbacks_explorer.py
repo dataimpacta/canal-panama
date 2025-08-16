@@ -168,6 +168,15 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         prevent_initial_call=True,
     )
     def download_data(_, source, start_month_idx, end_month_idx, start_week_idx, end_week_idx, country, purpose):
+        """
+        Download filtered data with enhanced filename generation and analytics tracking.
+        
+        The filename includes:
+        - Data type (emissions, waiting_time, service_time, energy)
+        - Date range (start to end)
+        
+        Example: panama_canal_emissions_data_2023-01_to_2023-12.csv
+        """
         start_ym = controls["date_range"]["index_to_year_month"].get(start_month_idx)
         end_ym = controls["date_range"]["index_to_year_month"].get(end_month_idx)
         start_yw = controls["week_range"]["index_to_year_week"].get(start_week_idx)
@@ -191,10 +200,17 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             fmt_date = lambda yw: f"{str(yw)[:4]}-W{str(yw)[4:]}"
             start_val = fmt_date(start_yw)
             end_val = fmt_date(end_yw)
+            # Create descriptive filename for energy data
+            filename = f"panama_canal_energy_data_{start_val}_to_{end_val}.csv"
         else:
-            fmt_date = lambda ym: f"{str(ym)[:4]}-{str(ym)[4:6]}-01"
+            fmt_date = lambda ym: f"{str(ym)[:4]}-{str(ym)[4:6]}"
             start_val = fmt_date(start_ym)
             end_val = fmt_date(end_ym)
+            # Create descriptive filename for other data types
+            filename = f"panama_canal_{source}_data_{start_val}_to_{end_val}.csv"
+        
+
+        
         ip_addr = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip_addr and "," in ip_addr:
             ip_addr = ip_addr.split(",")[0].strip()
@@ -209,6 +225,19 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             end_val,
         )
         
-        # Create filename with source information for better tracking
-        filename = f"panama_canal_{source}_data.csv"
+        # Add metadata about the download for analytics
+        download_metadata = {
+            'source': source,
+            'date_range': f"{start_val}_to_{end_val}",
+            'country': country or '',
+            'purpose': purpose or '',
+            'record_count': len(filtered),
+            'filename': filename
+        }
+        
+        # Store metadata in a data attribute that can be accessed by JavaScript
+        # This will be used by the GA4 tracking script
+        import json
+        request.environ['DOWNLOAD_METADATA'] = json.dumps(download_metadata)
+        
         return dcc.send_data_frame(filtered.to_csv, filename, index=False)
