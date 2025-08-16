@@ -1,5 +1,6 @@
 // Google Analytics 4 Event Tracking for Download Button
-// This script tracks file downloads from the explorer tab
+// This script tracks file downloads from the explorer tab with enhanced parameters
+// including data type, date range, country, purpose, and user metadata
 
 (function() {
     'use strict';
@@ -27,37 +28,119 @@
         const fileDetails = {
             'emissions': {
                 name: 'panama_canal_emissions_data',
-                extension: 'csv'
+                extension: 'csv',
+                data_type: 'emissions',
+                description: 'CO2 equivalent emissions data'
             },
             'waiting_time': {
                 name: 'panama_canal_waiting_time_data',
-                extension: 'csv'
+                extension: 'csv',
+                data_type: 'waiting_time',
+                description: 'Vessel waiting time data'
             },
             'service_time': {
                 name: 'panama_canal_service_time_data',
-                extension: 'csv'
+                extension: 'csv',
+                data_type: 'service_time',
+                description: 'Vessel service time data'
             },
             'energy': {
                 name: 'panama_canal_energy_data',
-                extension: 'csv'
+                extension: 'csv',
+                data_type: 'energy',
+                description: 'Energy consumption data'
             }
         };
         
         return fileDetails[source] || {
             name: 'panama_canal_data',
-            extension: 'csv'
+            extension: 'csv',
+            data_type: 'unknown',
+            description: 'Panama Canal data'
+        };
+    }
+    
+    // Function to get date range information
+    function getDateRangeInfo() {
+        const sourceDropdown = document.querySelector('#explorer--source');
+        const source = sourceDropdown ? sourceDropdown.value : 'unknown';
+        
+        let dateRange = '';
+        let dateType = '';
+        
+        if (source === 'energy') {
+            // For energy data, use week range
+            const startWeek = document.querySelector('#explorer--start-week');
+            const endWeek = document.querySelector('#explorer--end-week');
+            const startWeekLabel = document.querySelector('#explorer--week-range-label');
+            
+            if (startWeek && endWeek && startWeekLabel) {
+                dateRange = startWeekLabel.textContent || '';
+                dateType = 'week_range';
+            }
+        } else {
+            // For other data types, use month range
+            const startDate = document.querySelector('#explorer--start-date');
+            const endDate = document.querySelector('#explorer--end-date');
+            const startDateLabel = document.querySelector('#explorer--range-label');
+            
+            if (startDate && endDate && startDateLabel) {
+                dateRange = startDateLabel.textContent || '';
+                dateType = 'month_range';
+            }
+        }
+        
+        return { dateRange, dateType };
+    }
+    
+    // Function to get form information
+    function getFormInfo() {
+        const countryField = document.querySelector('#explorer--field-country');
+        const purposeField = document.querySelector('#explorer--field-purpose');
+        
+        return {
+            country: countryField ? countryField.value || '' : '',
+            purpose: purposeField ? purposeField.value || '' : ''
         };
     }
     
     // Function to track download event
     function trackDownloadEvent(source) {
         const fileDetails = getFileDetails(source);
+        const { dateRange, dateType } = getDateRangeInfo();
+        const { country, purpose } = getFormInfo();
+        
+        // Get additional metadata
+        const userAgent = navigator.userAgent;
+        const language = navigator.language || 'unknown';
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+        const screenResolution = `${screen.width}x${screen.height}`;
         
         const eventParameters = {
             file_name: fileDetails.name,
             file_extension: fileDetails.extension,
             download_source: 'explorer_tab',
-            source_type: source || 'unknown'
+            source_type: source || 'unknown',
+            data_type: fileDetails.data_type,
+            data_description: fileDetails.description,
+            date_range: dateRange,
+            date_type: dateType,
+            country: country,
+            purpose: purpose,
+            content_type: 'csv_data',
+            download_timestamp: new Date().toISOString(),
+            user_language: language,
+            user_timezone: timezone,
+            screen_resolution: screenResolution,
+            has_country_info: country ? 'yes' : 'no',
+            has_purpose_info: purpose ? 'yes' : 'no',
+            data_category: source === 'energy' ? 'energy_consumption' : 
+                          source === 'emissions' ? 'environmental' : 
+                          source === 'waiting_time' ? 'operational' : 
+                          source === 'service_time' ? 'operational' : 'other',
+            download_session_id: Date.now().toString(),
+            page_url: window.location.href,
+            referrer: document.referrer || 'direct'
         };
         
         sendGA4Event('file_download', eventParameters);
