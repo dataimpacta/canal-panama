@@ -444,18 +444,18 @@ def privacy():
             <p><strong>Controller:</strong> Panama Canal Analytics Team, contact: [your-email@domain.com]</p>
             
             <h2>What we collect</h2>
-            <p>Country (from the form), Purpose of the download (from the form), and your IP address (processed automatically when you submit the form).</p>
-            
+            <p>Country (from the form), Purpose of the download (from the form), and your email address (if you choose to provide it).</p>
+
             <h2>Why we process it</h2>
             <ul>
                 <li>To understand usage by region and purpose</li>
-                <li>To protect our systems against misuse (security)</li>
                 <li>To create anonymised statistics</li>
             </ul>
-            
+            <p>Your email is used solely for analytics and will not be used for marketing or other communications.</p>
+
             <h2>Legal basis</h2>
-            <p>Legitimate interests (GDPR Art. 6(1)(f)).</p>
-            
+            <p>Consent (GDPR Art. 6(1)(a)).</p>
+
             <h2>Retention</h2>
             <p>Submission rows are kept for up to 90 days. We keep only aggregated, non-personal statistics after that period.</p>
             

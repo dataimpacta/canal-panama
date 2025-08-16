@@ -3,8 +3,9 @@
 """Callbacks for the explorer tab."""
 
 from dash import Input, Output, State, dcc, ctx
+from dash.exceptions import PreventUpdate
 from charts import charts_explorer
-from data_utils.form_saver import append_form_row, anonymize_ip
+from data_utils.form_saver import append_form_row
 from flask import request
 
 
@@ -165,9 +166,11 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         State("explorer--end-week", "value"),
         State("explorer--field-country", "value"),
         State("explorer--field-purpose", "value"),
+        State("explorer--field-email", "value"),
+        State("explorer--field-consent", "value"),
         prevent_initial_call=True,
     )
-    def download_data(_, source, start_month_idx, end_month_idx, start_week_idx, end_week_idx, country, purpose):
+    def download_data(_, source, start_month_idx, end_month_idx, start_week_idx, end_week_idx, country, purpose, email, consent):
         """
         Download filtered data with enhanced filename generation and analytics tracking.
         
@@ -208,16 +211,12 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
             end_val = fmt_date(end_ym)
             # Create descriptive filename for other data types
             filename = f"panama_canal_{source}_data_{start_val}_to_{end_val}.csv"
-        
 
-        
-        ip_addr = request.headers.get("X-Forwarded-For", request.remote_addr)
-        if ip_addr and "," in ip_addr:
-            ip_addr = ip_addr.split(",")[0].strip()
-        anonymized = anonymize_ip(ip_addr) if ip_addr else ""
+        if not email or not consent:
+            raise PreventUpdate
 
         append_form_row(
-            anonymized,
+            email,
             country,
             purpose,
             source,

@@ -127,6 +127,12 @@ def build_download_modal():
                     ),
                     dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
                     dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
+                    dbc.Input(id="explorer--field-email", placeholder="Email", type="email", className="mb-2"),
+                    dbc.FormCheck(
+                        id="explorer--field-consent",
+                        label="I consent to the use of my email for analytics (not marketing).",
+                        className="mb-2",
+                    ),
                     html.Div(
                         [
                             html.Hr(),
@@ -150,7 +156,7 @@ def build_download_modal():
                     [
                         html.Small(
                             [
-                                "We collect country and purpose to understand usage. Your IP address is processed for security and regional statistics. See our ",
+                                "We collect country, purpose, and email (with your consent) for analytics only. We do not use your email for marketing. See our ",
                                 html.A(
                                     "Privacy Notice",
                                     href="/privacy",
