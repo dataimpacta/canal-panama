@@ -111,47 +111,56 @@
     
     // Function to track download event
     function trackDownloadEvent(source) {
-        // Debug: Log the source value being received
-        console.log('GA4 Debug - Source value received:', source);
-        
-        // If source is unknown or empty, try to get from the dropdown
-        if (!source || source === 'unknown') {
-            const sourceDropdown = document.querySelector('#explorer--source');
-            if (sourceDropdown) {
-                // Try to get the value
-                if (sourceDropdown.value) {
-                    source = sourceDropdown.value;
-                    console.log('GA4 Debug - Got source from dropdown value:', source);
-                }
-                // If no value, try to get from selected option
-                else if (sourceDropdown.options && sourceDropdown.selectedIndex >= 0) {
-                    source = sourceDropdown.options[sourceDropdown.selectedIndex].value;
-                    console.log('GA4 Debug - Got source from dropdown selected option:', source);
-                }
-                // If still no value, try to get from the visible text
-                else {
-                    const selectedText = sourceDropdown.options[sourceDropdown.selectedIndex]?.text || '';
-                    console.log('GA4 Debug - Dropdown selected text:', selectedText);
-                    // Map the display text back to the source value
-                    if (selectedText.toLowerCase().includes('emissions')) {
-                        source = 'emissions';
-                    } else if (selectedText.toLowerCase().includes('waiting')) {
-                        source = 'waiting_time';
-                    } else if (selectedText.toLowerCase().includes('service')) {
-                        source = 'service_time';
-                    } else if (selectedText.toLowerCase().includes('energy')) {
-                        source = 'energy';
+        try {
+            // Debug: Log the source value being received
+            console.log('GA4 Debug - Source value received:', source);
+            
+            // If source is unknown or empty, try to get from the dropdown
+            if (!source || source === 'unknown') {
+                const sourceDropdown = document.querySelector('#explorer--source');
+                if (sourceDropdown) {
+                    // Try to get the value
+                    if (sourceDropdown.value) {
+                        source = sourceDropdown.value;
+                        console.log('GA4 Debug - Got source from dropdown value:', source);
                     }
-                    console.log('GA4 Debug - Mapped source from text:', source);
+                    // If no value, try to get from selected option
+                    else if (sourceDropdown.options && sourceDropdown.selectedIndex >= 0) {
+                        source = sourceDropdown.options[sourceDropdown.selectedIndex].value;
+                        console.log('GA4 Debug - Got source from dropdown selected option:', source);
+                    }
+                    // If still no value, try to get from the visible text
+                    else if (sourceDropdown.options && sourceDropdown.selectedIndex >= 0 && sourceDropdown.selectedIndex < sourceDropdown.options.length) {
+                        const selectedText = sourceDropdown.options[sourceDropdown.selectedIndex].text || '';
+                        console.log('GA4 Debug - Dropdown selected text:', selectedText);
+                        // Map the display text back to the source value
+                        if (selectedText.toLowerCase().includes('emissions')) {
+                            source = 'emissions';
+                        } else if (selectedText.toLowerCase().includes('waiting')) {
+                            source = 'waiting_time';
+                        } else if (selectedText.toLowerCase().includes('service')) {
+                            source = 'service_time';
+                        } else if (selectedText.toLowerCase().includes('energy')) {
+                            source = 'energy';
+                        }
+                        console.log('GA4 Debug - Mapped source from text:', source);
+                    } else {
+                        console.log('GA4 Debug - Could not determine source from dropdown');
+                    }
                 }
             }
-        }
-        
-        const fileDetails = getFileDetails(source);
-        console.log('GA4 Debug - File details name:', fileDetails.name);
-        
-        const { dateRange, dateType } = getDateRangeInfo();
-        const { country, purpose } = getFormInfo();
+            
+            // Ensure we have a valid source value
+            if (!source || source === 'unknown') {
+                console.log('GA4 Debug - Using fallback source value');
+                source = 'emissions'; // Default fallback
+            }
+            
+            const fileDetails = getFileDetails(source);
+            console.log('GA4 Debug - File details name:', fileDetails.name);
+            
+            const { dateRange, dateType } = getDateRangeInfo();
+            const { country, purpose } = getFormInfo();
         
         // Get additional metadata
         const userAgent = navigator.userAgent;
@@ -188,6 +197,15 @@
         };
         
         sendGA4Event('file_download', eventParameters);
+        } catch (error) {
+            console.error('GA4 Tracking Error:', error);
+            // Send a basic event even if there's an error
+            sendGA4Event('file_download', {
+                file_name: 'panama_canal_data',
+                source_type: 'error',
+                error_message: error.message
+            });
+        }
     }
     
     // Function to setup event listener
