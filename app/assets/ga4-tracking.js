@@ -106,7 +106,21 @@
     
     // Function to track download event
     function trackDownloadEvent(source) {
+        // Debug: Log the source value being received
+        console.log('GA4 Debug - Source value received:', source);
+        
+        // If source is unknown or empty, try to get from the dropdown
+        if (!source || source === 'unknown') {
+            const sourceDropdown = document.querySelector('#explorer--source');
+            if (sourceDropdown && sourceDropdown.value) {
+                source = sourceDropdown.value;
+                console.log('GA4 Debug - Got source from dropdown:', source);
+            }
+        }
+        
         const fileDetails = getFileDetails(source);
+        console.log('GA4 Debug - File details name:', fileDetails.name);
+        
         const { dateRange, dateType } = getDateRangeInfo();
         const { country, purpose } = getFormInfo();
         
@@ -164,12 +178,21 @@
                                 
                                 // Add click event listener
                                 downloadButton.addEventListener('click', function(e) {
-                                    // Get the current source value from the dropdown
-                                    const sourceDropdown = document.querySelector('#explorer--source');
-                                    const source = sourceDropdown ? sourceDropdown.value : 'unknown';
-                                    
-                                    // Track the download event immediately on click
-                                    trackDownloadEvent(source);
+                                    // Use a small delay to ensure dropdown is properly initialized
+                                    setTimeout(function() {
+                                        // Get the current source value from the dropdown
+                                        const sourceDropdown = document.querySelector('#explorer--source');
+                                        console.log('GA4 Debug - Dropdown element found:', !!sourceDropdown);
+                                        console.log('GA4 Debug - Dropdown value:', sourceDropdown ? sourceDropdown.value : 'no dropdown');
+                                        
+                                        let source = 'unknown';
+                                        if (sourceDropdown) {
+                                            source = sourceDropdown.value;
+                                        }
+                                        
+                                        // Track the download event
+                                        trackDownloadEvent(source);
+                                    }, 100);
                                     
                                     // Let the original event continue
                                     // The download will proceed normally
@@ -195,9 +218,14 @@
             existingButton.setAttribute('data-ga-tracked', 'true');
             
             existingButton.addEventListener('click', function(e) {
-                const sourceDropdown = document.querySelector('#explorer--source');
-                const source = sourceDropdown ? sourceDropdown.value : 'unknown';
-                trackDownloadEvent(source);
+                setTimeout(function() {
+                    const sourceDropdown = document.querySelector('#explorer--source');
+                    let source = 'unknown';
+                    if (sourceDropdown) {
+                        source = sourceDropdown.value;
+                    }
+                    trackDownloadEvent(source);
+                }, 100);
             });
             
             console.log('GA4 tracking setup for existing download button');
