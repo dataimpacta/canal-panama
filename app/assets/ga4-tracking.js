@@ -30,25 +30,29 @@
                 name: 'panama_canal_emissions_data',
                 extension: 'csv',
                 data_type: 'emissions',
-                description: 'CO2 equivalent emissions data'
+                description: 'CO2 equivalent emissions data',
+                display_name: 'Emissions'
             },
             'waiting_time': {
                 name: 'panama_canal_waiting_time_data',
                 extension: 'csv',
                 data_type: 'waiting_time',
-                description: 'Vessel waiting time data'
+                description: 'Vessel waiting time data',
+                display_name: 'Waiting Time'
             },
             'service_time': {
                 name: 'panama_canal_service_time_data',
                 extension: 'csv',
                 data_type: 'service_time',
-                description: 'Vessel service time data'
+                description: 'Vessel service time data',
+                display_name: 'Service Time'
             },
             'energy': {
                 name: 'panama_canal_energy_data',
                 extension: 'csv',
                 data_type: 'energy',
-                description: 'Energy consumption data'
+                description: 'Energy consumption data',
+                display_name: 'Energy'
             }
         };
         
@@ -56,7 +60,8 @@
             name: 'panama_canal_data',
             extension: 'csv',
             data_type: 'unknown',
-            description: 'Panama Canal data'
+            description: 'Panama Canal data',
+            display_name: 'Unknown'
         };
     }
     
@@ -112,9 +117,33 @@
         // If source is unknown or empty, try to get from the dropdown
         if (!source || source === 'unknown') {
             const sourceDropdown = document.querySelector('#explorer--source');
-            if (sourceDropdown && sourceDropdown.value) {
-                source = sourceDropdown.value;
-                console.log('GA4 Debug - Got source from dropdown:', source);
+            if (sourceDropdown) {
+                // Try to get the value
+                if (sourceDropdown.value) {
+                    source = sourceDropdown.value;
+                    console.log('GA4 Debug - Got source from dropdown value:', source);
+                }
+                // If no value, try to get from selected option
+                else if (sourceDropdown.options && sourceDropdown.selectedIndex >= 0) {
+                    source = sourceDropdown.options[sourceDropdown.selectedIndex].value;
+                    console.log('GA4 Debug - Got source from dropdown selected option:', source);
+                }
+                // If still no value, try to get from the visible text
+                else {
+                    const selectedText = sourceDropdown.options[sourceDropdown.selectedIndex]?.text || '';
+                    console.log('GA4 Debug - Dropdown selected text:', selectedText);
+                    // Map the display text back to the source value
+                    if (selectedText.toLowerCase().includes('emissions')) {
+                        source = 'emissions';
+                    } else if (selectedText.toLowerCase().includes('waiting')) {
+                        source = 'waiting_time';
+                    } else if (selectedText.toLowerCase().includes('service')) {
+                        source = 'service_time';
+                    } else if (selectedText.toLowerCase().includes('energy')) {
+                        source = 'energy';
+                    }
+                    console.log('GA4 Debug - Mapped source from text:', source);
+                }
             }
         }
         
@@ -135,6 +164,7 @@
             file_extension: fileDetails.extension,
             download_source: 'explorer_tab',
             source_type: source || 'unknown',
+            source_display_name: fileDetails.display_name,
             data_type: fileDetails.data_type,
             data_description: fileDetails.description,
             date_range: dateRange,
