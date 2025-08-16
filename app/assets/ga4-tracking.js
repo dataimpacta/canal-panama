@@ -153,7 +153,8 @@
             // Ensure we have a valid source value
             if (!source || source === 'unknown') {
                 console.log('GA4 Debug - Using fallback source value');
-                source = 'emissions'; // Default fallback
+                // Don't set a default fallback - let it stay unknown so we can debug
+                source = 'unknown';
             }
             
             const fileDetails = getFileDetails(source);
@@ -232,11 +233,20 @@
                                         const sourceDropdown = document.querySelector('#explorer--source');
                                         console.log('GA4 Debug - Dropdown element found:', !!sourceDropdown);
                                         console.log('GA4 Debug - Dropdown value:', sourceDropdown ? sourceDropdown.value : 'no dropdown');
+                                        console.log('GA4 Debug - Dropdown selectedIndex:', sourceDropdown ? sourceDropdown.selectedIndex : 'no dropdown');
+                                        console.log('GA4 Debug - Dropdown options length:', sourceDropdown ? sourceDropdown.options.length : 'no dropdown');
+                                        
+                                        if (sourceDropdown && sourceDropdown.options && sourceDropdown.selectedIndex >= 0) {
+                                            console.log('GA4 Debug - Selected option text:', sourceDropdown.options[sourceDropdown.selectedIndex].text);
+                                            console.log('GA4 Debug - Selected option value:', sourceDropdown.options[sourceDropdown.selectedIndex].value);
+                                        }
                                         
                                         let source = 'unknown';
                                         if (sourceDropdown) {
                                             source = sourceDropdown.value;
                                         }
+                                        
+                                        console.log('GA4 Debug - Final source value before tracking:', source);
                                         
                                         // Track the download event
                                         trackDownloadEvent(source);
