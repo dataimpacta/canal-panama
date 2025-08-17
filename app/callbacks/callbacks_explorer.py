@@ -217,32 +217,22 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         Output("explorer--field-purpose", "invalid"),
         Input("explorer--field-country", "value"),
         Input("explorer--field-purpose", "value"),
-        Input("explorer--field-email", "value"),
-        Input("explorer--field-consent", "value"),
         Input("explorer--download-submit", "n_clicks"),
     )
-    def validate_required_fields_with_consent(country, purpose, email, consent, submit_clicks):
-        """Validate required fields and consent, update download button state."""
+    def validate_required_fields(country, purpose, submit_clicks):
+        """Validate required fields and update download button state."""
         country_valid = bool(country and country.strip())
         purpose_valid = bool(purpose and purpose.strip())
-        
-        # Check if email is provided but consent is not given
-        email_provided = bool(email and email.strip())
-        consent_required = email_provided and not consent
-        
-        is_valid = country_valid and purpose_valid and not consent_required
+        is_valid = country_valid and purpose_valid
         
         # Only show validation errors if user has tried to submit or has entered data
-        show_validation = submit_clicks is not None or country is not None or purpose is not None or email is not None
+        show_validation = submit_clicks is not None or country is not None or purpose is not None
         
         if is_valid:
             return False, "Download Data", True, False, True, False  # Button enabled, fields valid
         else:
             if show_validation:
-                if consent_required:
-                    return True, "Consent Required", country_valid, not country_valid, purpose_valid, not purpose_valid  # Button disabled, consent required
-                else:
-                    return True, "Fill Required Fields", country_valid, not country_valid, purpose_valid, not purpose_valid  # Button disabled, show field validation
+                return True, "Fill Required Fields", country_valid, not country_valid, purpose_valid, not purpose_valid  # Button disabled, show field validation
             else:
                 return True, "Download Data", False, False, False, False  # Button disabled, no validation errors shown
     
@@ -306,10 +296,6 @@ def setup_explorer_callbacks(app, df_emissions, df_waiting, df_energy, controls)
         if not country or not country.strip():
             raise PreventUpdate
         if not purpose or not purpose.strip():
-            raise PreventUpdate
-
-        # Validate consent - if user provides email, consent is required
-        if email and email.strip() and not consent:
             raise PreventUpdate
 
         # Only process email if consent is given, otherwise use "no consent" string
