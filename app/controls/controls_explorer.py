@@ -121,55 +121,126 @@ def build_download_modal():
             dbc.ModalHeader("Download Data"),
             dbc.ModalBody(
                 [
-                    html.P(
-                        "Please provide the following details so we understand how the data will be used.",
-                        className="small",
-                    ),
-                    dbc.Input(id="explorer--field-country", placeholder="Country", type="text", className="mb-2"),
-                    dbc.Input(id="explorer--field-purpose", placeholder="Purpose of the Download", type="text", className="mb-2"),
-                    html.Div(
-                        [
-                            html.Hr(),
-                            html.Small(
-                                "Example citation: ",
-                                style={"fontWeight": "bold"}
+                    # Header section
+                    html.Div([
+                        html.P(
+                            "Please provide your details to complete the download.",
+                            className="text-muted mb-4",
+                        ),
+                    ]),
+                    
+                    # Download summary section
+                    html.Div([
+                        html.H6("Download Summary", className="mb-3", style={"color": "#495057", "fontWeight": "600"}),
+                        html.Div([
+                            html.Div([
+                                html.Span("Data Type: ", style={"fontWeight": "600", "color": "#495057"}),
+                                html.Span(id="download-summary-type", style={"color": "#0d6efd"}),
+                            ], className="mb-2"),
+                            html.Div([
+                                html.Span("Date Range: ", style={"fontWeight": "600", "color": "#495057"}),
+                                html.Span(id="download-summary-range", style={"color": "#0d6efd"}),
+                            ], className="mb-2"),
+                        ], className="p-3", style={"backgroundColor": "#f8f9fa", "borderRadius": "6px", "border": "1px solid #e9ecef"}),
+                    ], className="mb-4"),
+                    
+                    # Required information section
+                    html.Div([
+                        html.H6("Your Information", className="mb-3", style={"color": "#495057", "fontWeight": "600"}),
+                        html.Div([
+                            html.Label("Country", className="form-label", style={"fontWeight": "500", "color": "#495057"}),
+                            html.Span(" *", style={"color": "#dc3545", "fontWeight": "bold"}),
+                        ], className="mb-2"),
+                        dbc.Input(
+                            id="explorer--field-country", 
+                            placeholder="Your country", 
+                            type="text", 
+                            className="mb-3",
+                            required=True
+                        ),
+                        html.Div([
+                            html.Label("Purpose", className="form-label", style={"fontWeight": "500", "color": "#495057"}),
+                            html.Span(" *", style={"color": "#dc3545", "fontWeight": "bold"}),
+                        ], className="mb-2"),
+                        dbc.Input(
+                            id="explorer--field-purpose", 
+                            placeholder="How will you use this data? (e.g., research, academic, business)", 
+                            type="text", 
+                            className="mb-3",
+                            required=True
+                        ),
+                    ], className="mb-4"),
+                    
+                    # Email section (optional)
+                    html.Div([
+                        html.Div([
+                            html.H6("Email", className="mb-3", style={"color": "#6c757d", "fontWeight": "600"}),
+                            html.Span(
+                                "ⓘ", 
+                                className="ms-2",
+                                style={"cursor": "help", "color": "#6c757d", "fontSize": "14px"},
+                                title="We will not use your email for marketing. It is used only for analytics and is stored securely as a hash."
                             ),
+                        ], className="d-flex align-items-center"),
+                        dbc.Input(
+                            id="explorer--field-email", 
+                            placeholder="Email address", 
+                            type="email", 
+                            className="mb-3"
+                        ),
+                    ], className="mb-4"),
+                    
+                    # Citation example section
+                    html.Div([
+                        html.H6("Citation", className="mb-2", style={"color": "#495057", "fontWeight": "600"}),
+                        html.Div([
                             html.Small(
                                 "Fuentes, G., & Adland, R. (2023). Greenhouse gas mitigation at "
                                 "maritime chokepoints: The case of the Panama Canal. Transportation "
                                 "Research Part D: Transport and Environment, 118, 103694.",
                                 className="text-muted",
+                                style={"fontStyle": "italic"}
                             ),
-                        ],
-                        className="mt-3",
-                    ),
+                        ], className="p-3", style={"backgroundColor": "#f8f9fa", "borderRadius": "6px", "border": "1px solid #e9ecef"}),
+                    ], className="mb-3"),
                 ]
             ),
             dbc.ModalFooter(
-                html.Div(
-                    [
-                        html.Small(
-                            [
-                                "We collect country and purpose to understand usage. Your IP address is processed for security and regional statistics. See our ",
+                html.Div([
+                    # Consent and privacy section
+                    html.Div([
+                        dbc.Switch(
+                            id="explorer--field-consent",
+                            label=[
+                                "I consent to the use of my email for analytics purposes, as described in the ",
                                 html.A(
                                     "Privacy Notice",
                                     href="/privacy",
                                     target="_blank",
+                                    style={"color": "#0d6efd", "textDecoration": "underline"}
                                 ),
-                                ".",
+                                "."
                             ],
-                            className="text-muted",
+                            value=False,
+                            className="mb-3"
                         ),
-                        html.Hr(),
-                        html.Div(
-                            [
-                                dbc.Button("Cancel", id="explorer--download-cancel", className="me-2"),
-                                dbc.Button("Download", id="explorer--download-submit", color="primary"),
-                            ],
-                            className="mt-2",
+                    ]),
+                    
+                    # Action buttons
+                    html.Div([
+                        dbc.Button(
+                            "Cancel", 
+                            id="explorer--download-cancel", 
+                            className="me-2",
+                            color="light"
                         ),
-                    ]
-                )
+                        dbc.Button(
+                            "Download Data", 
+                            id="explorer--download-submit", 
+                            color="primary"
+                        ),
+                    ], className="d-flex justify-content-end"),
+                ])
             ),
         ],
         id="explorer--download-modal",
