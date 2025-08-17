@@ -247,15 +247,19 @@ def build_about_us():
 
         html.P([
             "This dashboard was developed in collaboration with ",
-            html.Strong("The Norwegian School of Economics (NHH)"),
+            html.Strong("Norwegian School of Economics (NHH)"),
             ", ",
-            html.Strong("Technological University of Panama"),
+            html.Strong("Universidad Tecnológica de Panamá"),
             ", ",
-            html.Strong("International Maritime University of Panama"),
+            html.Strong("Universidad Marítima Internacional de Panamá"),
             ", ",
-            html.Strong("University of Liverpool"),
+            html.Strong("Liverpool John Moores University"),
+            ", ",
+            html.Strong("Georgia Tech Panamá"),
+            ", ",
+            html.Strong("Autoridad del Canal de Panamá"),
             ", and ",
-            html.Strong("Georgia Institute of Technology"),
+            html.Strong("UN Big Data Group"),
             ". We extend our gratitude to these institutions for their valuable contributions and support in making this project possible."
         ], style={
             "fontSize": "1rem",
