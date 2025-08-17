@@ -24,9 +24,14 @@ def hash_email(email: str) -> str:
     """
     Hash email address for use as unique identifier.
     Returns empty string if email is None or empty.
+    Returns "no_consent" if email is "no consent".
     """
     if not email or not email.strip():
         return ""
+    
+    # Handle "no consent" case
+    if email.strip().lower() == "no consent":
+        return "no_consent"
     
     # Normalize email (lowercase, trim whitespace)
     normalized_email = email.strip().lower()
