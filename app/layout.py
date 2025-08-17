@@ -88,6 +88,7 @@ def build_footer():
                 ),
                 ", partly sponsored by SENACYT under project number 060/2024.",
                 html.Br(),
+                html.Br(),
                 "The results and information presented herein are provided for informational "
                 "purposes only and shall not be construed as assigning, implying, or establishing "
                 "any liability, responsibility, or obligation on the part of any participant "
