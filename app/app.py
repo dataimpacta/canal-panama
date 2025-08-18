@@ -23,6 +23,7 @@ import pandas as pd
 import geopandas as gpd
 import boto3
 import psutil
+from flask import jsonify
 from dotenv import load_dotenv
 
 from shapely.geometry import Polygon
@@ -280,58 +281,6 @@ def prepare_explorer_controls(df_emissions, df_waiting, df_energy):
         },
     }
 
-# ========================== 3️⃣ READ & PREPROCESS DATA ==========================
-
-# ✅ Read the data
-df_emissions = read_parquet_from_s3(bucket_name, file_name_emissions)
-df_emissions["year_month"] = (
-    df_emissions["year"].astype(str) + df_emissions["month"].astype(str).str.zfill(2)
-).astype(int)
-
-# Pre-sort the DataFrame by year_month for better performance in callbacks
-df_emissions = df_emissions.sort_values("year_month").reset_index(drop=True)
-
-# Optimize data types for better memory usage and performance
-df_emissions = df_emissions.astype({
-    "year": "int16",
-    "month": "int8", 
-    "year_month": "int32",
-    "co2_equivalent_t": "float32"
-})
-
-controls_emissions = prepare_emissions_controls(df_emissions)
-
-
-# Read Waiting Time Data
-df_waiting_times = read_parquet_from_s3(bucket_name, file_name_waiting)
-df_waiting_times["year_month"] = (
-    df_waiting_times["year"].astype(str) + df_waiting_times["month"].astype(str).str.zfill(2)
-).astype(int)
-
-controls_waiting_times = prepare_waiting_time_controls(df_waiting_times)
-
-# Read Energy Demand Data
-df_energy_demand = read_parquet_from_s3(bucket_name, file_name_energy)
-df_energy_demand["year_week"] = (
-    df_energy_demand["year"].astype(str) + df_energy_demand["week"].astype(str).str.zfill(2)
-).astype(int)
-df_energy_demand["year_month"] = df_energy_demand.apply(
-    lambda row: int(
-        datetime.date.fromisocalendar(int(row["year"]), int(row["week"]), 1).strftime("%Y%m")
-    ),
-    axis=1,
-)
-
-df_energy_demand["country_before_name"] = df_energy_demand["country_before"].apply(get_country_name)
-df_energy_demand["country_after_name"] = df_energy_demand["country_after"].apply(get_country_name)
-
-controls_energy = prepare_energy_controls(df_energy_demand)
-controls_explorer = prepare_explorer_controls(
-    df_emissions,
-    df_waiting_times,
-    df_energy_demand,
-)
-
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
@@ -354,8 +303,65 @@ def create_geojson_template(geo_df):
     """
     return json.loads(geo_df.to_json())
 
-unique_polygons_gdf = generate_unique_polygons(df_emissions)
-geojson_template = create_geojson_template(unique_polygons_gdf)
+df_data = {}
+
+def load_dataset():
+    """Load datasets from S3 into global dataframes."""
+    global df_data, df_emissions, df_waiting_times, df_energy_demand
+    global controls_emissions, controls_waiting_times, controls_energy, controls_explorer
+    global unique_polygons_gdf, geojson_template
+
+    df_emissions = read_parquet_from_s3(bucket_name, file_name_emissions)
+    df_emissions["year_month"] = (
+        df_emissions["year"].astype(str) + df_emissions["month"].astype(str).str.zfill(2)
+    ).astype(int)
+    df_emissions = df_emissions.sort_values("year_month").reset_index(drop=True)
+    df_emissions = df_emissions.astype({
+        "year": "int16",
+        "month": "int8",
+        "year_month": "int32",
+        "co2_equivalent_t": "float32"
+    })
+    controls_emissions = prepare_emissions_controls(df_emissions)
+
+    df_waiting_times = read_parquet_from_s3(bucket_name, file_name_waiting)
+    df_waiting_times["year_month"] = (
+        df_waiting_times["year"].astype(str) + df_waiting_times["month"].astype(str).str.zfill(2)
+    ).astype(int)
+    controls_waiting_times = prepare_waiting_time_controls(df_waiting_times)
+
+    df_energy_demand = read_parquet_from_s3(bucket_name, file_name_energy)
+    df_energy_demand["year_week"] = (
+        df_energy_demand["year"].astype(str) + df_energy_demand["week"].astype(str).str.zfill(2)
+    ).astype(int)
+    df_energy_demand["year_month"] = df_energy_demand.apply(
+        lambda row: int(
+            datetime.date.fromisocalendar(int(row["year"]), int(row["week"]), 1).strftime("%Y%m")
+        ),
+        axis=1,
+    )
+    df_energy_demand["country_before_name"] = df_energy_demand["country_before"].apply(get_country_name)
+    df_energy_demand["country_after_name"] = df_energy_demand["country_after"].apply(get_country_name)
+    controls_energy = prepare_energy_controls(df_energy_demand)
+
+    controls_explorer = prepare_explorer_controls(
+        df_emissions,
+        df_waiting_times,
+        df_energy_demand,
+    )
+
+    unique_polygons_gdf = generate_unique_polygons(df_emissions)
+    geojson_template = create_geojson_template(unique_polygons_gdf)
+
+    df_data = {
+        "emissions": df_emissions,
+        "waiting_times": df_waiting_times,
+        "energy_demand": df_energy_demand,
+    }
+    return df_data
+
+# Load datasets at startup
+load_dataset()
 
 # ========================== 7️⃣ DASHBOARD LAYOUT ==========================
 
@@ -587,12 +593,21 @@ DATA QUALITY NOTES
 
 """
     
-    from flask import Response
+from flask import Response
     return Response(
         data_dictionary,
         mimetype='text/plain',
         headers={'Content-Disposition': 'attachment; filename=data_dictionary.txt'}
     )
+
+
+# ========================== DATA RELOAD ROUTE ==========================
+
+@app.server.route("/reload-data", methods=["POST"])
+def reload_data():
+    """Reload datasets from S3 without restarting the server."""
+    load_dataset()
+    return jsonify({"status": "reloaded"}), 200
 
 # Inline the local stylesheet and preload external CSS to minimise
 # render-blocking resources.
