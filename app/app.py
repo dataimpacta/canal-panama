@@ -442,7 +442,7 @@ def privacy():
         <div class="container">
             <h1>Privacy Notice – Panama Canal Analytics</h1>
             
-            <p><strong>Controller:</strong> Panama Canal Analytics Team</p>
+            <p><strong>Controller:</strong>  Panama Canal Analytics Team</p>
             <p><strong>Contact:</strong> gabriel.fuentes@nhh.no</p>
             
             <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
@@ -572,7 +572,7 @@ Variables:
 - Week: ISO week number (1-53) of the energy measurement
 - Country Before: ISO-2 country code for origin country
 - Country After: ISO-2 country code for destination country
-- Sum Energy: Total energy consumption in kilowatt-hours (kWh)
+- Sum Energy: Total energy consumption in kilowatt-hours (kWh) between two nodes
 - Year Week: Combined year-week identifier in YYYYWW format (e.g., 202301 for week 1 of 2023)
 - Year Month: Combined year-month identifier derived from year-week
 - Country Before Name: Full country name for origin country
