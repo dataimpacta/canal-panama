@@ -999,7 +999,7 @@ def build_main_layout_content():
         dcc.Interval(id="initial-delay", interval=3000, n_intervals=0, max_intervals=1),
         build_tutorial_components(),
         # Navigation bar - always available
-        html.Div(id="navigation-bar"),
+        html.Div(id="navigation-bar", children=build_navigation_bar()),
         html.Div(id="main-content"),
         html.Div(id="tab-content"),
         build_footer(),
