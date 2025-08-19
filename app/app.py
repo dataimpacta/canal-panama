@@ -612,13 +612,13 @@ app.index_string = f"""
         {{%favicon%}}
         <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
         <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-H01MT5EHCM"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-GDP8YP7WZG"></script>
         <script>
           window.dataLayer = window.dataLayer || [];
           function gtag(){{dataLayer.push(arguments);}}
           gtag('js', new Date());
 
-          gtag('config', 'G-H01MT5EHCM');
+          gtag('config', 'G-GDP8YP7WZG');
         </script>
         <!-- Cookiebot -->
         <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="a3d8223b-4a06-42bf-87d5-5a706a03c9ba" data-blockingmode="auto" type="text/javascript"></script>
