@@ -18,6 +18,7 @@ import dash
 import dash_bootstrap_components as dbc
 
 from dash import Input, Output, State, ctx, html, MATCH
+from dash.exceptions import PreventUpdate
 
 import pandas as pd
 import geopandas as gpd
@@ -624,7 +625,7 @@ app.index_string = f"""
         <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="a3d8223b-4a06-42bf-87d5-5a706a03c9ba" data-blockingmode="auto" type="text/javascript"></script>
         <link rel=\"preload\" href=\"{bootstrap_icons}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
         <link rel=\"preload\" href=\"{bootstrap_css}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">
-        <link rel=\"preload\" href=\"/assets/Financing_Logo.png\" as=\"image\">
+        <link rel=\"preload\" href=\"/assets/Financing_Logo.webp\" as=\"image\">
         <noscript>
             <link rel=\"stylesheet\" href=\"{bootstrap_icons}\">
             <link rel=\"stylesheet\" href=\"{bootstrap_css}\">
@@ -683,39 +684,24 @@ callbacks_energy.setup_energy_callbacks(
 
 @app.callback(
     Output("chart-tabs-store", "data"),
-    [
-        Input("tab-emissions", "n_clicks"),
-        Input("tab-waiting", "n_clicks"),
-        Input("tab-service", "n_clicks"),
-        Input("tab-energy", "n_clicks"),
-        Input("tab-explorer", "n_clicks"),
-        Input("tab-about", "n_clicks"),
-        Input("url", "pathname"),
-    ],
+    Input("url", "pathname"),
     prevent_initial_call=False
 )
-def update_tab(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks, pathname):
-    """Update name of the tab based on clicks or URL"""
-    # If we have a valid pathname, prioritize URL over tab clicks
-    if pathname and pathname != "/" and pathname != "/emissions":
-        pathname = pathname.lstrip('/')
-        # Map URL paths to tab names
-        tab_mapping = {
-            "waiting": "waiting", 
-            "service": "service",
-            "energy": "energy",
-            "explorer": "explorer",
-            "about": "about"
-        }
-        if pathname in tab_mapping:
-            return tab_mapping[pathname]
-    # Check if triggered by a tab click
-    triggered_id = ctx.triggered_id
-    if triggered_id and triggered_id.startswith("tab-"):
-        tab_name = triggered_id.replace("tab-", "")
-        return tab_name
-    # Default to emissions
-    return "emissions"
+def update_tab(pathname):
+    """Update name of the tab based on URL"""
+    if pathname is None or pathname == "/" or pathname == "/emissions":
+        return "emissions"
+    
+    pathname = pathname.lstrip('/')
+    # Map URL paths to tab names
+    tab_mapping = {
+        "waiting": "waiting", 
+        "service": "service",
+        "energy": "energy",
+        "explorer": "explorer",
+        "about": "about"
+    }
+    return tab_mapping.get(pathname, "emissions")
 
 
 
@@ -735,6 +721,21 @@ def show_main_content(n_intervals):
     return ""  # Let the tab-content callback handle the actual content
 
 @app.callback(
+    Output("navigation-bar", "children"),
+    Input("chart-tabs-store", "data"),
+    Input("url", "pathname"),
+)
+def update_navigation_bar(selected_tab, pathname):
+    """Update the navigation bar based on the current tab and URL"""
+    # If we have a URL, use it to determine the active tab
+    if pathname and pathname != "/":
+        pathname = pathname.lstrip('/')
+        if pathname in ["waiting", "service", "energy", "explorer", "about"]:
+            return layout.build_navigation_bar(active_tab=pathname)
+    # Otherwise use the selected tab from the store
+    return layout.build_navigation_bar(active_tab=selected_tab)
+
+@app.callback(
     Output("url", "pathname"),
     [
         Input("tab-emissions", "n_clicks"),
@@ -751,13 +752,15 @@ def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, en
     # Check if any actual clicks occurred (not just initial rendering)
     all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks]
     if all(click is None for click in all_clicks):
-        raise dash.exceptions.PreventUpdate
+        raise PreventUpdate
     triggered_id = ctx.triggered_id
     if triggered_id and triggered_id.startswith("tab-"):
         tab_name = triggered_id.replace("tab-", "")
         new_path = "/emissions" if tab_name == "emissions" else f"/{tab_name}"
         return new_path
     return "/emissions"
+
+
 
 @app.callback(
     Output("url", "pathname", allow_duplicate=True),
@@ -775,20 +778,7 @@ def handle_initial_url(pathname):
     return "/emissions"
 
 
-@app.callback(
-    Output("navigation-bar", "children"),
-    Input("chart-tabs-store", "data"),
-    Input("url", "pathname"),
-)
-def update_navigation_bar(selected_tab, pathname):
-    """Update the navigation bar based on the current tab and URL"""
-    # If we have a URL, use it to determine the active tab
-    if pathname and pathname != "/":
-        pathname = pathname.lstrip('/')
-        if pathname in ["waiting", "service", "energy", "explorer", "about"]:
-            return layout.build_navigation_bar(active_tab=pathname)
-    # Otherwise use the selected tab from the store
-    return layout.build_navigation_bar(active_tab=selected_tab)
+
 
 @app.callback(
     Output("tab-content", "children"),
