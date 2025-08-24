@@ -55,6 +55,18 @@ def build_date_range_display():
     ], className="mb-3")
 
 def build_country_before_checklist(country_before):
+    """Build the origin-country checklist.
+
+    Parameters
+    ----------
+    country_before : list[str]
+        Origin countries to display.
+
+    Returns
+    -------
+    html.Div
+        Checklist component wrapped in a div.
+    """
     return html.Div([
         html.Div([
             html.Span(
@@ -101,6 +113,18 @@ def build_country_before_checklist(country_before):
     ])
 
 def build_country_after_checklist(country_after):
+    """Build the destination-country checklist.
+
+    Parameters
+    ----------
+    country_after : list[str]
+        Destination countries to display.
+
+    Returns
+    -------
+    html.Div
+        Checklist component wrapped in a div.
+    """
     return html.Div([
         html.Div([
             html.Span(

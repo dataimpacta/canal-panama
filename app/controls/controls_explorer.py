@@ -111,6 +111,13 @@ def build_week_range_display():
 
 
 def build_download_button():
+    """Create the download button for exporting data.
+
+    Returns
+    -------
+    dbc.Button
+        Button that opens the download modal.
+    """
     return dbc.Button("Download Data", id="explorer--download-btn", color="primary")
 
 

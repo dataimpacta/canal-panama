@@ -84,6 +84,20 @@ def plot_line_chart_waiting_time_by_year_month(df, value_column="waiting_time", 
 
 
 def plot_bar_chart_waiting_by_stop_area(df, value_column="waiting_time"):
+    """Create a horizontal bar chart of waiting times by stop area.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing ``stop_area`` and waiting time columns.
+    value_column : str, optional
+        Column to plot on the x-axis, by default ``"waiting_time"``.
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        Bar chart figure.
+    """
 
     fig = go.Figure()
 
@@ -122,6 +136,20 @@ def plot_bar_chart_waiting_by_stop_area(df, value_column="waiting_time"):
 
 
 def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time"):
+    """Create a bar chart of waiting times by vessel type.
+
+    Parameters
+    ----------
+    df_summary : pandas.Series
+        Series indexed by vessel type with waiting time values.
+    value_column : str, optional
+        Name used for axis labelling, defaults to ``"waiting_time"``.
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        Bar chart figure.
+    """
     fig = go.Figure()
 
     fig.add_trace(go.Bar(
@@ -158,7 +186,25 @@ def plot_bar_chart_waiting_by_vessel_type(df_summary, value_column="waiting_time
     return fig
 
 
-def plot_line_chart_waiting_by_type_week(df, value_column="waiting_time", top_padding_pct=0.2, bottom_padding_pct=0.1):
+def plot_line_chart_waiting_by_type_week(
+    df, value_column="waiting_time", top_padding_pct=0.2, bottom_padding_pct=0.1
+):
+    """Create a line chart of waiting time by vessel type over time.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame with ``StandardVesselType`` and ``year_month`` columns.
+    value_column : str, optional
+        Column with waiting time values.
+    top_padding_pct, bottom_padding_pct : float, optional
+        Padding percentages for y-axis range.
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        Line chart figure.
+    """
     fig = go.Figure()
 
     if df.empty or "StandardVesselType" not in df.columns:

@@ -56,7 +56,20 @@ PRIORITY_STOP_AREAS = [
 
 
 def reorder_with_priority(options, priority):
-    """Return ``options`` with ``priority`` values at the front."""
+    """Reorder options placing priority items first.
+
+    Parameters
+    ----------
+    options : iterable
+        Original option values.
+    priority : list
+        Values that should appear first if present in ``options``.
+
+    Returns
+    -------
+    list
+        Reordered list with priority values leading.
+    """
     options = list(options)
     priority_items = [p for p in priority if p in options]
     remaining = [o for o in options if o not in priority_items]
@@ -80,7 +93,20 @@ logger = logging.getLogger(__name__)
 process = psutil.Process(os.getpid())
 
 def log_step(step_name, start_time):
-    """Function to log the time and memory usage of a step"""
+    """Log the elapsed time and memory usage for a processing step.
+
+    Parameters
+    ----------
+    step_name : str
+        Label for the step being logged.
+    start_time : float
+        Timestamp marking the start of the step.
+
+    Returns
+    -------
+    float
+        Current timestamp for chaining.
+    """
     elapsed = time.time() - start_time
     mem = process.memory_info().rss / 1024 / 1024
     logger.info("✅ Step: %s | Time: %.2fs | Memory: %.1fMB", step_name, elapsed, mem)
@@ -110,21 +136,55 @@ s3_client = boto3.client(
 )
 
 def read_csv_from_s3(bucket, file):
-    """Reads CSV from an S3 bucket and returns a DataFrame"""
+    """Read a CSV file from S3.
+
+    Parameters
+    ----------
+    bucket : str
+        S3 bucket name.
+    file : str
+        Object key within the bucket.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Loaded DataFrame.
+    """
     obj = s3_client.get_object(Bucket=bucket, Key=file)
     data = obj['Body'].read().decode('utf-8')
     return pd.read_csv(StringIO(data))
 
 def read_parquet_from_s3(bucket, file):
-    """Reads parket from an S3 bucket and returns a DataFrame"""
+    """Read a Parquet file from S3.
+
+    Parameters
+    ----------
+    bucket : str
+        S3 bucket name.
+    file : str
+        Object key within the bucket.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Loaded DataFrame.
+    """
     obj = s3_client.get_object(Bucket=bucket, Key=file)
     data = obj['Body'].read()
     return pd.read_parquet(io.BytesIO(data))
 
 def prepare_emissions_controls(df):
-    """
-    Given a DataFrame with emissions data, returns a dictionary
-    with control values for vessel types and date ranges.
+    """Build control options for the emissions tab.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Emissions data including ``StandardVesselType`` and ``year_month``.
+
+    Returns
+    -------
+    dict
+        Dictionary of control values such as vessel types and date range info.
     """
 
     # Vessel types
@@ -163,9 +223,17 @@ def prepare_emissions_controls(df):
     }
 
 def prepare_waiting_time_controls(df):
-    """
-    Given a DataFrame with waiting data, returns a dictionary
-    with control values for vessel types and date ranges.
+    """Build control options for waiting time and service time tabs.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Waiting/service time data with ``StandardVesselType``, ``stop_area`` and ``year_month``.
+
+    Returns
+    -------
+    dict
+        Dictionary of control values including vessel types, stop areas and date range info.
     """
 
     # Vessel types
@@ -208,9 +276,17 @@ def prepare_waiting_time_controls(df):
     }
 
 def prepare_energy_controls(df):
-    """
-    Given a DataFrame with energy demand data, returns a dictionary
-    with control values for origin (country_before), destination (country_after), and date ranges.
+    """Build control options for the energy tab.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Energy demand data with country codes and ``year_week``.
+
+    Returns
+    -------
+    dict
+        Control values for origin/destination countries and date ranges.
     """
     # Unique origin and destination countries (use full names for controls)
     country_before = sorted(df['country_before_name'].unique())
@@ -245,7 +321,18 @@ def prepare_energy_controls(df):
     }
 
 def _yw_to_month(yw: int) -> int:
-    """Convert YYYYWW to YYYYMM for month based sliders."""
+    """Convert ``YYYYWW`` integers to ``YYYYMM`` format.
+
+    Parameters
+    ----------
+    yw : int
+        Year-week integer.
+
+    Returns
+    -------
+    int
+        Year-month integer for slider controls.
+    """
     year = int(str(yw)[:4])
     week = int(str(yw)[4:])
     date_val = datetime.date.fromisocalendar(year, week, 1)
@@ -253,7 +340,18 @@ def _yw_to_month(yw: int) -> int:
 
 
 def prepare_explorer_controls(df_emissions, df_waiting, df_energy):
-    """Prepare controls for the explorer tab."""
+    """Assemble control options for the explorer tab.
+
+    Parameters
+    ----------
+    df_emissions, df_waiting, df_energy : pandas.DataFrame
+        Datasets used for emissions, waiting/service times and energy.
+
+    Returns
+    -------
+    dict
+        Control metadata including sources and date/week ranges.
+    """
     energy_months = [_yw_to_month(yw) for yw in df_energy["year_week"]]
     all_months = sorted(
         set(df_emissions["year_month"]).union(df_waiting["year_month"]).union(energy_months)
@@ -336,23 +434,31 @@ controls_explorer = prepare_explorer_controls(
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
-    """Converts an H3 index to a Shapely Polygon."""
+    """Convert an H3 index to a Shapely ``Polygon``.
+
+    Parameters
+    ----------
+    h3_index : int | str
+        H3 index as integer or hexadecimal string.
+
+    Returns
+    -------
+    Polygon
+        Polygon representing the cell.
+    """
     boundary = cell_to_boundary(h3_index)
     return Polygon([(lng, lat) for lat, lng in boundary])
 
+
 def generate_unique_polygons(df_with_resolution_id):
-    """
-    Generates a GeoDataFrame with unique resolution_id polygons.
-    Only needs to be run once at app startup.
-    """
+    """Create GeoDataFrame of unique ``resolution_id`` polygons."""
     unique_ids = df_with_resolution_id[["resolution_id"]].drop_duplicates().copy()
     unique_ids["geometry"] = unique_ids["resolution_id"].apply(h3_to_polygon)
     return gpd.GeoDataFrame(unique_ids, geometry="geometry", crs="EPSG:4326")
 
+
 def create_geojson_template(geo_df):
-    """
-    Converts a GeoDataFrame to a GeoJSON dictionary.
-    """
+    """Convert a GeoDataFrame to a GeoJSON dictionary."""
     return json.loads(geo_df.to_json())
 
 unique_polygons_gdf = generate_unique_polygons(df_emissions)
@@ -688,7 +794,18 @@ callbacks_energy.setup_energy_callbacks(
     prevent_initial_call=False
 )
 def update_tab(pathname):
-    """Update name of the tab based on URL"""
+    """Map the current URL to a tab name.
+
+    Parameters
+    ----------
+    pathname : str
+        URL path from ``dcc.Location``.
+
+    Returns
+    -------
+    str
+        Tab identifier.
+    """
     if pathname is None or pathname == "/" or pathname == "/emissions":
         return "emissions"
     
@@ -710,7 +827,18 @@ def update_tab(pathname):
     Input("initial-delay", "n_intervals")
 )
 def show_main_content(n_intervals):
-    """Show the main content after initial delay"""
+    """Display the main content after a loading delay.
+
+    Parameters
+    ----------
+    n_intervals : int | None
+        Number of elapsed intervals from an ``Interval`` component.
+
+    Returns
+    -------
+    dash.html.Div | str
+        Loading container or empty string once ready.
+    """
     if n_intervals is None or n_intervals == 0:
         return html.Div([
             html.H4("Loading main content...", className="text-center text-muted"),
@@ -726,7 +854,20 @@ def show_main_content(n_intervals):
     Input("url", "pathname"),
 )
 def update_navigation_bar(selected_tab, pathname):
-    """Update the navigation bar based on the current tab and URL"""
+    """Generate navigation bar items based on tab selection or URL.
+
+    Parameters
+    ----------
+    selected_tab : str
+        Currently selected tab from store.
+    pathname : str
+        Current URL path.
+
+    Returns
+    -------
+    Component
+        Navigation bar with the active tab highlighted.
+    """
     # If we have a URL, use it to determine the active tab
     if pathname and pathname != "/":
         pathname = pathname.lstrip('/')
@@ -748,7 +889,18 @@ def update_navigation_bar(selected_tab, pathname):
     prevent_initial_call=True
 )
 def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks):
-    """Update URL when tabs are clicked"""
+    """Update browser URL when navigation tabs are clicked.
+
+    Parameters
+    ----------
+    emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks : int | None
+        Click counts for each navigation tab.
+
+    Returns
+    -------
+    str
+        New pathname reflecting the active tab.
+    """
     # Check if any actual clicks occurred (not just initial rendering)
     all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks]
     if all(click is None for click in all_clicks):
@@ -768,7 +920,18 @@ def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, en
     prevent_initial_call=True
 )
 def handle_initial_url(pathname):
-    """Handle initial URL load and redirects"""
+    """Handle initial URL loading and fallback routing.
+
+    Parameters
+    ----------
+    pathname : str
+        Initial path from the browser.
+
+    Returns
+    -------
+    str
+        Valid pathname within the application.
+    """
     if pathname is None or pathname == "/":
         return "/emissions"
     # If it's a valid path, just return it to keep it
@@ -787,7 +950,20 @@ def handle_initial_url(pathname):
 )
 
 def update_tab_content(selected_tab, n_intervals):
-    """Update the dashboard depending on the different tabs."""
+    """Render layout components for the selected tab.
+
+    Parameters
+    ----------
+    selected_tab : str
+        Active tab identifier.
+    n_intervals : int | None
+        Number of intervals elapsed; used to delay rendering.
+
+    Returns
+    -------
+    dash.html.Div | str
+        Layout for the selected tab or empty string during initial delay.
+    """
     # Don't show content until initial delay is complete
     if n_intervals is None or n_intervals == 0:
         return ""
@@ -840,8 +1016,17 @@ def update_tab_content(selected_tab, n_intervals):
     Input("tutorial-store", "data")
 )
 def display_tutorial(step):
-    """
-    Display the tutorial modal and popover.
+    """Show tutorial modal and popover based on current step.
+
+    Parameters
+    ----------
+    step : str | None
+        Current tutorial step stored in ``dcc.Store``.
+
+    Returns
+    -------
+    tuple[bool, bool]
+        Modal open state and popover open state.
     """
     if step is None:
         return True, False
@@ -856,8 +1041,19 @@ def display_tutorial(step):
     prevent_initial_call=True
 )
 def update_tutorial(start_click, next_click, current):
-    """
-    Update the tutorial step.
+    """Advance tutorial steps based on user interaction.
+
+    Parameters
+    ----------
+    start_click, next_click : int | None
+        Click counts for tutorial buttons.
+    current : str | None
+        Current tutorial state.
+
+    Returns
+    -------
+    str | None
+        Updated step identifier.
     """
     triggered = ctx.triggered_id
     if triggered == "btn-tutorial-start":
@@ -875,8 +1071,19 @@ def update_tutorial(start_click, next_click, current):
     prevent_initial_call=True
 )
 def toggle_chart_modal(open_clicks, close_clicks, is_open):
-    """
-    Toggle the chart modal.
+    """Toggle the full-screen chart modal.
+
+    Parameters
+    ----------
+    open_clicks, close_clicks : int | None
+        Click counts for open/close buttons.
+    is_open : bool
+        Current modal visibility state.
+
+    Returns
+    -------
+    bool
+        Updated open state.
     """
     trigger = ctx.triggered_id
     if trigger and trigger.get("type") == "open-fullscreen":

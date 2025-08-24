@@ -1,4 +1,4 @@
-"""Build the emissiosn controls panel for the dashboard."""
+"""Build the time-based controls panel for the dashboard."""
 
 # controls/emissions.py
 from dash import html, dcc
@@ -60,6 +60,18 @@ def build_date_range_display():
 
 
 def build_vessel_type_checklist(vessel_types):
+    """Build a checklist of vessel types.
+
+    Parameters
+    ----------
+    vessel_types : list[str]
+        Available vessel type options.
+
+    Returns
+    -------
+    html.Div
+        Div containing the checklist and helper buttons.
+    """
     return html.Div([
         html.Div([
             html.Span(
@@ -107,6 +119,18 @@ def build_vessel_type_checklist(vessel_types):
 
 
 def build_stop_area_checklist(vessel_types):
+    """Build a checklist of stop areas.
+
+    Parameters
+    ----------
+    vessel_types : list[str]
+        Stop areas to display as options.
+
+    Returns
+    -------
+    html.Div
+        Div containing the checklist and helper buttons.
+    """
     return html.Div([
         html.Div([
             html.Span(
@@ -154,4 +178,13 @@ def build_stop_area_checklist(vessel_types):
 
 
 def build_button_refresh_charts():
-    return dbc.Button("Refresh Charts", id="time--btn--refresh", n_clicks=0, color="primary")
+    """Create the refresh button for updating charts.
+
+    Returns
+    -------
+    dbc.Button
+        Dash Bootstrap button component.
+    """
+    return dbc.Button(
+        "Refresh Charts", id="time--btn--refresh", n_clicks=0, color="primary"
+    )

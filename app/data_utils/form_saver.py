@@ -51,6 +51,25 @@ def append_form_row(
     bucket: str = FORM_BUCKET,
     file: str = FORM_FILE,
 ) -> None:
+    """Append a row with form submission metadata to S3.
+
+    Parameters
+    ----------
+    email : str
+        Email address supplied by the user.
+    country : str
+        Country of the requester.
+    purpose : str
+        Intended use of the data.
+    source : str
+        Dataset name.
+    start_date, end_date : str
+        Selected date range.
+    bucket : str, optional
+        S3 bucket where the form data is stored.
+    file : str, optional
+        Object key within the bucket.
+    """
 
     if not all([
         bucket,
@@ -84,3 +103,4 @@ def append_form_row(
         data += "\n"
     data += row + "\n"
     s3_client.put_object(Bucket=bucket, Key=file, Body=data.encode("utf-8"))
+

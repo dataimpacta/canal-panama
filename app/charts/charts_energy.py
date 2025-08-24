@@ -97,6 +97,20 @@ def plot_line_chart_energy_demand_by_year_week(df, top_padding_pct=0.1, bottom_p
 
 
 def plot_bar_chart_energy_by_country(df, value_column="country_before"):
+    """Create a horizontal bar chart of energy by country.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing ``sum_energy`` and country columns.
+    value_column : str, optional
+        Column used for country labels, by default ``"country_before"``.
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        Bar chart figure.
+    """
 
     fig = go.Figure()
 
