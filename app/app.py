@@ -36,6 +36,7 @@ from callbacks import callbacks_waiting
 from callbacks import callbacks_energy
 from callbacks import callbacks_explorer
 from charts.charts_energy import get_country_name
+import routes
 
 import layout
 
@@ -56,7 +57,20 @@ PRIORITY_STOP_AREAS = [
 
 
 def reorder_with_priority(options, priority):
-    """Return ``options`` with ``priority`` values at the front."""
+    """Reorder options placing priority items first.
+
+    Parameters
+    ----------
+    options : iterable
+        Original option values.
+    priority : list
+        Values that should appear first if present in ``options``.
+
+    Returns
+    -------
+    list
+        Reordered list with priority values leading.
+    """
     options = list(options)
     priority_items = [p for p in priority if p in options]
     remaining = [o for o in options if o not in priority_items]
@@ -80,7 +94,20 @@ logger = logging.getLogger(__name__)
 process = psutil.Process(os.getpid())
 
 def log_step(step_name, start_time):
-    """Function to log the time and memory usage of a step"""
+    """Log the elapsed time and memory usage for a processing step.
+
+    Parameters
+    ----------
+    step_name : str
+        Label for the step being logged.
+    start_time : float
+        Timestamp marking the start of the step.
+
+    Returns
+    -------
+    float
+        Current timestamp for chaining.
+    """
     elapsed = time.time() - start_time
     mem = process.memory_info().rss / 1024 / 1024
     logger.info("✅ Step: %s | Time: %.2fs | Memory: %.1fMB", step_name, elapsed, mem)
@@ -110,21 +137,55 @@ s3_client = boto3.client(
 )
 
 def read_csv_from_s3(bucket, file):
-    """Reads CSV from an S3 bucket and returns a DataFrame"""
+    """Read a CSV file from S3.
+
+    Parameters
+    ----------
+    bucket : str
+        S3 bucket name.
+    file : str
+        Object key within the bucket.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Loaded DataFrame.
+    """
     obj = s3_client.get_object(Bucket=bucket, Key=file)
     data = obj['Body'].read().decode('utf-8')
     return pd.read_csv(StringIO(data))
 
 def read_parquet_from_s3(bucket, file):
-    """Reads parket from an S3 bucket and returns a DataFrame"""
+    """Read a Parquet file from S3.
+
+    Parameters
+    ----------
+    bucket : str
+        S3 bucket name.
+    file : str
+        Object key within the bucket.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Loaded DataFrame.
+    """
     obj = s3_client.get_object(Bucket=bucket, Key=file)
     data = obj['Body'].read()
     return pd.read_parquet(io.BytesIO(data))
 
 def prepare_emissions_controls(df):
-    """
-    Given a DataFrame with emissions data, returns a dictionary
-    with control values for vessel types and date ranges.
+    """Build control options for the emissions tab.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Emissions data including ``StandardVesselType`` and ``year_month``.
+
+    Returns
+    -------
+    dict
+        Dictionary of control values such as vessel types and date range info.
     """
 
     # Vessel types
@@ -163,9 +224,17 @@ def prepare_emissions_controls(df):
     }
 
 def prepare_waiting_time_controls(df):
-    """
-    Given a DataFrame with waiting data, returns a dictionary
-    with control values for vessel types and date ranges.
+    """Build control options for waiting time and service time tabs.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Waiting/service time data with ``StandardVesselType``, ``stop_area`` and ``year_month``.
+
+    Returns
+    -------
+    dict
+        Dictionary of control values including vessel types, stop areas and date range info.
     """
 
     # Vessel types
@@ -208,9 +277,17 @@ def prepare_waiting_time_controls(df):
     }
 
 def prepare_energy_controls(df):
-    """
-    Given a DataFrame with energy demand data, returns a dictionary
-    with control values for origin (country_before), destination (country_after), and date ranges.
+    """Build control options for the energy tab.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Energy demand data with country codes and ``year_week``.
+
+    Returns
+    -------
+    dict
+        Control values for origin/destination countries and date ranges.
     """
     # Unique origin and destination countries (use full names for controls)
     country_before = sorted(df['country_before_name'].unique())
@@ -245,7 +322,18 @@ def prepare_energy_controls(df):
     }
 
 def _yw_to_month(yw: int) -> int:
-    """Convert YYYYWW to YYYYMM for month based sliders."""
+    """Convert ``YYYYWW`` integers to ``YYYYMM`` format.
+
+    Parameters
+    ----------
+    yw : int
+        Year-week integer.
+
+    Returns
+    -------
+    int
+        Year-month integer for slider controls.
+    """
     year = int(str(yw)[:4])
     week = int(str(yw)[4:])
     date_val = datetime.date.fromisocalendar(year, week, 1)
@@ -253,7 +341,18 @@ def _yw_to_month(yw: int) -> int:
 
 
 def prepare_explorer_controls(df_emissions, df_waiting, df_energy):
-    """Prepare controls for the explorer tab."""
+    """Assemble control options for the explorer tab.
+
+    Parameters
+    ----------
+    df_emissions, df_waiting, df_energy : pandas.DataFrame
+        Datasets used for emissions, waiting/service times and energy.
+
+    Returns
+    -------
+    dict
+        Control metadata including sources and date/week ranges.
+    """
     energy_months = [_yw_to_month(yw) for yw in df_energy["year_week"]]
     all_months = sorted(
         set(df_emissions["year_month"]).union(df_waiting["year_month"]).union(energy_months)
@@ -336,23 +435,31 @@ controls_explorer = prepare_explorer_controls(
 # ========================== 5️⃣ MAP PROCESSING ==========================
 
 def h3_to_polygon(h3_index):
-    """Converts an H3 index to a Shapely Polygon."""
+    """Convert an H3 index to a Shapely ``Polygon``.
+
+    Parameters
+    ----------
+    h3_index : int | str
+        H3 index as integer or hexadecimal string.
+
+    Returns
+    -------
+    Polygon
+        Polygon representing the cell.
+    """
     boundary = cell_to_boundary(h3_index)
     return Polygon([(lng, lat) for lat, lng in boundary])
 
+
 def generate_unique_polygons(df_with_resolution_id):
-    """
-    Generates a GeoDataFrame with unique resolution_id polygons.
-    Only needs to be run once at app startup.
-    """
+    """Create GeoDataFrame of unique ``resolution_id`` polygons."""
     unique_ids = df_with_resolution_id[["resolution_id"]].drop_duplicates().copy()
     unique_ids["geometry"] = unique_ids["resolution_id"].apply(h3_to_polygon)
     return gpd.GeoDataFrame(unique_ids, geometry="geometry", crs="EPSG:4326")
 
+
 def create_geojson_template(geo_df):
-    """
-    Converts a GeoDataFrame to a GeoJSON dictionary.
-    """
+    """Convert a GeoDataFrame to a GeoJSON dictionary."""
     return json.loads(geo_df.to_json())
 
 unique_polygons_gdf = generate_unique_polygons(df_emissions)
@@ -385,215 +492,9 @@ server = app.server
 # This ensures correct URLs when the app is served behind a proxy
 server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1, x_host=1)
 
-# ========================== PRIVACY NOTICE ROUTE ==========================
+# Register additional routes
+routes.register_routes(app)
 
-@app.server.route("/privacy")
-def privacy():
-    """Serve the privacy notice page."""
-    html_doc = """
-    <html>
-    <head>
-        <title>Privacy Notice – Panama Canal Analytics</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 760px;
-                margin: 0 auto;
-                padding: 24px;
-                background-color: #f8f9fa;
-            }
-            .container {
-                background: white;
-                padding: 32px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            h1 {
-                color: #007bff;
-                border-bottom: 2px solid #007bff;
-                padding-bottom: 8px;
-            }
-            h2 {
-                color: #495057;
-                margin-top: 24px;
-            }
-            ul {
-                padding-left: 20px;
-            }
-            li {
-                margin-bottom: 8px;
-            }
-            .back-link {
-                display: inline-block;
-                margin-top: 24px;
-                color: #007bff;
-                text-decoration: none;
-                font-weight: 500;
-            }
-            .back-link:hover {
-                text-decoration: underline;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Privacy Notice – Panama Canal Analytics</h1>
-            
-            <p><strong>Controller:</strong>  Panama Canal Analytics Team</p>
-            <p><strong>Contact:</strong> gabriel.fuentes@nhh.no</p>
-            
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>1. What we collect</h2>
-            <p>When you download data from our platform, we collect the following information:</p>
-            <ul>
-                <li>Country (as provided in the form)</li>
-                <li>Purpose of the download (as provided in the form)</li>
-                <li>Email address (if you choose to provide it; immediately hashed, see below)</li>
-            </ul>
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>2. How we process your email</h2>
-            <ul>
-                <li>Your email is immediately converted into a secure one-way hash (SHA-256).</li>
-                <li>We never store or use your actual email.</li>
-                <li>The hash cannot be reversed into your original email, but it allows us to:</li>
-                <ul>
-                    <li>Track unique downloads</li>
-                    <li>Deduplicate repeated requests</li>
-                    <li>Generate anonymised statistics</li>
-                </ul>
-            </ul>
-            <p>Your email (or its hash) is never used for marketing, sales, or third-party sharing.</p>
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>3. Purpose of processing</h2>
-            <p>We process your data to:</p>
-            <ul>
-                <li>Understand usage by region and purpose</li>
-                <li>Generate anonymised statistics to improve our platform</li>
-                <li>Track unique users while avoiding storage of personal identifiers</li>
-            </ul>
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>4. Legal basis</h2>
-            <p>We rely on your consent (GDPR Art. 6(1)(a)) for collecting and processing your email for analytics purposes.</p>
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>5. Retention</h2>
-            <p>We retain data only as long as necessary to fulfil the purposes described in this notice.</p>
-            <p>We periodically review our datasets and delete records that are no longer required.</p>
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>6. Sharing and transfers</h2>
-            <ul>
-                <li>We may use trusted service providers (e.g. cloud hosting, storage) under strict data processing agreements.</li>
-                <li>We do not sell or share your data with third parties.</li>
-                <li>Where data is transferred outside the EEA, we rely on Standard Contractual Clauses to safeguard your rights.</li>
-            </ul>
-
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;">
-            
-            <h2>7. Your rights</h2>
-            <p>Under GDPR and applicable U.S. data protection laws, you have the right to:</p>
-            <ul>
-                <li>Access, correct, or delete your data</li>
-                <li>Restrict or object to processing</li>
-                <li>Withdraw your consent at any time (by contacting us)</li>
-                <li>Request portability of your data in certain circumstances</li>
-                <li>Lodge a complaint with your local data protection authority</li>
-            </ul>
-            
-            <a href="/explorer" class="back-link">← Back to Dashboard</a>
-        </div>
-    </body>
-    </html>
-    """
-    return html_doc
-
-# ========================== DATA DICTIONARY DOWNLOAD ROUTE ==========================
-
-@app.server.route("/download-data-dictionary")
-def download_data_dictionary():
-    """Serve the data dictionary as a text file."""
-    data_dictionary = """
-PANAMA CANAL ANALYTICS - DATA DICTIONARY
-========================================
-
-This document provides detailed information about the data sources and variables available in the Panama Canal Analytics dashboard.
-
-DATA SOURCES
-===========
-
-1. EMISSIONS DATA
------------------
-Source: Maritime vessel emissions data from Panama Canal operations
-Description: CO2 equivalent emissions data aggregated by vessel type, location, and time period
-
-Variables:
-- Year: Calendar year of the emission measurement
-- Month: Calendar month (1-12) of the emission measurement  
-- Resolution Id: H3 geospatial index identifier for location-based aggregation
-- StandardVesselType: Standardized classification of vessel type (e.g., Container, Oil tanker, Bulk Carrier)
-- Co2 Equivalent T: Total CO2 equivalent emissions in tonnes
-- Year Month: Combined year-month identifier in YYYYMM format (e.g., 202301 for January 2023)
-
-2. WAITING AND SERVICE TIME DATA
---------------------
-Source: Panama Canal vessel transit and waiting time records
-Description: Vessel waiting times and service times at different canal locations and stop areas
-
-Variables:
-- Year: Calendar year of the time measurement
-- Month: Calendar month (1-12) of the time measurement
-- StandardVesselType: Standardized classification of vessel type
-- Stop Area: Specific location or area where vessels wait (e.g., PPC Balboa, MIT, Panama Canal South Transit)
-- Service Time: Time in hours that vessels spend in active service/transit
-- Waiting Time: Time in hours that vessels spend waiting before service
-- Sample Size: Number of vessels included in the aggregated measurement
-- Neo Transit: Indicator for new/neo vessel transit classification
-- Year Month: Combined year-month identifier in YYYYMM format
-
-3. ENERGY DATA
---------------
-Source: Energy demand data for maritime operations in Panama Canal region
-Description: Energy consumption data aggregated by origin/destination countries and time periods
-
-Variables:
-- Year: Calendar year of the energy measurement
-- Week: ISO week number (1-53) of the energy measurement
-- Country Before: ISO-2 country code for origin country
-- Country After: ISO-2 country code for destination country
-- Sum Energy: Total energy consumption in kilowatt-hours (kWh) between two nodes
-- Year Week: Combined year-week identifier in YYYYWW format (e.g., 202301 for week 1 of 2023)
-- Year Month: Combined year-month identifier derived from year-week
-- Country Before Name: Full country name for origin country
-- Country After Name: Full country name for destination country
-
-DATA QUALITY NOTES
-=================
-- All time-based variables use consistent date formatting (YYYYMM for months, YYYYWW for weeks)
-- Vessel types follow standardized maritime classification system
-- Geographic data uses H3 hexagonal grid system for spatial aggregation
-- Energy data includes both origin and destination country information for route analysis
-- Sample sizes are provided for waiting/service time data to indicate data reliability
-
-"""
-    
-    from flask import Response
-    return Response(
-        data_dictionary,
-        mimetype='text/plain',
-        headers={'Content-Disposition': 'attachment; filename=data_dictionary.txt'}
-    )
 
 # Inline the local stylesheet and preload external CSS to minimise
 # render-blocking resources.
@@ -688,7 +589,18 @@ callbacks_energy.setup_energy_callbacks(
     prevent_initial_call=False
 )
 def update_tab(pathname):
-    """Update name of the tab based on URL"""
+    """Map the current URL to a tab name.
+
+    Parameters
+    ----------
+    pathname : str
+        URL path from ``dcc.Location``.
+
+    Returns
+    -------
+    str
+        Tab identifier.
+    """
     if pathname is None or pathname == "/" or pathname == "/emissions":
         return "emissions"
     
@@ -710,7 +622,18 @@ def update_tab(pathname):
     Input("initial-delay", "n_intervals")
 )
 def show_main_content(n_intervals):
-    """Show the main content after initial delay"""
+    """Display the main content after a loading delay.
+
+    Parameters
+    ----------
+    n_intervals : int | None
+        Number of elapsed intervals from an ``Interval`` component.
+
+    Returns
+    -------
+    dash.html.Div | str
+        Loading container or empty string once ready.
+    """
     if n_intervals is None or n_intervals == 0:
         return html.Div([
             html.H4("Loading main content...", className="text-center text-muted"),
@@ -726,7 +649,20 @@ def show_main_content(n_intervals):
     Input("url", "pathname"),
 )
 def update_navigation_bar(selected_tab, pathname):
-    """Update the navigation bar based on the current tab and URL"""
+    """Generate navigation bar items based on tab selection or URL.
+
+    Parameters
+    ----------
+    selected_tab : str
+        Currently selected tab from store.
+    pathname : str
+        Current URL path.
+
+    Returns
+    -------
+    Component
+        Navigation bar with the active tab highlighted.
+    """
     # If we have a URL, use it to determine the active tab
     if pathname and pathname != "/":
         pathname = pathname.lstrip('/')
@@ -748,7 +684,18 @@ def update_navigation_bar(selected_tab, pathname):
     prevent_initial_call=True
 )
 def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks):
-    """Update URL when tabs are clicked"""
+    """Update browser URL when navigation tabs are clicked.
+
+    Parameters
+    ----------
+    emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks : int | None
+        Click counts for each navigation tab.
+
+    Returns
+    -------
+    str
+        New pathname reflecting the active tab.
+    """
     # Check if any actual clicks occurred (not just initial rendering)
     all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks]
     if all(click is None for click in all_clicks):
@@ -768,7 +715,18 @@ def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, en
     prevent_initial_call=True
 )
 def handle_initial_url(pathname):
-    """Handle initial URL load and redirects"""
+    """Handle initial URL loading and fallback routing.
+
+    Parameters
+    ----------
+    pathname : str
+        Initial path from the browser.
+
+    Returns
+    -------
+    str
+        Valid pathname within the application.
+    """
     if pathname is None or pathname == "/":
         return "/emissions"
     # If it's a valid path, just return it to keep it
@@ -787,7 +745,20 @@ def handle_initial_url(pathname):
 )
 
 def update_tab_content(selected_tab, n_intervals):
-    """Update the dashboard depending on the different tabs."""
+    """Render layout components for the selected tab.
+
+    Parameters
+    ----------
+    selected_tab : str
+        Active tab identifier.
+    n_intervals : int | None
+        Number of intervals elapsed; used to delay rendering.
+
+    Returns
+    -------
+    dash.html.Div | str
+        Layout for the selected tab or empty string during initial delay.
+    """
     # Don't show content until initial delay is complete
     if n_intervals is None or n_intervals == 0:
         return ""
@@ -840,8 +811,17 @@ def update_tab_content(selected_tab, n_intervals):
     Input("tutorial-store", "data")
 )
 def display_tutorial(step):
-    """
-    Display the tutorial modal and popover.
+    """Show tutorial modal and popover based on current step.
+
+    Parameters
+    ----------
+    step : str | None
+        Current tutorial step stored in ``dcc.Store``.
+
+    Returns
+    -------
+    tuple[bool, bool]
+        Modal open state and popover open state.
     """
     if step is None:
         return True, False
@@ -856,8 +836,19 @@ def display_tutorial(step):
     prevent_initial_call=True
 )
 def update_tutorial(start_click, next_click, current):
-    """
-    Update the tutorial step.
+    """Advance tutorial steps based on user interaction.
+
+    Parameters
+    ----------
+    start_click, next_click : int | None
+        Click counts for tutorial buttons.
+    current : str | None
+        Current tutorial state.
+
+    Returns
+    -------
+    str | None
+        Updated step identifier.
     """
     triggered = ctx.triggered_id
     if triggered == "btn-tutorial-start":
@@ -875,8 +866,19 @@ def update_tutorial(start_click, next_click, current):
     prevent_initial_call=True
 )
 def toggle_chart_modal(open_clicks, close_clicks, is_open):
-    """
-    Toggle the chart modal.
+    """Toggle the full-screen chart modal.
+
+    Parameters
+    ----------
+    open_clicks, close_clicks : int | None
+        Click counts for open/close buttons.
+    is_open : bool
+        Current modal visibility state.
+
+    Returns
+    -------
+    bool
+        Updated open state.
     """
     trigger = ctx.triggered_id
     if trigger and trigger.get("type") == "open-fullscreen":
