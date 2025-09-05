@@ -24,7 +24,6 @@ def build_header():
                 alt="SENACYT Logo",
                 width = "275px",
                 height = "60px",
-                #style="margin-left: auto;"
             )
         ], className="d-flex d-md-none mb-3"),  # Show on xs-md only
 
@@ -113,19 +112,13 @@ def build_about_us():
     """
     return dbc.Container([
         html.Br(),
-
-
-
         html.P(
             "This dashboard is inspired by the study "
             "'Greenhouse Gas Mitigation at Maritime Chokepoints: The Case of the Panama Canal', "
             "led by Gabriel Fuentes. The goal is to visualize maritime emissions and performance "
             "indicators to support sustainable shipping practices and informed decision-making."
         ),
-
-
         html.Br(),
-
         dbc.Row([
             dbc.Col([
                 html.Img(
@@ -193,12 +186,12 @@ def build_about_us():
                 html.P(
                     "The Maritime Technology Cooperation Centre for Latin America (MTCC Caribbean) "
                     "operates within the Universidad Marítima Internacional de Panama (UMIP), "
-                    "serving as a center for maritime industry training and coastal marine studies. "
-                    "Strategically located near the Port of Panama City, MTCC Latin America focuses "
-                    "on all aspects of the maritime sector including shipping, maritime infrastructure, "
-                    "services, and environmental protection. The center plays a crucial role in "
-                    "promoting sustainable maritime practices and technological cooperation across "
-                    "the Latin American region."
+                    "serving as a center for maritime industry training and coastal marine studies."
+                    " Strategically located near the Port of Panama City, MTCC Latin America "
+                    "focuses on all aspects of the maritime sector including shipping, maritime "
+                    "infrastructure, services, and environmental protection. The center plays a "
+                    "crucial role in promoting sustainable maritime practices and technological "
+                    "cooperation across the Latin American region."
                 )
             ], xs=12, md=12, lg=9, width=9)
         ], className="mb-4 g-4"),
@@ -261,7 +254,8 @@ def build_about_us():
             html.Strong("Autoridad del Canal de Panamá"),
             ", and ",
             html.Strong("UN Big Data Group"),
-            ". We extend our gratitude to these institutions for their valuable contributions and support in making this project possible."
+            ". We extend our gratitude to these institutions for their "
+            "valuable contributions and support in making this project possible."
         ], style={
             "fontSize": "1rem",
             "lineHeight": "1.6",
@@ -271,16 +265,9 @@ def build_about_us():
         html.Br()
     ], className="")
 
-
 def build_navigation_bar(active_tab="emissions"):
     """
     Build the navigation bar of the dashboard.
-    - Emissions
-    - Waiting Time
-    - Service Time
-    - Energy
-    - Explorer
-    - About Us
     """
     return dbc.Nav(
         [
@@ -319,6 +306,36 @@ def build_navigation_bar(active_tab="emissions"):
         vertical=False,
         className="mb-3"
     )
+
+def build_tutorial_components():
+    """
+    Build the tutorial components of the dashboard.
+    """
+    return html.Div([
+        dcc.Store(id="tutorial-store", storage_type="local"),
+        dbc.Modal([
+            dbc.ModalHeader("Welcome to the Dashboard"),
+            dbc.ModalBody(
+                "Use the filters and charts to explore the data.",
+                style={"backgroundColor": "#f8f9fa"},
+            ),
+            dbc.ModalFooter(
+                dbc.Button("Start", id="btn-tutorial-start", color="primary")
+            ),
+        ], id="modal-welcome", backdrop="static", is_open=False),
+        dbc.Popover([
+            dbc.PopoverHeader("Filters"),
+            dbc.PopoverBody(
+                [
+                    html.P("You can move the filters to change the data."),
+                    dbc.Button("Done", id="btn-tutorial-next-filters",
+                        size="sm", color="primary", className="mt-2"),
+                ],
+                style={"backgroundColor": "#f8f9fa"},
+            ),
+        ], id="popover-filters", target="tutorial-filters-target",
+        placement="right", is_open=False),
+    ])
 
 # ============================
 # Funcitons for the charts and KPIs
@@ -525,7 +542,6 @@ def create_standard_table_container(table):
                 )
             )
         ),
-        
         # Data Dictionary Download Link
         html.Div([
             html.Hr(style={"margin": "20px 0 15px 0"}),
@@ -542,7 +558,8 @@ def create_standard_table_container(table):
                         "fontFamily": "system-ui, sans-serif"
                     }
                 ),
-                html.I(className="bi bi-box-arrow-up-right ms-1", style={"fontSize": "0.8rem", "color": "#666"})
+                html.I(className="bi bi-box-arrow-up-right ms-1",
+                style={"fontSize": "0.8rem", "color": "#666"})
             ], style={"display": "flex", "alignItems": "center"})
         ], style={"marginTop": "10px"})
     ], className="border p-4 m-0 g-0")
@@ -596,7 +613,6 @@ def build_sidebar_emissions(controls):
         html.Br(),
         controls_emissions.build_button_refresh_charts(),
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
-
 
 def build_main_container_emissions():
     """
@@ -688,7 +704,6 @@ def build_sidebar_waiting_times(controls):
 
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
-
 def build_main_container_waiting_times():
     """
     Here we only have statick content, with the tags
@@ -736,6 +751,56 @@ def build_main_container_waiting_times():
         ])
         ], xs=12, md=12, lg=10, width=10)
 
+def build_main_container_service_times():
+    """
+    Here we only have statick content, with the tags
+    - KPI grid
+    - Chart grid
+    """
+    return dbc.Col([
+        build_chart_grid([
+            {
+                "id": "time--chart--1",
+                "title": "Average Monthly Service Time", 
+                "subtitle": "HOURS",
+                "description": (
+                    "Average time (in hours) that vessels spend being served at "
+                    "ports. This is estimated from the difference between the "
+                    "timestamps of a vessel entering and leaving a port polygon. "
+                    "It provides an indicator for tracking operational efficiency "
+                    "over time."
+                )
+            },
+            {
+                "id": "time--chart--2",
+                "title": "Service Time by Stop Area", 
+                "subtitle": "HOURS",
+                "description": (
+                    "Average time (in hours) vessels spend being served at ports. "
+                    "The graph is segmented by ports, highlighting areas with longer "
+                    "or shorter operation times."
+                )
+            },
+            {
+                "id": "time--chart--3",
+                "title": "Service Time by Vessel Typel", 
+                "subtitle": "HOURS",
+                "description": (
+                    "Average service time per vessel type. Shows how long different "
+                    "types of vessels typically remain in service zones."
+                )
+            },
+            {
+                "id": "time--chart--4",
+                "title": "Service Time Series by Vessel Type", 
+                "subtitle": "HOURS",
+                "description": (
+                    "Monthly time series of service time by vessel type. Useful to "
+                    "detect shifts in operational behavior or service efficiency."
+                )
+            },
+        ])
+        ], xs=12, md=12, lg=10, width=10)
 
 # ===========================
 # Energy
@@ -771,7 +836,6 @@ def build_sidebar_energy(controls):
         html.Br(),
         controls_emissions.build_button_refresh_charts()
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
-
 
 def build_main_container_energy():
     """
@@ -830,60 +894,6 @@ def build_main_container_energy():
         ])
         ], className="p-0", xs=12, md=12, lg=10, width=10)
 
-# ===========================
-# Service Times
-
-def build_main_container_service_times():
-    """
-    Here we only have statick content, with the tags
-    - KPI grid
-    - Chart grid
-    """
-    return dbc.Col([
-        build_chart_grid([
-            {
-                "id": "time--chart--1",
-                "title": "Average Monthly Service Time", 
-                "subtitle": "HOURS",
-                "description": (
-                    "Average time (in hours) that vessels spend being served at "
-                    "ports. This is estimated from the difference between the "
-                    "timestamps of a vessel entering and leaving a port polygon. "
-                    "It provides an indicator for tracking operational efficiency "
-                    "over time."
-                )
-            },
-            {
-                "id": "time--chart--2",
-                "title": "Service Time by Stop Area", 
-                "subtitle": "HOURS",
-                "description": (
-                    "Average time (in hours) vessels spend being served at ports. "
-                    "The graph is segmented by ports, highlighting areas with longer "
-                    "or shorter operation times."
-                )
-            },
-            {
-                "id": "time--chart--3",
-                "title": "Service Time by Vessel Typel", 
-                "subtitle": "HOURS",
-                "description": (
-                    "Average service time per vessel type. Shows how long different "
-                    "types of vessels typically remain in service zones."
-                )
-            },
-            {
-                "id": "time--chart--4",
-                "title": "Service Time Series by Vessel Type", 
-                "subtitle": "HOURS",
-                "description": (
-                    "Monthly time series of service time by vessel type. Useful to "
-                    "detect shifts in operational behavior or service efficiency."
-                )
-            },
-        ])
-        ], xs=12, md=12, lg=10, width=10)
-
 
 # ===========================
 # Explorer
@@ -911,7 +921,6 @@ def build_sidebar_explorer(controls):
         controls_explorer.build_download_modal(),
         dcc.Download(id="explorer--download")
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
-
 
 def build_main_container_explorer():
     """Main container for the explorer tab."""
@@ -949,42 +958,8 @@ def build_main_container_explorer():
     ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
-
 # ============================
-
-
-
-def build_tutorial_components():
-    """
-    Build the tutorial components of the dashboard.
-    """
-    return html.Div([
-        dcc.Store(id="tutorial-store", storage_type="local"),
-        dbc.Modal([
-            dbc.ModalHeader("Welcome to the Dashboard"),
-            dbc.ModalBody(
-                "Use the filters and charts to explore the data.",
-                style={"backgroundColor": "#f8f9fa"},
-            ),
-            dbc.ModalFooter(
-                dbc.Button("Start", id="btn-tutorial-start", color="primary")
-            ),
-        ], id="modal-welcome", backdrop="static", is_open=False),
-        dbc.Popover([
-            dbc.PopoverHeader("Filters"),
-            dbc.PopoverBody(
-                [
-                    html.P("You can move the filters to change the data."),
-                    dbc.Button("Done", id="btn-tutorial-next-filters",
-                        size="sm", color="primary", className="mt-2"),
-                ],
-                style={"backgroundColor": "#f8f9fa"},
-            ),
-        ], id="popover-filters", target="tutorial-filters-target",
-        placement="right", is_open=False),
-    ])
-
-
+# Main layout content
 
 def build_main_layout_content():
     """
