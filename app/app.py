@@ -471,7 +471,7 @@ app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
-    title="Panama Canal Analytics",  # This sets the browser tab title
+    title="Maritime Analytics",  # This sets the browser tab title
     url_base_pathname=None,  # Allow URL routing
     routes_pathname_prefix='/',
     compress=True,  # Enable compression
