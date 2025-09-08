@@ -85,7 +85,15 @@ def build_footer():
                     "\"Green Shipping Corridors in the Panama Canal under Climate Risk\"",
                     style={"fontWeight": "bold"}
                 ),
-                ", partly sponsored by SENACYT under project number 060/2024.",
+                ", partly sponsored by SENACYT under project number 060/2024 "
+                "and with AIS data provided by the ",
+                html.A(
+                    "UN Global Platform",
+                    href="https://unstats.un.org/bigdata/un-global-platform.cshtml",
+                    target="_blank",
+                    style={"textDecoration": "underline"}
+                ),
+                ".",
                 html.Br(),
                 html.Br(),
                 "The results and information presented herein are provided for informational "
