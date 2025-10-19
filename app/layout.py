@@ -856,10 +856,10 @@ def build_main_container_energy():
         build_chart_grid([
             {
                 "id": "energy--chart--1",
-                "title": "Total Weekly Energy Transported",
+                "title": "Total Weekly Energy Demand",
                 "subtitle": "kWh",
                 "description": (
-                    "Total amount of energy (in kWh) transported along all routes that "
+                    "Total amount of energy (in kWh) demand of vessels along all routes that "
                     "are connected with and by a country of reference. For instance, "
                     "if Panama is the country of reference, then the energy consumed by "
                     "vessels calling to a from Panama are summarized in here. Highlights "
@@ -868,11 +868,11 @@ def build_main_container_energy():
                 },
             {
                 "id": "energy--chart--2",
-                "title": "Energy Transported by Vessels via Panama",
+                "title": "Energy Demand of Vessels via Panama",
                 "subtitle": "kWh",
                 "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart2"),
                 "description": (
-                    "Energy transported by country that connects with the country of reference. "
+                    "Energy demand of vessels by country that connects with the country of reference. "
                     "Shows which routes are major energy consumers and touches upon the country "
                     "of reference. This information signals candidates for Green Maritime "
                     "Corridors."
@@ -880,7 +880,7 @@ def build_main_container_energy():
             },
             {
                 "id": "energy--chart--3",
-                "title": "Energy Transported by Vessels via Panama",
+                "title": "Energy Demand by Vessels via Panama",
                 "subtitle": "kWh",
                 "controls": controls_energy.build_country_role_dropdown("energy--dropdown-chart3"),
                 "description": (
