@@ -32,7 +32,7 @@ def build_header():
             dbc.Col([
                 html.Div([
                     html.H1(
-                        "Panama Maritime Statistics",
+                        "SEAnalytics",
                         style={
                             "margin": 0,
                             "fontSize": "2.75rem",  # or 1.75rem
@@ -41,7 +41,7 @@ def build_header():
                         }
                     ),
                     html.H4(
-                        "Efficiency and Sustainability Indicators",
+                        "Shipping Energy Analytics",
                         style={
                             "margin": 0,
                             "fontWeight": 500,
@@ -70,8 +70,21 @@ def build_header():
                 })
             ], md=2)
         ], className="dashboard-header pb-4")
+    dbc.Row([
+            dbc.Col([
+                html.Div(
+                    "Country: Panama",
+                    style={
+                        "fontSize": "1rem",
+                        "fontWeight": 500,
+                        "fontFamily": "Arial, Helvetica, sans-serif",
+                        "paddingLeft": "4px"
+                    }
+                )
+            ], width="auto")
+        ], className="pb-4"),
     ], className="ps-4 pe-4 pt-4")
-
+    
 def build_footer():
     """
     Build the footer of the dashboard.
@@ -222,7 +235,7 @@ def build_about_us():
                     "organizations measure and monitor problems for better decision making. "
                     "They create solutions that contribute to generating positive impact in areas "
                     "such as health, economy, environment, energy, equity, and innovation. "
-                    "This dashboard was developed by their team to visualize maritime emissions "
+                    "This platform was developed by their team to visualize maritime emissions "
                     "and performance indicators, supporting sustainable shipping practices and "
                     "informed decision-making."
                 ),
@@ -249,7 +262,7 @@ def build_about_us():
         }),
 
         html.P([
-            "This dashboard was developed in collaboration with ",
+            "This platofrm was developed in collaboration with ",
             html.Strong("Norwegian School of Economics (NHH)"),
             ", ",
             html.Strong("Universidad Tecnológica de Panamá"),
@@ -323,7 +336,7 @@ def build_tutorial_components():
     return html.Div([
         dcc.Store(id="tutorial-store", storage_type="local"),
         dbc.Modal([
-            dbc.ModalHeader("Welcome to the Dashboard"),
+            dbc.ModalHeader("Welcome to SEAnalytics"),
             dbc.ModalBody(
                 "Use the filters and charts to explore the data.",
                 style={"backgroundColor": "#f8f9fa"},
