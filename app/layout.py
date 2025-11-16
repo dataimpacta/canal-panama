@@ -22,11 +22,12 @@ def build_header():
             html.Img(
                 src="/assets/Financing_Logo.webp",
                 alt="SENACYT Logo",
-                width = "275px",
-                height = "60px",
+                width="275px",
+                height="60px",
             )
-        ], className="d-flex d-md-none mb-3"),  # Show on xs-md only
+        ], className="d-flex d-md-none mb-3"),  # Show on xs–md only
 
+        # Main title + large-screen logo
         dbc.Row([
             # Title column
             dbc.Col([
@@ -35,9 +36,9 @@ def build_header():
                         "SEAnalytics",
                         style={
                             "margin": 0,
-                            "fontSize": "2.75rem",  # or 1.75rem
+                            "fontSize": "2.75rem",
                             "fontWeight": 700,
-                            "fontFamily": "Arial, Helvetica, sans-serif"  # system fonts = fast
+                            "fontFamily": "Arial, Helvetica, sans-serif",
                         }
                     ),
                     html.H4(
@@ -46,13 +47,13 @@ def build_header():
                             "margin": 0,
                             "fontWeight": 500,
                             "fontSize": "1.5rem",
-                            "fontFamily": "Arial, Helvetica, sans-serif"
+                            "fontFamily": "Arial, Helvetica, sans-serif",
                         }
-                    )
+                    ),
                 ])
             ], xs=12, md=10, lg=10),
 
-            # Logo column (only visible on lg and up)
+            # Logo column (only visible on md and up)
             dbc.Col([
                 html.Div([
                     html.Img(
@@ -62,15 +63,17 @@ def build_header():
                         height="70px",
                     )
                 ],
-                className="d-none d-md-flex",
-                style={
-                    "justifyContent": "flex-end",
-                    "alignItems": "center",
-                    "height": "100%"
-                })
-            ], md=2)
-        ], className="dashboard-header pb-4")
-    dbc.Row([
+                    className="d-none d-md-flex",
+                    style={
+                        "justifyContent": "flex-end",
+                        "alignItems": "center",
+                        "height": "100%",
+                    }
+                )
+            ], md=2),
+        ], className="dashboard-header pb-4"),
+        # Country row
+        dbc.Row([
             dbc.Col([
                 html.Div(
                     "Country: Panama",
@@ -78,12 +81,13 @@ def build_header():
                         "fontSize": "1rem",
                         "fontWeight": 500,
                         "fontFamily": "Arial, Helvetica, sans-serif",
-                        "paddingLeft": "4px"
-                    }
+                        "paddingLeft": "4px",
+                    },
                 )
-            ], width="auto")
+            ], width="auto"),
         ], className="pb-4"),
     ], className="ps-4 pe-4 pt-4")
+
     
 def build_footer():
     """
