@@ -112,7 +112,8 @@ def build_footer():
                 ),
                 ".",
                 html.Br(),
-                "This project is a spin-off and also kindly supported by the",
+                html.Br(),
+                "This project is a spin-off and also kindly supported by the ",
                 html.A(
                     "SFI Climate Futures",
                     href="https://www.climatefutures.no/en/home/",
@@ -209,7 +210,7 @@ def build_about_us():
                 dbc.Row([
             dbc.Col([
                 html.Img(
-                    src="/assets/climate_futures.jpg",
+                    src="/assets/climate_futures.png",
                     alt="SENACYT",
                     style={"width": "100%", "maxWidth": "200px"}
                 )
