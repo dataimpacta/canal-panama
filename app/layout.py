@@ -115,7 +115,7 @@ def build_footer():
                 html.Br(),
                 "This project is a spin-off and also kindly supported by the ",
                 html.A(
-                    "SFI Climate Futures",
+                    "SFI Climate Futures of Norway.",
                     href="https://www.climatefutures.no/en/home/",
                     target="_blank",
                     style={"textDecoration": "underline"}
