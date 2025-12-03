@@ -112,6 +112,14 @@ def build_footer():
                 ),
                 ".",
                 html.Br(),
+                "This project is a spin-off and also kindly supported by the",
+                html.A(
+                    "SFI Climate Futures",
+                    href="https://www.climatefutures.no/en/home/",
+                    target="_blank",
+                    style={"textDecoration": "underline"}
+                ),
+                html.Br(),
                 html.Br(),
                 "The results and information presented herein are provided for informational "
                 "purposes only and shall not be construed as assigning, implying, or establishing "
@@ -192,6 +200,29 @@ def build_about_us():
                     "SENACYT has been instrumental in providing resources and support for "
                     "projects aimed at sustainable development, including initiatives in maritime "
                     "emissions reduction."
+                )
+            ], xs=12, md=12, lg=9, width=9)
+        ], className="mb-4 g-4"),
+
+        html.Br(),
+
+                dbc.Row([
+            dbc.Col([
+                html.Img(
+                    src="/assets/climate_futures.jpg",
+                    alt="SENACYT",
+                    style={"width": "100%", "maxWidth": "200px"}
+                )
+            ], xs=12, md=12, lg=3, width=3),
+            dbc.Col([
+                html.H5("SFI Climate Futures"),
+                html.P(
+                    "Climate Futures is a Centre for Research-based Innovation (abbreviated SFI in Norwegian)," 
+                    "funded by the Research Council of Norway, and launched on October 1, 2020. Their goal is to"
+                    "generate long-term cooperation between companies, public organizations and research groups"
+                    "across sectors and disciplines to tackle one of the most urgent challenges of our time."
+                    "The Green Corridors project works in close integration and within the goals of the Smart Shipping"
+                    "node at the Climate Futures project."
                 )
             ], xs=12, md=12, lg=9, width=9)
         ], className="mb-4 g-4"),
