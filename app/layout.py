@@ -165,8 +165,10 @@ def build_about_us():
             dbc.Col([
                 html.H5("Gabriel Fuentes"),
                 html.P(
-                    "Assistant Professor at the Norwegian School of Economics (NHH), Gabriel "
+                    "Associate Professor at the Norwegian School of Economics (NHH), Gabriel "
                     "Fuentes specializes in maritime analytics and operations research. "
+                    "He is the Principal Investigator of the Green Shipping Corridors in the " 
+                    "Panama Canal under Climate Risk. "
                     "He co-authored the study that serves as the foundation for this dashboard. "
                     "His research focuses on improving operational efficiency to reduce emissions "
                     "in maritime transport."
