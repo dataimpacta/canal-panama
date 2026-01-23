@@ -241,9 +241,9 @@ def build_about_us():
             dbc.Col([
                 html.H5("MTCC Latin America"),
                 html.P(
-                    "The Maritime Technology Cooperation Centre for Latin America (MTCC Caribbean) "
-                    "operates within the Universidad Marítima Internacional de Panama (UMIP), "
-                    "serving as a center for maritime industry training and coastal marine studies."
+                    "The Maritime Technology Cooperation Centre for Latin America (MTCC Latin America) "
+                    "is one of five Cooperation centres coordinated by the International Maritime Organization (IMO)"
+                    "and operates within the Universidad Marítima Internacional de Panama (UMIP). "
                     " Strategically located near the Port of Balboa in Panama City, and the"
                     "Gulf of Panama entrance of the Panama Canal, MTCC Latin America focuses on all"
                     "aspects of the maritime sector including shipping, maritime"
