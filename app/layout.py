@@ -147,44 +147,15 @@ def build_about_us():
     return dbc.Container([
         html.Br(),
         html.P(
-            "This dashboard is inspired by the study "
-            "'Greenhouse Gas Mitigation at Maritime Chokepoints: The Case of the Panama Canal', "
-            "led by Gabriel Fuentes. The goal is to visualize maritime emissions and performance "
-            "indicators to support sustainable shipping practices and informed decision-making."
-        ),
-        html.Br(),
-        dbc.Row([
-            dbc.Col([
-                html.Img(
-                    src="/assets/gabriel_moises_fuentes.jpg",
-                    alt="Gabriel Fuentes",
-                    style={"width": "100%", "maxWidth": "150px", "borderRadius": "8px"}
-                )
-            ], xs=12, md=12, lg=3, width=3),
-
-            dbc.Col([
-                html.H5("Gabriel Fuentes"),
-                html.P(
-                    "Associate Professor at the Norwegian School of Economics (NHH), Gabriel "
-                    "Fuentes specializes in maritime analytics and operations research. "
-                    "He is the Principal Investigator of the Green Shipping Corridors in the " 
-                    "Panama Canal under Climate Risk. "
-                    "He co-authored the study that serves as the foundation for this dashboard. "
-                    "His research focuses on improving operational efficiency to reduce emissions "
-                    "in maritime transport."
-                ),
-                html.P([
-                    "Read the full study: ",
-                    html.A(
-                        "Greenhouse Gas Mitigation at Maritime Chokepoints",
-                        href="https://doi.org/10.1016/j.trd.2023.103694",
-                        target="_blank",
-                        style={"textDecoration": "underline"}
+            "This dashboard feeds from the methods of the study "
+            html.A(
+                "Greenhouse Gas Mitigation at Maritime Chokepoints",
+                href="https://doi.org/10.1016/j.trd.2023.103694",
+                target="_blank",
+                style={"textDecoration": "underline"}
                     )
                 ])
-            ], xs=12, md=12, lg=9, width=9)
-        ], className="mb-4 g-4"),
-
+        ),
         html.Br(),
 
         dbc.Row([
