@@ -286,7 +286,7 @@ def build_about_us():
             ", and ",
             html.Strong("UN Big Data Group"),
             ". We extend our gratitude to these institutions for their "
-            "valuable contributions and support in making this project possible."
+            "valuable contributions and support."
         ], style={
             "fontSize": "1rem",
             "lineHeight": "1.6",
