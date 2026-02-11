@@ -147,7 +147,7 @@ def build_about_us():
     return dbc.Container([
         html.Br(),
         html.P(
-            "This dashboard feeds from the methods of the study "
+            "This dashboard feeds from the methods of the study ",
             html.A(
                 "Greenhouse Gas Mitigation at Maritime Chokepoints",
                 href="https://doi.org/10.1016/j.trd.2023.103694",
