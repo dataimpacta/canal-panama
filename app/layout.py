@@ -146,16 +146,18 @@ def build_about_us():
     """
     return dbc.Container([
         html.Br(),
-        html.P(
+
+        html.P([
             "This dashboard feeds from the methods of the study ",
             html.A(
                 "Greenhouse Gas Mitigation at Maritime Chokepoints",
                 href="https://doi.org/10.1016/j.trd.2023.103694",
                 target="_blank",
-                style={"textDecoration": "underline"}
-                    )
-                ])
-        ),
+                style={"textDecoration": "underline"},
+            ),
+            "."
+        ]),
+
         html.Br(),
 
         dbc.Row([
@@ -166,6 +168,7 @@ def build_about_us():
                     style={"width": "100%", "maxWidth": "200px"}
                 )
             ], xs=12, md=12, lg=3, width=3),
+
             dbc.Col([
                 html.H5("SENACYT"),
                 html.P(
@@ -175,30 +178,31 @@ def build_about_us():
                     "projects aimed at sustainable development, including initiatives in maritime "
                     "emissions reduction."
                 )
-            ], xs=12, md=12, lg=9, width=9)
+            ], xs=12, md=12, lg=9, width=9),
         ], className="mb-4 g-4"),
 
         html.Br(),
 
-                dbc.Row([
+        dbc.Row([
             dbc.Col([
                 html.Img(
                     src="/assets/climate_futures.png",
-                    alt="SENACYT",
+                    alt="SFI Climate Futures",
                     style={"width": "100%", "maxWidth": "200px"}
                 )
             ], xs=12, md=12, lg=3, width=3),
+
             dbc.Col([
                 html.H5("SFI Climate Futures"),
                 html.P(
-                    "Climate Futures is a Centre for Research-based Innovation (abbreviated SFI in Norwegian)," 
-                    "funded by the Research Council of Norway, and launched on October 1, 2020. Their goal is to"
-                    "generate long-term cooperation between companies, public organizations and research groups"
-                    "across sectors and disciplines to tackle one of the most urgent challenges of our time."
-                    "The Green Corridors project works in close integration and within the goals of the Smart Shipping"
+                    "Climate Futures is a Centre for Research-based Innovation (abbreviated SFI in Norwegian), "
+                    "funded by the Research Council of Norway, and launched on October 1, 2020. Their goal is to "
+                    "generate long-term cooperation between companies, public organizations and research groups "
+                    "across sectors and disciplines to tackle one of the most urgent challenges of our time. "
+                    "The Green Corridors project works in close integration and within the goals of the Smart Shipping "
                     "node at the Climate Futures project."
                 )
-            ], xs=12, md=12, lg=9, width=9)
+            ], xs=12, md=12, lg=9, width=9),
         ], className="mb-4 g-4"),
 
         html.Br(),
@@ -211,20 +215,19 @@ def build_about_us():
                     style={"width": "100%", "maxWidth": "200px"}
                 )
             ], xs=12, md=12, lg=3, width=3),
+
             dbc.Col([
                 html.H5("MTCC Latin America"),
                 html.P(
                     "The Maritime Technology Cooperation Centre for Latin America (MTCC Latin America) "
-                    "is one of five Cooperation centres coordinated by the International Maritime Organization (IMO)"
+                    "is one of five cooperation centres coordinated by the International Maritime Organization (IMO) "
                     "and operates within the Universidad Marítima Internacional de Panama (UMIP). "
-                    " Strategically located near the Port of Balboa in Panama City, and the"
-                    "Gulf of Panama entrance of the Panama Canal, MTCC Latin America focuses on all"
-                    "aspects of the maritime sector including shipping, maritime"
-                    "infrastructure, services, and environmental protection. The center plays a "
-                    "crucial role in promoting sustainable maritime practices and technological "
-                    "cooperation across the Latin American region."
+                    "Strategically located near the Port of Balboa in Panama City and the Gulf of Panama entrance of the Panama Canal, "
+                    "MTCC Latin America focuses on all aspects of the maritime sector including shipping, maritime "
+                    "infrastructure, services, and environmental protection. The centre plays a crucial role in promoting "
+                    "sustainable maritime practices and technological cooperation across the Latin American region."
                 )
-            ], xs=12, md=12, lg=9, width=9)
+            ], xs=12, md=12, lg=9, width=9),
         ], className="mb-4 g-4"),
 
         html.Br(),
@@ -237,6 +240,7 @@ def build_about_us():
                     style={"width": "100%", "maxWidth": "200px"}
                 )
             ], xs=12, md=12, lg=3, width=3),
+
             dbc.Col([
                 html.H5("Data Impacta"),
                 html.P(
@@ -257,21 +261,24 @@ def build_about_us():
                         style={"textDecoration": "underline"}
                     )
                 ])
-            ], xs=12, md=12, lg=9, width=9)
+            ], xs=12, md=12, lg=9, width=9),
         ], className="mb-4 g-4"),
 
         html.Br(),
 
-        html.H4("Collaboration with", style={
-            "fontWeight": "bold",
-            "color": "#333",
-            "marginTop": "2rem",
-            "marginBottom": "1rem",
-            "fontFamily": "Arial, Helvetica, sans-serif"
-        }),
+        html.H4(
+            "Collaboration with",
+            style={
+                "fontWeight": "bold",
+                "color": "#333",
+                "marginTop": "2rem",
+                "marginBottom": "1rem",
+                "fontFamily": "Arial, Helvetica, sans-serif",
+            },
+        ),
 
         html.P([
-            "This platofrm was developed in collaboration with ",
+            "This platform was developed in collaboration with ",
             html.Strong("Norwegian School of Economics (NHH)"),
             ", ",
             html.Strong("Universidad Tecnológica de Panamá"),
@@ -285,15 +292,14 @@ def build_about_us():
             html.Strong("Autoridad del Canal de Panamá"),
             ", and ",
             html.Strong("UN Big Data Group"),
-            ". We extend our gratitude to these institutions for their "
-            "valuable contributions and support."
+            ". We extend our gratitude to these institutions for their valuable contributions and support."
         ], style={
             "fontSize": "1rem",
             "lineHeight": "1.6",
-            "fontFamily": "Arial, Helvetica, sans-serif"
+            "fontFamily": "Arial, Helvetica, sans-serif",
         }),
 
-        html.Br()
+        html.Br(),
     ], className="")
 
 def build_navigation_bar(active_tab="emissions"):
