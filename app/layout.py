@@ -210,6 +210,30 @@ def build_about_us():
         dbc.Row([
             dbc.Col([
                 html.Img(
+                    src="/assets/logistikk.png",
+                    alt="logistikk",
+                    style={"width": "100%", "maxWidth": "200px"}
+                )
+            ], xs=12, md=12, lg=3, width=3),
+
+            dbc.Col([
+                html.H5("logistikk.io"),
+                html.P(
+                    "logistikk.io is a consulting and analytics company specialized in supply chain economics, "
+                    "operations and logistics decision-making. Their work focuses on developing tailored digital "
+                    "solutions that support organizations in solving complex operational and strategic problems "
+                    "through data-driven analysis, business modelling and decision-support tools. "
+                    "For this project, logistikk.io is responsible for the backend design and the development of "
+                    "the core algorithms."
+                )
+            ], xs=12, md=12, lg=9, width=9),
+        ], className="mb-4 g-4"),
+
+        html.Br(),
+
+        dbc.Row([
+            dbc.Col([
+                html.Img(
                     src="/assets/MTCC-logo.png",
                     alt="MTCC Latin America",
                     style={"width": "100%", "maxWidth": "200px"}
