@@ -35,6 +35,7 @@ from callbacks import callbacks_emissions
 from callbacks import callbacks_waiting
 from callbacks import callbacks_energy
 from callbacks import callbacks_explorer
+from callbacks import callbacks_climate
 from charts.charts_energy import get_country_name
 import routes
 
@@ -611,6 +612,7 @@ def update_tab(pathname):
         "service": "service",
         "energy": "energy",
         "explorer": "explorer",
+        "climate": "climate",
         "about": "about"
     }
     return tab_mapping.get(pathname, "emissions")
@@ -666,7 +668,7 @@ def update_navigation_bar(selected_tab, pathname):
     # If we have a URL, use it to determine the active tab
     if pathname and pathname != "/":
         pathname = pathname.lstrip('/')
-        if pathname in ["waiting", "service", "energy", "explorer", "about"]:
+        if pathname in ["waiting", "service", "energy", "explorer", "climate", "about"]:
             return layout.build_navigation_bar(active_tab=pathname)
     # Otherwise use the selected tab from the store
     return layout.build_navigation_bar(active_tab=selected_tab)
@@ -679,11 +681,12 @@ def update_navigation_bar(selected_tab, pathname):
         Input("tab-service", "n_clicks"),
         Input("tab-energy", "n_clicks"),
         Input("tab-explorer", "n_clicks"),
+        Input("tab-climate", "n_clicks"),
         Input("tab-about", "n_clicks"),
     ],
     prevent_initial_call=True
 )
-def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks):
+def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, climate_clicks, about_clicks):
     """Update browser URL when navigation tabs are clicked.
 
     Parameters
@@ -697,7 +700,7 @@ def update_url_on_tab_click(emissions_clicks, waiting_clicks, service_clicks, en
         New pathname reflecting the active tab.
     """
     # Check if any actual clicks occurred (not just initial rendering)
-    all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, about_clicks]
+    all_clicks = [emissions_clicks, waiting_clicks, service_clicks, energy_clicks, explorer_clicks, climate_clicks, about_clicks]
     if all(click is None for click in all_clicks):
         raise PreventUpdate
     triggered_id = ctx.triggered_id
@@ -730,7 +733,7 @@ def handle_initial_url(pathname):
     if pathname is None or pathname == "/":
         return "/emissions"
     # If it's a valid path, just return it to keep it
-    valid_paths = ["/emissions", "/waiting", "/service", "/energy", "/explorer", "/about"]
+    valid_paths = ["/emissions", "/waiting", "/service", "/energy", "/explorer", "/climate", "/about"]
     if pathname in valid_paths:
         return pathname
     return "/emissions"
@@ -795,6 +798,13 @@ def update_tab_content(selected_tab, n_intervals):
             dbc.Row([
                 layout.build_sidebar_explorer(controls_explorer),
                 layout.build_main_container_explorer()
+            ], className="g-0")
+        ])
+    elif selected_tab == "climate":
+        return html.Div([
+            dbc.Row([
+                layout.build_sidebar_climate(),
+                layout.build_main_container_climate(),
             ], className="g-0")
         ])
     elif selected_tab == "about":
@@ -887,6 +897,8 @@ def toggle_chart_modal(open_clicks, close_clicks, is_open):
         return False
     return is_open
 
+
+callbacks_climate.setup_climate_callbacks(app)
 
 callbacks_explorer.setup_explorer_callbacks(
     app,
