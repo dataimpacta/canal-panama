@@ -10,7 +10,6 @@ from controls import controls_explorer
 from controls import controls_emissions
 from controls import controls_time
 from controls import controls_energy
-from controls import controls_climate
 
 
 def build_header():
@@ -355,13 +354,12 @@ def build_navigation_bar(active_tab="emissions"):
             ),
             dbc.NavItem(
                 dbc.NavLink(
-                    "Explorer", href="#", id="tab-explorer", active=active_tab == "explorer"
+                    "Climate & Watershed", href="#", id="tab-climate", active=active_tab == "climate"
                 )
             ),
             dbc.NavItem(
                 dbc.NavLink(
-                    "Climate & Watershed", href="#", id="tab-climate",
-                    active=active_tab == "climate"
+                    "Explorer", href="#", id="tab-explorer", active=active_tab == "explorer"
                 )
             ),
             dbc.NavItem(
@@ -491,7 +489,7 @@ def create_standard_chart_container(chart):
         dcc.Loading(
             id=f"loading-{chart['id']}",
             type="circle",
-            children=dcc.Graph(id=chart["id"], style={"height": chart.get("height", "300px")})
+            children=dcc.Graph(id=chart["id"], style={"height": "300px"})
         ),
 
         dbc.Modal(
@@ -542,7 +540,7 @@ def create_standard_chart_container(chart):
             backdrop=False,
             scrollable=True,
         )
-    ], className="border p-4 m-0 g-0", style={"minHeight": chart.get("minHeight", "420px")})
+    ], className="border p-4 m-0 g-0", style={"minHeight": "420px"})
 
 def create_standard_table_container(table):
     """Container for data tables with title, subtitle, and clean styling."""
@@ -1026,47 +1024,67 @@ def build_main_container_explorer():
     ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 
-# ============================
-# Climate & Watershed - first phase: one interactive chart
+
+
+# ===========================
+# Climate & Watershed — uses existing dashboard layout components
 
 def build_sidebar_climate():
-    """Controls for selecting one historical climate / water-level series."""
+    """Same sidebar styling and dimensions as existing dashboard tabs."""
     return dbc.Col([
-        html.H5("Climate & Watershed", className="mb-3"),
-        html.Label("Data series", className="fw-bold mb-2"),
-        controls_climate.build_metric_dropdown(),
-        html.Label("Historical range", className="fw-bold mb-2"),
-        controls_climate.build_history_window_dropdown(),
-        html.Label("Chart view", className="fw-bold mb-2"),
-        controls_climate.build_view_dropdown(),
-        controls_climate.build_refresh_button(),
-        html.Small("Observed series are solid. Gatun projections are dashed. "
-                   "Niño 3.4 forecasts are not shown in this first version.",
-                   className="d-block text-muted mb-3"),
-        html.Div([
-            html.A("NOAA SST anomaly data", href="https://www.cpc.ncep.noaa.gov/data/indices/",
-                   target="_blank", className="d-block"),
-            html.A("ACP Gatun level data", href="https://evtms-rpts.pancanal.com/eng/h2o/index.html",
-                   target="_blank", className="d-block"),
-        ], className="small"),
+        html.H6("Climate & Watershed", className="mb-3", style={"fontWeight": "bold"}),
+        dbc.Accordion([
+            dbc.AccordionItem([
+                dcc.Dropdown(
+                    id="climate--history-years",
+                    options=[
+                        {"label": "Last 3 years", "value": "3"},
+                        {"label": "Last 5 years", "value": "5"},
+                        {"label": "Last 10 years", "value": "10"},
+                        {"label": "All available", "value": "all"},
+                    ],
+                    value="5",
+                    clearable=False,
+                )
+            ], title="Historical period"),
+        ]),
+        html.Br(),
+        dbc.Button("Refresh Charts", id="climate--btn--refresh", n_clicks=0, color="primary"),
+        html.Small(
+            "Data: NOAA ENSO and Panama Canal Authority Gatun Lake, supplied from S3.",
+            className="d-block text-muted mt-3",
+        ),
     ], className="border p-3", xs=12, md=12, lg=2, width=2)
 
 
 def build_main_container_climate():
-    """Display a single wide time-series chart with the existing fullscreen control."""
+    """Use the same chart container, tooltips, and fullscreen modals as other tabs."""
+    charts = [
+        {
+            "id": "climate--chart--enso",
+            "title": "Niño 3.4 Historical and Model Projections",
+            "subtitle": "SST ANOMALY (°C)",
+            "description": "Historical Niño 3.4 SST anomalies and forecasts from individual NMME models and their reported model mean. Forecast curves use the latest initialization in the S3 file.",
+        },
+        {
+            "id": "climate--chart--gatun",
+            "title": "Gatun Lake Historical and Projected Levels",
+            "subtitle": "WATER LEVEL (m)",
+            "description": "Historical water levels and Panama Canal Authority projections for Gatun Lake, expressed in metres.",
+        },
+    ]
+    combined_chart = {
+        "id": "climate--chart--combined",
+        "title": "ENSO and Gatun Lake: Historical Series and Projections",
+        "subtitle": "NIÑO 3.4 SST ANOMALY (°C, LEFT AXIS)  |  GATUN LAKE LEVEL (m, RIGHT AXIS)",
+        "description": "Observed Niño 3.4 SST anomalies (black), individual NMME projections and model mean (red dashed) share a date axis with Gatun Lake historical levels (teal) and projections (blue dashed). The vertical marker denotes the earliest forecast date; forecast start dates may differ between sources.",
+    }
     return dbc.Col([
-        html.Div(id="climate--data-status", className="px-3 py-2"),
-        create_standard_chart_container({
-            "id": "climate--chart",
-            "height": "520px",
-            "minHeight": "625px",
-            "title": "Climate & Watershed – Historical and projected conditions",
-            "subtitle": "Select Gatun Lake levels or Niño 3.4 SST anomalies in the sidebar",
-            "description": "Source data: Panama Canal Authority (Gatun Lake) and NOAA CPC "
-                           "(Niño 3.4). Projected Gatun values are shown as forecasts, "
-                           "never as observations. The series have different units and "
-                           "are therefore displayed separately."
-        }),
+        html.Div(id="climate--load-status"),
+        dbc.Row([
+            dbc.Col(create_standard_chart_container(combined_chart), xs=12, md=12, lg=12),
+        ], class_name="g-0 mt-0 me-0 ms-0"),
+        build_chart_grid(charts),
     ], className="p-0", xs=12, md=12, lg=10, width=10)
 
 

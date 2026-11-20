@@ -611,8 +611,8 @@ def update_tab(pathname):
         "waiting": "waiting", 
         "service": "service",
         "energy": "energy",
-        "explorer": "explorer",
         "climate": "climate",
+        "explorer": "explorer",
         "about": "about"
     }
     return tab_mapping.get(pathname, "emissions")
@@ -668,7 +668,7 @@ def update_navigation_bar(selected_tab, pathname):
     # If we have a URL, use it to determine the active tab
     if pathname and pathname != "/":
         pathname = pathname.lstrip('/')
-        if pathname in ["waiting", "service", "energy", "explorer", "climate", "about"]:
+        if pathname in ["waiting", "service", "energy", "climate", "explorer", "about"]:
             return layout.build_navigation_bar(active_tab=pathname)
     # Otherwise use the selected tab from the store
     return layout.build_navigation_bar(active_tab=selected_tab)
@@ -898,7 +898,7 @@ def toggle_chart_modal(open_clicks, close_clicks, is_open):
     return is_open
 
 
-callbacks_climate.setup_climate_callbacks(app)
+callbacks_climate.setup_climate_callbacks(app, s3_client)
 
 callbacks_explorer.setup_explorer_callbacks(
     app,
